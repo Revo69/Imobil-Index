@@ -110,10 +110,12 @@ with col_left:
     st.subheader("🏆 ТОП-10 самых дешёвых районов")
     cheap = df_now.nsmallest(10, "avg_per_m2_eur").copy()
     cheap["Район"] = cheap["city"].str.cat(cheap["sector"].fillna("центр"), sep=" → ")
+    cheap["Цена м² (€)"] = cheap["avg_per_m2_eur"]
+
     fig_cheap = px.bar(
         cheap, x="Район", y="Цена м² (€)",
-        text=cheap["avg_per_m2_eur"].round(0).astype(int).astype(str) + " €",
-        color="avg_per_m2_eur", color_continuous_scale="Blues"
+        text=cheap["Цена м² (€)"].round(0).astype(int).astype(str) + " €",
+        color="Цена м² (€)", color_continuous_scale="Blues"
     )
     fig_cheap.update_layout(showlegend=False, xaxis_tickangle=45)
     fig_cheap.update_traces(textposition='outside')
@@ -123,10 +125,12 @@ with col_right:
     st.subheader("💎 ТОП-10 самых дорогих районов")
     expensive = df_now.nlargest(10, "avg_per_m2_eur").copy()
     expensive["Район"] = expensive["city"].str.cat(expensive["sector"].fillna("центр"), sep=" → ")
+    expensive["Цена м² (€)"] = expensive["avg_per_m2_eur"]
+
     fig_exp = px.bar(
         expensive, x="Район", y="Цена м² (€)",
-        text=expensive["avg_per_m2_eur"].round(0).astype(int).astype(str) + " €",
-        color="avg_per_m2_eur", color_continuous_scale="Reds"
+        text=expensive["Цена м² (€)"].round(0).astype(int).astype(str) + " €",
+        color="Цена м² (€)", color_continuous_scale="Reds"
     )
     fig_exp.update_layout(showlegend=False, xaxis_tickangle=45)
     fig_exp.update_traces(textposition='outside')
