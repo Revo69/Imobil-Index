@@ -84,15 +84,14 @@ col1, col2, col3, col4 = st.columns(4)
 
 col1.metric("🏙️ Районов в аналитике", len(df_now))
 col2.metric("💰 Средняя цена м²", f"{df_now['avg_per_m2_eur'].mean():.0f} €")
+
 # Находим строки с минимальной и максимальной ценой
 min_row = df_now.loc[df_now['avg_per_m2_eur'].idxmin()]
 max_row = df_now.loc[df_now['avg_per_m2_eur'].idxmax()]
 
-# Формируем подписи "Город → Район"
-min_label = f"{min_row['city']} → {min_row['sector']}" if pd.notna(min_row['sector']) else min_row['city']
-max_label = f"{max_row['city']} → {max_row['sector']}" if pd.notna(max_row['sector']) else max_row['city']
+min_label = f"{min_row['city']}\n→ {min_row['sector']}" if pd.notna(min_row['sector']) else min_row['city']
+max_label = f"{max_row['city']}\n→ {max_row['sector']}" if pd.notna(max_row['sector']) else max_row['city']
 
-# Выводим метрики
 col3.metric("📉 Самый дешёвый", min_label)
 col4.metric("📈 Самый дорогой", max_label)
 
