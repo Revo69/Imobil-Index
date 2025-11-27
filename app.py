@@ -68,13 +68,6 @@ col_title, col_refresh = st.columns([4, 1])
 with col_title:
     st.title("🏠 Imobil.Index — Аналитика недвижимости Молдовы")
 
-with col_refresh:
-    st.write("")  # отступ
-    if st.button("🔄 Обновить данные", type="primary"):
-        with st.spinner("Обновляем данные..."):
-            if refresh_gold_estate():
-                st.rerun()
-
 st.markdown(f"📅 Обновлено: {datetime.now():%d %B %Y в %H:%M} │ 📊 {df_now['listings'].sum():,} активных объявлений")
 
 # =========================
