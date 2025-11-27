@@ -16,7 +16,7 @@ st.set_page_config(
 # Используем SERVICE_ROLE ключ для полного доступа
 supabase = create_client(
     st.secrets["SUPABASE_URL"], 
-    st.secrets["SUPABASE_SERVICE_KEY"]  # Изменил на SERVICE_KEY
+    st.secrets["SUPABASE_KEY"] 
 )
 
 # =========================
