@@ -19,12 +19,12 @@ supabase = create_client(st.secrets["SUPABASE_URL"], st.secrets["SUPABASE_KEY"])
 # =========================
 # Загрузка данных
 # =========================
-@st.cache_data(ttl=3600)  # обновляется каждый час
+#@st.cache_data(ttl=3600)  # обновляется каждый час
 def load_current():
     resp = supabase.table("gold_estate_current").select("*").execute()
     return pd.DataFrame(resp.data)
 
-@st.cache_data(ttl=86400)  # ежедневно
+#@st.cache_data(ttl=86400)  # ежедневно
 def load_history():
     resp = supabase.table("gold_estate_daily").select("*").execute()
     return pd.DataFrame(resp.data)
