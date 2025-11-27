@@ -94,8 +94,8 @@ min_sector = str(min_row['sector']) if pd.notna(min_row['sector']) else "—"
 max_city = str(max_row['city'])
 max_sector = str(max_row['sector']) if pd.notna(max_row['sector']) else "—"
 
-col3.metric("📉 Самый дешёвый", min_city, delta=f"→ {min_sector}")
-col4.metric("📈 Самый дорогой", max_city, delta=f"→ {max_sector}")
+col3.metric("📉 Самый дешёвый", min_city, delta=f"{min_sector}")
+col4.metric("📈 Самый дорогой", max_city, delta=f"{max_sector}")
 
 
 
