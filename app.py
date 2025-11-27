@@ -114,7 +114,7 @@ with col_left:
 
     fig_cheap = px.bar(
         cheap, x="Район", y="Цена м² (€)",
-        text=cheap["Цена м² (€)"].round(0).astype(int).astype(str) + " €",
+        text=cheap["Цена м² (€)"].round(0).astype(int).astype(str),
         color="Цена м² (€)", color_continuous_scale="Blues"
     )
     fig_cheap.update_layout(showlegend=False, xaxis_tickangle=45)
@@ -129,7 +129,7 @@ with col_right:
 
     fig_exp = px.bar(
         expensive, x="Район", y="Цена м² (€)",
-        text=expensive["Цена м² (€)"].round(0).astype(int).astype(str) + " €",
+        text=expensive["Цена м² (€)"].round(0).astype(int).astype(str),
         color="Цена м² (€)", color_continuous_scale="Reds"
     )
     fig_exp.update_layout(showlegend=False, xaxis_tickangle=45)
