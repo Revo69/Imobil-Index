@@ -202,30 +202,33 @@ display.columns = ['Город', 'Район', 'Объявления', 'Цена
 st.dataframe(display, use_container_width=True, hide_index=True)
 
 # =========================
-# Футер
+# Футер — универсальный (светлая + тёмная тема)
 # =========================
 st.markdown("---")
 
-st.markdown("""
+st.markdown(f"""
 <div style="
-    text-align: center; 
-    padding: 2.5rem 1rem; 
-    color: #94a3b8; 
-    font-size: 0.925rem; 
+    text-align: center;
+    padding: 3rem 1rem 2rem;
+    color: var(--text-color);
+    font-size: 0.925rem;
     font-weight: 400;
-    letter-spacing: 0.5px;
+    letter-spacing: 0.4px;
+    opacity: 0.75;
 ">
-    <span style="opacity: 0.7;">Revoland Analytics</span>
-    <span style="margin: 0 1rem; opacity: 0.4;">·</span>
+    <span>Revoland Analytics</span>
+    <span style="margin: 0 0.8rem; opacity: 0.5;">•</span>
     <a href="mailto:sergey.revo@outlook.com" 
-       style="color: #94a3b8; text-decoration: none; opacity: 0.7; transition: opacity 0.2s;">
+       style="color: var(--text-color); text-decoration: none; opacity: 0.75; transition: opacity 0.2s;"
+       onmouseover="this.style.opacity=1"
+       onmouseout="this.style.opacity=0.75">
        sergey.revo@outlook.com
     </a>
-    <span style="margin: 0 1rem; opacity: 0.4;">·</span>
-    <span style="opacity: 0.7;">Аналитика недвижимости Молдовы</span>
+    <span style="margin: 0 0.8rem; opacity: 0.5;">•</span>
+    <span>Аналитика недвижимости Молдовы</span>
     <br><br>
-    <span style="opacity: 0.5; font-size: 0.8rem;">
-        © {year} — Все права защищены
+    <span style="font-size: 0.8rem; opacity: 0.6;">
+        © {datetime.now().year} — Все права защищены
     </span>
 </div>
-""".format(year=datetime.now().year), unsafe_allow_html=True)
+""", unsafe_allow_html=True)
