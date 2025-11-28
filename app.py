@@ -47,10 +47,10 @@ if df_now.empty:
     st.stop()
 
 # =========================
-# Шапка
+# ШАПКА
 # =========================
 st.markdown(f"""
-<div style="text-align: center; padding: 2.5rem 1rem; background: #0f172a; color: white; border-radius: 16px; box-shadow: 0 8px 32px rgba(0,0,0,0.3);">
+<div style="text-align: center; padding: 2.5rem 1rem; background: #0f172a; color: white; border-radius: 16px; margin-bottom: 2rem;">
     <h1 style="margin:0; font-size: 3rem; font-weight: 800; letter-spacing: -1px;">
         Imobil.Index
     </h1>
@@ -59,10 +59,14 @@ st.markdown(f"""
     </p>
 </div>
 
-<div style="text-align: center; margin: 2rem 0; padding: 1.2rem; background: #1e293b; border-radius: 12px; color: #e2e8f0; font-size: 1rem;">
-    <strong>Обновлено:</strong> {datetime.now().strftime('%d %B %Y в %H:%M')} 
-    │ 
-    <strong>Активных объявлений:</strong> <span style="color: #60a5fa; font-size: 1.3rem; font-weight: 700;">{df_now['listings'].sum():,}</span>
+<div style="text-align: center; margin: 2rem 0; padding: 1.2rem; background: #1e293b; border-radius: 12px; color: #e2e8f0;">
+    <p style="margin:0; font-size: 0.95rem; opacity: 0.8;">
+        Обновлено: <strong>{datetime.now().strftime('%d %B %Y в %H:%M')}</strong>
+    </p>
+    <p style="margin: 1rem 0 0; font-size: 1.1rem;">
+        Активных объявлений: 
+        <strong style="color: #60a5fa; font-size: 1.4rem;">{df_now['listings'].sum():,}</strong>
+    </p>
 </div>
 """, unsafe_allow_html=True)
 
@@ -198,15 +202,19 @@ display.columns = ['Город', 'Район', 'Объявления', 'Цена
 st.dataframe(display, use_container_width=True, hide_index=True)
 
 # =========================
-# Футер
+# ФУТЕР
 # =========================
 st.markdown("---")
 
 st.markdown("""
-<div style="text-align: center; padding: 2rem; color: #64748b; font-size: 0.95rem;">
-    <strong>Revoland Analytics</strong> 
-    │ 📧 <a href="mailto:sergey.revo@outlook.com" style="color: #60a5fa; text-decoration: none;">sergey.revo@outlook.com</a> 
-    │ 🏠 Аналитика недвижимости Молдовы 
-    │ {year} © Все права защищены
+<div style="text-align: center; padding: 2rem; background: #0f172a; color: #e2e8f0; border-radius: 16px; font-size: 0.95rem;">
+    <p style="margin: 0;">
+        <strong>Revoland Analytics</strong> 
+        │ 📧 <a href="mailto:sergey.revo@outlook.com" style="color: #60a5fa; text-decoration: none;">sergey.revo@outlook.com</a>
+        │ 🏠 Аналитика недвижимости Молдовы
+    </p>
+    <p style="margin: 1rem 0 0; opacity: 0.7;">
+        {year} © Все права защищены
+    </p>
 </div>
 """.format(year=datetime.now().year), unsafe_allow_html=True)
