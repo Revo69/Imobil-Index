@@ -46,13 +46,112 @@ if df_now.empty:
     st.error("Нет данных. Запусти Silver пайплайн.")
     st.stop()
 
-# =========================
-# Шапка
-# =========================
-st.title("Imobil.Index — Недвижимость Молдовы 2025")
-st.markdown(f"**Обновлено:** {datetime.now():%d %B %Y в %H:%M} │ {df_now['listings'].sum():,} активных объявлений")
+import streamlit as st
+from datetime import datetime
 
-st.markdown("---")
+# =========================
+# ПРЕМИУМ-ШАПКА 2025
+# =========================
+col1, col2, col3 = st.columns([1, 2, 1])
+
+with col2:
+    st.markdown(
+        """
+        <div style="
+            text-align: center;
+            padding: 2.5rem 1rem;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            border-radius: 20px;
+            box-shadow: 0 10px 30px rgba(102, 126, 234, 0.4);
+            margin: 20px 0;
+            color: white;
+            backdrop-filter: blur(10px);
+            border: 1px solid rgba(255,255,255,0.2);
+        ">
+            <h1 style="
+                font-size: 3.2rem;
+                margin: 0 0 0.5rem 0;
+                font-weight: 800;
+                background: linear-gradient(to right, #ffffff, #a8edea);
+                -webkit-background-clip: text;
+                -webkit-text-fill-color: transparent;
+                text-shadow: 0 4px 10px rgba(0,0,0,0.3);
+            ">
+                Imobil.Index
+            </h1>
+            <p style="
+                font-size: 1.4rem;
+                margin: 0.4rem 0;
+                opacity: 0.95;
+                font-weight: 500;
+            ">
+                Недвижимость Молдовы • 2025
+            </p>
+        </div>
+        """,
+        unsafe_allow_html=True
+    )
+
+# Строка с обновлением и количеством объявлений — элегантно и с иконкой
+st.markdown(
+    f"""
+    <div style="
+        text-align: center;
+        margin-top: -10px;
+        margin-bottom: 30px;
+        padding: 1rem;
+        background: rgba(102, 126, 234, 0.08);
+        border-radius: 16px;
+        border-left: 6px solid #667eea;
+        backdrop-filter: blur(8px);
+    ">
+        <p style="
+            font-size: 1.25rem;
+            color: #2d3748;
+            margin: 0;
+            font-weight: 600;
+        ">
+            Обновлено: <span style="color: #667eea; font-weight: 700;">{datetime.now():%d %B %Y в %H:%M}</span>
+            &nbsp;&nbsp;•&nbsp;&nbsp;
+            <span style="color: #48bb78; font-size: 1.5rem; font-weight: 800;">
+                {df_now['listings'].sum():,} 
+            </span> 
+            активных объявлений прямо сейчас
+        </p>
+    </div>
+    """,
+    unsafe_allow_html=True
+)
+
+# Дополнительный микро-акцент — «живой» индикатор
+st.markdown(
+    """
+    <div style="text-align: center; margin-bottom: 30px;">
+        <span style="
+            display: inline-block;
+            padding: 8px 20px;
+            background: #48bb78;
+            color: white;
+            border-radius: 50px;
+            font-size: 0.95rem;
+            font-weight: 600;
+            box-shadow: 0 4px 15px rgba(72, 187, 120, 0.4);
+            animation: pulse 3s infinite;
+        ">
+            ● Данные в реальном времени
+        </span>
+    </div>
+
+    <style>
+    @keyframes pulse {
+        0% { box-shadow: 0 0 0 0 rgba(72, 187, 120, 0.7); }
+        70% { box-shadow: 0 0 0 10px rgba(72, 187, 120, 0); }
+        100% { box-shadow: 0 0 0 0 rgba(72, 187, 120, 0); }
+    }
+    </style>
+    """,
+    unsafe_allow_html=True
+)
 
 # =========================
 # Ключевые метрики
