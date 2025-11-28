@@ -18,12 +18,24 @@ supabase = create_client(
     st.secrets["SUPABASE_KEY"]  # лучше использовать service_role только на сервере
 )
 
-# =========================
-# Проверка данных
-# =========================
+# Загрузка данных
+@st.cache_data(ttl=3600)
+def load_current():
+    resp = supabase.table("gold_estate_current").select("*").execute()
+    return pd.DataFrame(resp.data)
+
+@st.cache_data(ttl=86400)
+def load_history():
+    resp = supabase.table("gold_estate_daily").select("*").execute()
+    return pd.DataFrame(resp.data)
+
+df_now = load_current()
+df_hist = load_history()
+
+# Проверка
 if df_now.empty:
     st.error("Нет данных в gold_estate_current")
-    st.info("Запусти Silver пайплайн или выполни вручную: `select refresh_gold_estate();`")
+    st.info("Запусти Silver пайплайн — Gold обновится автоматически")
     st.stop()
     
 # =========================
