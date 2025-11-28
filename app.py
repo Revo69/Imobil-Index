@@ -104,13 +104,19 @@ with col3:
     cheapest = df_now.loc[df_now['avg_per_m2_eur'].idxmin()]
     city_c = cheapest['city']
     sector_c = cheapest['sector'] or "Центр"
-    st.metric(label="Самый дешёвый", value=f"{city_c} → {sector_c}")
+    st.markdown(
+        f"<div style='text-align:center; font-size:1.1em;'><b>Самый дешёвый</b><br>{city_c} → {sector_c}</div>",
+        unsafe_allow_html=True
+    )
 
 with col4:
     expensive = df_now.loc[df_now['avg_per_m2_eur'].idxmax()]
     city_e = expensive['city']
     sector_e = expensive['sector'] or "Центр"
-    st.metric(label="Самый дорогой", value=f"{city_e} → {sector_e}")
+    st.markdown(
+        f"<div style='text-align:center; font-size:1.1em;'><b>Самый дорогой</b><br>{city_e} → {sector_e}</div>",
+        unsafe_allow_html=True
+    )
     
 st.markdown("---")
 
