@@ -85,27 +85,37 @@ st.markdown("---")
 col_left, col_right = st.columns(2)
 
 with col_left:
-    st.subheader("🔥 ТОП-10 самых дешёвых районов")
+    st.subheader("ТОП-10 самых дешёвых районов")
     cheap = df_now.nsmallest(10, "avg_per_m2_eur").copy()
     cheap["Район"] = cheap["city"] + " → " + cheap["sector"].fillna("Центр")
+    # Переименовываем колонку для красивой оси Y
+    cheap = cheap.rename(columns={"avg_per_m2_eur": "Цена м² (€)"})
+
     fig1 = px.bar(
-        cheap, x="Район", y="avg_per_m2_eur",
-        text=cheap["avg_per_m2_eur"].round(0).astype(int).astype(str) + "€",
-        color="avg_per_m2_eur", color_continuous_scale="Blues",
-        animation_frame=None
+        cheap,
+        x="Район",
+        y="Цена м² (€)",
+        text=cheap["Цена м² (€)"].round(0).astype(int).astype(str) + "€",
+        color="Цена м² (€)",
+        color_continuous_scale="Blues"
     )
     fig1.update_layout(showlegend=False, xaxis_tickangle=45, height=500)
     fig1.update_traces(textposition='outside')
     st.plotly_chart(fig1, use_container_width=True)
 
 with col_right:
-    st.subheader("💎 ТОП-10 самых дорогих районов")
+    st.subheader("ТОП-10 самых дорогих районов")
     expensive = df_now.nlargest(10, "avg_per_m2_eur").copy()
     expensive["Район"] = expensive["city"] + " → " + expensive["sector"].fillna("Центр")
+    expensive = expensive.rename(columns={"avg_per_m2_eur": "Цена м² (€)"})
+
     fig2 = px.bar(
-        expensive, x="Район", y="avg_per_m2_eur",
-        text=expensive["avg_per_m2_eur"].round(0).astype(int).astype(str) + "€",
-        color="avg_per_m2_eur", color_continuous_scale="Reds"
+        expensive,
+        x="Район",
+        y="Цена м² (€)",
+        text=expensive["Цена м² (€)"].round(0).astype(int).astype(str) + "€",
+        color="Цена м² (€)",
+        color_continuous_scale="Reds"
     )
     fig2.update_layout(showlegend=False, xaxis_tickangle=45, height=500)
     fig2.update_traces(textposition='outside')
