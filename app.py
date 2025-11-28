@@ -195,10 +195,18 @@ st.dataframe(display, use_container_width=True, hide_index=True)
 # Футер
 # =========================
 st.markdown("---")
-st.markdown("""
-<div style="text-align: center; padding: 2rem; background: #0e1117; color: white; border-radius: 12px;">
-    <h2>Imobil.Index — Ваш инструмент №1 на рынке недвижимости</h2>
-    <p>Ежедневное обновление │ Точность 99.9%</p>
-    <p>📧 sergey.revo@outlook.com</p>
+
+st.markdown(f"""
+<div style="text-align: center; padding: 2rem; background: linear-gradient(90deg, #1e3a8a, #1e40af); color: white; border-radius: 12px; margin-top: 3rem;">
+    <h2 style="margin: 0; font-size: 2rem;">Imobil.Index</h2>
+    <p style="margin: 1rem 0 0; font-size: 1.1rem; opacity: 0.9;">
+        Самый точный и актуальный индекс недвижимости Молдовы
+    </p>
+    <p style="margin: 1.5rem 0 0; font-size: 1rem; opacity: 0.8;">
+        Данные обновляются ежедневно │ {datetime.now().year} © Revoland Analytics
+    </p>
+    <p style="margin: 1rem 0 0; font-size: 0.95rem; opacity: 0.7;">
+        📧 sergey.revo@outlook.com
+    </p>
 </div>
 """, unsafe_allow_html=True)
