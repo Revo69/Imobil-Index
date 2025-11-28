@@ -50,22 +50,50 @@ if df_now.empty:
 # ШАПКА
 # =========================
 st.markdown(f"""
-<div style="text-align: center; padding: 2.5rem 1rem; background: #0f172a; color: white; border-radius: 16px; margin-bottom: 2rem;">
-    <h1 style="margin:0; font-size: 3rem; font-weight: 800; letter-spacing: -1px;">
+<div style="
+    text-align: center;
+    padding: 3.5rem 1rem 2.5rem;
+    margin-bottom: 2rem;
+">
+    <h1 style="
+        margin: 0;
+        font-size: 3.2rem;
+        font-weight: 800;
+        letter-spacing: -1.5px;
+        background: linear-gradient(90deg, #3b82f6, #8b5cf6);
+        -webkit-background-clip: text;
+        -webkit-text-fill-color: transparent;
+        background-clip: text;
+    ">
         Imobil.Index
     </h1>
-    <p style="margin: 0.8rem 0 0; font-size: 1.25rem; opacity: 0.9; font-weight: 300;">
+    
+    <p style="
+        margin: 1rem 0 0;
+        font-size: 1.35rem;
+        font-weight: 400;
+        color: var(--text-color);
+        opacity: 0.9;
+    ">
         Самый точный индекс недвижимости Молдовы
     </p>
 </div>
 
-<div style="text-align: center; margin: 2rem 0; padding: 1.2rem; background: #1e293b; border-radius: 12px; color: #e2e8f0;">
-    <p style="margin:0; font-size: 0.95rem; opacity: 0.8;">
-        Обновлено: <strong>{datetime.now().strftime('%d %B %Y в %H:%M')}</strong>
+<div style="
+    text-align: center;
+    padding: 1.5rem;
+    background: var(--secondary-background-color);
+    border-radius: 16px;
+    margin: 0 2rem 3rem;
+    color: var(--text-color);
+    box-shadow: 0 4px 20px rgba(0,0,0,0.05);
+">
+    <p style="margin: 0; font-size: 0.95rem; opacity: 0.8;">
+        Обновлено: <strong style="font-size: 1.1rem;">{datetime.now().strftime('%d %B %Y в %H:%M')}</strong>
     </p>
     <p style="margin: 1rem 0 0; font-size: 1.1rem;">
         Активных объявлений: 
-        <strong style="color: #60a5fa; font-size: 1.4rem;">{df_now['listings'].sum():,}</strong>
+        <strong style="font-size: 1.6rem; color: #3b82f6;">{df_now['listings'].sum():,}</strong>
     </p>
 </div>
 """, unsafe_allow_html=True)
