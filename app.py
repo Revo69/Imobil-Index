@@ -202,19 +202,7 @@ display.columns = ['Город', 'Район', 'Объявления', 'Цена
 st.dataframe(display, use_container_width=True, hide_index=True)
 
 # =========================
-# ФУТЕР
+# Футер
 # =========================
 st.markdown("---")
-
-st.markdown("""
-<div style="text-align: center; padding: 2rem; background: #0f172a; color: #e2e8f0; border-radius: 16px; font-size: 0.95rem;">
-    <p style="margin: 0;">
-        <strong>Revoland Analytics</strong> 
-        │ 📧 <a href="mailto:sergey.revo@outlook.com" style="color: #60a5fa; text-decoration: none;">sergey.revo@outlook.com</a>
-        │ 🏠 Аналитика недвижимости Молдовы
-    </p>
-    <p style="margin: 1rem 0 0; opacity: 0.7;">
-        {year} © Все права защищены
-    </p>
-</div>
-""".format(year=datetime.now().year), unsafe_allow_html=True)
+st.markdown("**Revoland Analytics** │ 📧 sergey.revo@outlook.com │ 🏠 Аналитика недвижимости Молдовы")
