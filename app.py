@@ -19,48 +19,13 @@ supabase = create_client(
 )
 
 # =========================
-# Функция обновления
-# =========================
-def refresh_gold_estate():
-    try:
-        resp = supabase.rpc("refresh_gold_estate").execute()
-        if hasattr(resp, "error") and resp.error:
-            st.error(f"Ошибка при обновлении: {resp.error}")
-            return False
-        st.cache_data.clear()
-        return True
-    except Exception as e:
-        st.error(f"❌ Ошибка: {e}")
-        return False
-
-# =========================
-# Загрузка данных
-# =========================
-@st.cache_data(ttl=3600)
-def load_current():
-    resp = supabase.table("gold_estate_current").select("*").execute()
-    return pd.DataFrame(resp.data)
-
-@st.cache_data(ttl=86400)
-def load_history():
-    resp = supabase.table("gold_estate_daily").select("*").execute()
-    return pd.DataFrame(resp.data)
-
-df_now = load_current()
-df_hist = load_history()
-
-# =========================
-# Если пусто — запускаем обновление
+# Проверка данных
 # =========================
 if df_now.empty:
-    st.warning("Нет данных в gold_estate_current")
-    with st.spinner("Обновляем данные..."):
-        if refresh_gold_estate():
-            st.success("✅ Данные обновлены, перезапускаем дашборд")
-            st.rerun()
-        else:
-            st.stop()
-
+    st.error("Нет данных в gold_estate_current")
+    st.info("Запусти Silver пайплайн или выполни вручную: `select refresh_gold_estate();`")
+    st.stop()
+    
 # =========================
 # Шапка
 # =========================
