@@ -47,14 +47,10 @@ if df_now.empty:
     st.stop()
 
 # =========================
-# ШАПКА
+# ШАПКА — финальная, без ошибок, премиум-минимализм 2025
 # =========================
 st.markdown(f"""
-<div style="
-    text-align: center;
-    padding: 3.5rem 1rem 2.5rem;
-    margin-bottom: 2rem;
-">
+<div style="text-align: center; padding: 3.5rem 1rem 2.5rem; margin-bottom: 2rem;">
     <h1 style="
         margin: 0;
         font-size: 3.2rem;
