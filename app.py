@@ -85,21 +85,14 @@ with col3:
     cheapest = df_now.loc[df_now['avg_per_m2_eur'].idxmin()]
     city_c = cheapest['city']
     sector_c = cheapest['sector'] or "Центр"
-    # Длинные названия обрезаем и добавляем перенос
-    label_c = f"{city_c} → {sector_c}"
-    if len(label_c) > 18:
-        label_c = city_c + "\n→ " + sector_c
-    st.metric("Самый дешёвый", label_c)
+    st.metric("Самый дешёвый", f"{city_c}\n→ {sector_c}")
 
 with col4:
     expensive = df_now.loc[df_now['avg_per_m2_eur'].idxmax()]
     city_e = expensive['city']
     sector_e = expensive['sector'] or "Центр"
-    label_e = f"{city_e} → {sector_e}"
-    if len(label_e) > 18:
-        label_e = city_e + "\n→ " + sector_e
-    st.metric("Самый дорогой", label_e)
-
+    st.metric("Самый дорогой", f"{city_e}\n→ {sector_e}")
+    
 st.markdown("---")
 
 # =========================
