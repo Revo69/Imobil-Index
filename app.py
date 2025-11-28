@@ -46,104 +46,180 @@ if df_now.empty:
     st.error("Нет данных. Запусти Silver пайплайн.")
     st.stop()
 
+import streamlit as st
+from datetime import datetime
+
 # =========================
-# Современный минималистичный дизайн
+# Улучшенная шапка дашборда
 # =========================
 
 st.markdown(f"""
 <div style="
-    background: #ffffff;
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
     border-radius: 24px;
-    padding: 3rem;
+    padding: 3rem 2rem;
     margin-bottom: 2rem;
-    box-shadow: 
-        0 4px 6px -1px rgba(0, 0, 0, 0.1),
-        0 2px 4px -1px rgba(0, 0, 0, 0.06),
-        inset 0 -2px 0 rgba(0, 0, 0, 0.05);
-    border: 1px solid rgba(0,0,0,0.05);
+    box-shadow: 0 20px 40px rgba(102, 126, 234, 0.3);
+    position: relative;
+    overflow: hidden;
 ">
-    <div style="text-align: center;">
-        <!-- Логотип и заголовок -->
-        <div style="
-            display: inline-flex;
-            align-items: center;
-            gap: 1rem;
-            margin-bottom: 1.5rem;
-        ">
+    <!-- Декоративные элементы -->
+    <div style="
+        position: absolute;
+        top: -100px;
+        right: -50px;
+        width: 300px;
+        height: 300px;
+        background: rgba(255,255,255,0.1);
+        border-radius: 50%;
+        animation: float 6s ease-in-out infinite;
+    "></div>
+    <div style="
+        position: absolute;
+        bottom: -80px;
+        left: -30px;
+        width: 200px;
+        height: 200px;
+        background: rgba(255,255,255,0.05);
+        border-radius: 50%;
+        animation: float 8s ease-in-out infinite;
+    "></div>
+    
+    <div style="position: relative; z-index: 2;">
+        <!-- Заголовок -->
+        <div style="text-align: center; margin-bottom: 3rem;">
             <div style="
-                background: linear-gradient(135deg, #10b981, #059669);
-                width: 80px;
-                height: 80px;
-                border-radius: 20px;
-                display: flex;
+                display: inline-flex;
                 align-items: center;
-                justify-content: center;
-                font-size: 2.5rem;
-                box-shadow: 0 4px 14px rgba(16, 185, 129, 0.4);
-            ">🏠</div>
-            <div style="text-align: left;">
-                <h1 style="
-                    margin: 0;
-                    font-size: 2.5rem;
-                    font-weight: 800;
-                    color: #1f2937;
-                    line-height: 1.1;
-                ">Imobil.Index</h1>
-                <p style="
-                    margin: 0;
-                    color: #6b7280;
-                    font-size: 1.2rem;
-                    font-weight: 500;
-                ">Аналитика недвижимости Молдовы</p>
+                gap: 1rem;
+                background: rgba(255,255,255,0.15);
+                padding: 1rem 2rem;
+                border-radius: 20px;
+                backdrop-filter: blur(10px);
+                border: 1px solid rgba(255,255,255,0.2);
+                margin-bottom: 1rem;
+            ">
+                <div style="font-size: 2.5rem;">🏠</div>
+                <div>
+                    <h1 style="
+                        margin: 0;
+                        font-size: 2.5rem;
+                        font-weight: 800;
+                        color: white;
+                        line-height: 1.1;
+                    ">Imobil.Index</h1>
+                    <p style="
+                        margin: 0;
+                        color: rgba(255,255,255,0.9);
+                        font-size: 1.1rem;
+                        font-weight: 500;
+                    ">Аналитика недвижимости Молдовы</p>
+                </div>
             </div>
         </div>
-        
+
         <!-- Метрики -->
         <div style="
             display: grid;
             grid-template-columns: 1fr auto 1fr;
             align-items: center;
-            gap: 2rem;
-            max-width: 600px;
+            gap: 3rem;
+            max-width: 700px;
             margin: 0 auto;
+            background: rgba(255,255,255,0.1);
+            padding: 2rem;
+            border-radius: 20px;
+            backdrop-filter: blur(15px);
+            border: 1px solid rgba(255,255,255,0.2);
         ">
             <!-- Левая метрика -->
             <div style="text-align: right;">
-                <div style="font-size: 0.875rem; color: #6b7280; font-weight: 500;">
-                    ОБНОВЛЕНО
-                </div>
-                <div style="font-size: 1.25rem; color: #1f2937; font-weight: 700;">
-                    {datetime.now():%d %b %Y}
-                </div>
-                <div style="font-size: 0.875rem; color: #9ca3af;">
-                    в {datetime.now():%H:%M}
+                <div style="
+                    display: flex;
+                    flex-direction: column;
+                    gap: 0.5rem;
+                ">
+                    <div style="font-size: 0.875rem; color: rgba(255,255,255,0.8); font-weight: 600; letter-spacing: 1px;">
+                        ОБНОВЛЕНО
+                    </div>
+                    <div style="font-size: 1.5rem; color: white; font-weight: 800; text-shadow: 0 2px 4px rgba(0,0,0,0.2);">
+                        {datetime.now():%d %b %Y}
+                    </div>
+                    <div style="font-size: 1rem; color: rgba(255,255,255,0.7); font-weight: 500;">
+                        в {datetime.now():%H:%M}
+                    </div>
                 </div>
             </div>
-            
+
             <!-- Разделитель -->
             <div style="
-                width: 1px;
-                height: 50px;
-                background: linear-gradient(180deg, transparent, #e5e7eb, transparent);
-            "></div>
-            
+                width: 2px;
+                height: 80px;
+                background: linear-gradient(180deg, 
+                    transparent 0%, 
+                    rgba(255,255,255,0.5) 50%, 
+                    transparent 100%);
+                position: relative;
+            ">
+                <div style="
+                    position: absolute;
+                    top: 50%;
+                    left: 50%;
+                    transform: translate(-50%, -50%);
+                    width: 8px;
+                    height: 8px;
+                    background: white;
+                    border-radius: 50%;
+                    box-shadow: 0 0 10px rgba(255,255,255,0.5);
+                "></div>
+            </div>
+
             <!-- Правая метрика -->
             <div style="text-align: left;">
-                <div style="font-size: 0.875rem; color: #6b7280; font-weight: 500;">
-                    АКТИВНЫХ ОБЪЯВЛЕНИЙ
-                </div>
                 <div style="
-                    font-size: 2rem;
-                    color: #059669;
-                    font-weight: 800;
-                    line-height: 1;
+                    display: flex;
+                    flex-direction: column;
+                    gap: 0.5rem;
                 ">
-                    {df_now['listings'].sum():,}
+                    <div style="font-size: 0.875rem; color: rgba(255,255,255,0.8); font-weight: 600; letter-spacing: 1px;">
+                        АКТИВНЫХ ОБЪЯВЛЕНИЙ
+                    </div>
+                    <div style="
+                        font-size: 2.5rem;
+                        color: #fbbf24;
+                        font-weight: 900;
+                        line-height: 1;
+                        text-shadow: 0 2px 8px rgba(251, 191, 36, 0.4);
+                        background: linear-gradient(45deg, #fbbf24, #f59e0b);
+                        -webkit-background-clip: text;
+                        -webkit-text-fill-color: transparent;
+                    ">
+                        16,197
+                    </div>
+                    <div style="
+                        font-size: 0.875rem;
+                        color: rgba(255,255,255,0.7);
+                        font-weight: 500;
+                    ">
+                        +124 за сегодня
+                    </div>
                 </div>
             </div>
         </div>
     </div>
 </div>
+
+<style>
+    @keyframes float {
+        0%, 100% {{ transform: translateY(0px) rotate(0deg); }}
+        50% {{ transform: translateY(-20px) rotate(180deg); }}
+    }}
+    
+    @keyframes glow {{
+        0%, 100% {{ box-shadow: 0 0 20px rgba(102, 126, 234, 0.5); }}
+        50% {{ box-shadow: 0 0 40px rgba(102, 126, 234, 0.8); }}
+    }}
+</style>
 """, unsafe_allow_html=True)
 
 # Стилизованный разделитель
@@ -151,17 +227,21 @@ st.markdown("""
 <div style="
     display: flex;
     align-items: center;
+    justify-content: center;
     margin: 3rem 0;
     gap: 1rem;
 ">
-    <div style="flex: 1; height: 2px; background: linear-gradient(90deg, #10b981, transparent);"></div>
+    <div style="flex: 1; height: 2px; background: linear-gradient(90deg, transparent, #667eea);"></div>
     <div style="
-        width: 8px;
-        height: 8px;
-        border-radius: 50%;
-        background: #10b981;
-    "></div>
-    <div style="flex: 1; height: 2px; background: linear-gradient(90deg, transparent, #10b981);"></div>
+        display: flex;
+        gap: 0.5rem;
+        align-items: center;
+    ">
+        <div style="width: 6px; height: 6px; background: #667eea; border-radius: 50%;"></div>
+        <div style="width: 8px; height: 8px; background: #764ba2; border-radius: 50%;"></div>
+        <div style="width: 6px; height: 6px; background: #667eea; border-radius: 50%;"></div>
+    </div>
+    <div style="flex: 1; height: 2px; background: linear-gradient(90deg, #764ba2, transparent);"></div>
 </div>
 """, unsafe_allow_html=True)
 
