@@ -205,4 +205,27 @@ st.dataframe(display, use_container_width=True, hide_index=True)
 # Футер
 # =========================
 st.markdown("---")
-st.markdown("**Revoland Analytics** │ 📧 sergey.revo@outlook.com │ 🏠 Аналитика недвижимости Молдовы")
+
+st.markdown("""
+<div style="
+    text-align: center; 
+    padding: 2.5rem 1rem; 
+    color: #94a3b8; 
+    font-size: 0.925rem; 
+    font-weight: 400;
+    letter-spacing: 0.5px;
+">
+    <span style="opacity: 0.7;">Revoland Analytics</span>
+    <span style="margin: 0 1rem; opacity: 0.4;">·</span>
+    <a href="mailto:sergey.revo@outlook.com" 
+       style="color: #94a3b8; text-decoration: none; opacity: 0.7; transition: opacity 0.2s;">
+       sergey.revo@outlook.com
+    </a>
+    <span style="margin: 0 1rem; opacity: 0.4;">·</span>
+    <span style="opacity: 0.7;">Аналитика недвижимости Молдовы</span>
+    <br><br>
+    <span style="opacity: 0.5; font-size: 0.8rem;">
+        © {year} — Все права защищены
+    </span>
+</div>
+""".format(year=datetime.now().year), unsafe_allow_html=True)
