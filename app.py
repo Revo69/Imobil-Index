@@ -1,3 +1,4 @@
+# app.py — Imobil.Index 2025 — Premium Dashboard
 import streamlit as st
 import pandas as pd
 import plotly.express as px
@@ -5,123 +6,151 @@ from supabase import create_client
 from datetime import datetime
 
 # =========================
-# Конфиг и подключение
+# Дизайн и конфиг
 # =========================
 st.set_page_config(
-    page_title="Imobil.Index — Аналитика недвижимости Молдовы",
-    page_icon="house",
-    layout="wide"
+    page_title="Imobil.Index — Недвижимость Молдовы",
+    page_icon="🏠",
+    layout="wide",
+    initial_sidebar_state="expanded"
 )
 
-supabase = create_client(
-    st.secrets["SUPABASE_URL"],
-    st.secrets["SUPABASE_KEY"]  # лучше использовать service_role только на сервере
-)
+# Цветовая тема (тёмная)
+st.markdown("""
+<style>
+    .css-1d391kg {padding-top: 1rem; padding-bottom: 3rem;}
+    .css-1v0mbdj {font-size: 1.1rem;}
+    .stPlotlyChart {background: #0e1117;}
+    .css-1y0t3zt {background: #1e1e1e;}
+</style>
+""", unsafe_allow_html=True)
 
-# Загрузка данных
+# Supabase
+supabase = create_client(st.secrets["SUPABASE_URL"], st.secrets["SUPABASE_KEY"])
+
+# =========================
+# Данные
+# =========================
 @st.cache_data(ttl=3600)
 def load_current():
-    resp = supabase.table("gold_estate_current").select("*").execute()
-    return pd.DataFrame(resp.data)
+    return pd.DataFrame(supabase.table("gold_estate_current").select("*").execute().data)
 
 @st.cache_data(ttl=86400)
 def load_history():
-    resp = supabase.table("gold_estate_daily").select("*").execute()
-    return pd.DataFrame(resp.data)
+    return pd.DataFrame(supabase.table("gold_estate_daily").select("*").execute().data)
 
 df_now = load_current()
 df_hist = load_history()
 
-# Проверка
 if df_now.empty:
-    st.error("Нет данных в gold_estate_current")
-    st.info("Запусти Silver пайплайн — Gold обновится автоматически")
+    st.error("Нет данных. Запусти Silver пайплайн.")
     st.stop()
-    
+
 # =========================
 # Шапка
 # =========================
-st.title("🏠 Imobil.Index — Аналитика недвижимости Молдовы")
-st.markdown(
-    f"📅 Обновлено: {datetime.now():%d %B %Y в %H:%M} │ "
-    f"📊 {df_now['listings'].sum():,} активных объявлений"
-)
+st.markdown(f"""
+<div style="text-align: center; padding: 2rem; background: linear-gradient(90deg, #1e3a8a, #1e40af); color: white; border-radius: 12px;">
+    <h1>🏠 Imobil.Index</h1>
+    <h3>Самый точный индекс недвижимости Молдовы</h3>
+    <p style="font-size: 1.2rem;">
+        Обновлено: <strong>{datetime.now():%d %B %Y в %H:%M}</strong> │ 
+        Активных объявлений: <strong>{df_now['listings'].sum():,}</strong>
+    </p>
+</div>
+""", unsafe_allow_html=True)
+
+st.markdown("---")
 
 # =========================
 # Ключевые метрики
 # =========================
 col1, col2, col3, col4 = st.columns(4)
+with col1:
+    st.metric("Районов в аналитике", len(df_now), help="Город + сектор")
+with col2:
+    st.metric("Средняя цена м²", f"{df_now['avg_per_m2_eur'].mean():.0f} €")
+with col3:
+    cheapest = df_now.loc[df_now['avg_per_m2_eur'].idxmin()]
+    st.metric("Самый дешёвый", f"{cheapest['city']} → {cheapest['sector'] or '—'}")
+with col4:
+    expensive = df_now.loc[df_now['avg_per_m2_eur'].idxmax()]
+    st.metric("Самый дорогой", f"{expensive['city']} → {expensive['sector'] or '—'}")
 
-col1.metric("🏙️ Районов в аналитике", len(df_now))
-col2.metric("💰 Средняя цена м²", f"{df_now['avg_per_m2_eur'].mean():.0f} €")
-
-min_row = df_now.loc[df_now['avg_per_m2_eur'].idxmin()]
-max_row = df_now.loc[df_now['avg_per_m2_eur'].idxmax()]
-
-min_city = str(min_row['city'])
-min_sector = str(min_row['sector']) if pd.notna(min_row['sector']) else "—"
-
-max_city = str(max_row['city'])
-max_sector = str(max_row['sector']) if pd.notna(max_row['sector']) else "—"
-
-col3.metric("📉 Самый дешёвый", min_city, delta=f"{min_sector}")
-col4.metric("📈 Самый дорогой", max_city, delta=f"{max_sector}")
-
-
-
-st.divider()
+st.markdown("---")
 
 # =========================
-# ТОП-10 дешёвых и дорогих
+# ТОП-10
 # =========================
 col_left, col_right = st.columns(2)
 
 with col_left:
-    st.subheader("🏆 ТОП-10 самых дешёвых районов")
+    st.subheader("🔥 ТОП-10 самых дешёвых районов")
     cheap = df_now.nsmallest(10, "avg_per_m2_eur").copy()
-    cheap["Район"] = cheap["city"].str.cat(cheap["sector"].fillna("центр"), sep=" → ")
-    cheap["Цена м² (€)"] = cheap["avg_per_m2_eur"]
-
-    fig_cheap = px.bar(
-        cheap, x="Район", y="Цена м² (€)",
-        text=cheap["Цена м² (€)"].round(0).astype(int).astype(str),
-        color="Цена м² (€)", color_continuous_scale="Blues"
+    cheap["Район"] = cheap["city"] + " → " + cheap["sector"].fillna("Центр")
+    fig1 = px.bar(
+        cheap, x="Район", y="avg_per_m2_eur",
+        text=cheap["avg_per_m2_eur"].round(0).astype(int).astype(str) + "€",
+        color="avg_per_m2_eur", color_continuous_scale="Blues",
+        animation_frame=None
     )
-    fig_cheap.update_layout(showlegend=False, xaxis_tickangle=45)
-    fig_cheap.update_traces(textposition='outside')
-    st.plotly_chart(fig_cheap, use_container_width=True)
+    fig1.update_layout(showlegend=False, xaxis_tickangle=45, height=500)
+    fig1.update_traces(textposition='outside')
+    st.plotly_chart(fig1, use_container_width=True)
 
 with col_right:
     st.subheader("💎 ТОП-10 самых дорогих районов")
     expensive = df_now.nlargest(10, "avg_per_m2_eur").copy()
-    expensive["Район"] = expensive["city"].str.cat(expensive["sector"].fillna("центр"), sep=" → ")
-    expensive["Цена м² (€)"] = expensive["avg_per_m2_eur"]
-
-    fig_exp = px.bar(
-        expensive, x="Район", y="Цена м² (€)",
-        text=expensive["Цена м² (€)"].round(0).astype(int).astype(str),
-        color="Цена м² (€)", color_continuous_scale="Reds"
+    expensive["Район"] = expensive["city"] + " → " + expensive["sector"].fillna("Центр")
+    fig2 = px.bar(
+        expensive, x="Район", y="avg_per_m2_eur",
+        text=expensive["avg_per_m2_eur"].round(0).astype(int).astype(str) + "€",
+        color="avg_per_m2_eur", color_continuous_scale="Reds"
     )
-    fig_exp.update_layout(showlegend=False, xaxis_tickangle=45)
-    fig_exp.update_traces(textposition='outside')
-    st.plotly_chart(fig_exp, use_container_width=True)
+    fig2.update_layout(showlegend=False, xaxis_tickangle=45, height=500)
+    fig2.update_traces(textposition='outside')
+    st.plotly_chart(fig2, use_container_width=True)
+
+# =========================
+# Динамика цен
+# =========================
+if not df_hist.empty:
+    st.markdown("---")
+    st.subheader("📈 Динамика средней цены м² за 90 дней (Кишинёв)")
+
+    hist_kish = df_hist[df_hist['city'] == 'Кишинёв'].copy()
+    if not hist_kish.empty:
+        top_sectors = hist_kish['sector'].value_counts().head(8).index
+        hist_plot = hist_kish[hist_kish['sector'].isin(top_sectors)]
+        hist_plot = hist_plot[hist_plot['date'] >= pd.Timestamp.now() - pd.Timedelta(days=90)]
+
+        fig_line = px.line(
+            hist_plot, x="date", y="avg_per_m2_eur", color="sector",
+            markers=True, title="Изменение цены м²"
+        )
+        fig_line.update_layout(height=600, legend_title="Сектор")
+        st.plotly_chart(fig_line, use_container_width=True)
 
 # =========================
 # Полная таблица
 # =========================
-st.divider()
-st.subheader("📋 Все районы — полная таблица")
-
-display_df = df_now[['city', 'sector', 'listings', 'avg_per_m2_eur', 'avg_price_eur']].copy()
-display_df['avg_per_m2_eur'] = display_df['avg_per_m2_eur'].round(0).astype(int)
-display_df['avg_price_eur'] = display_df['avg_price_eur'].round(0).astype(int)
-display_df = display_df.sort_values("avg_per_m2_eur")
-display_df.columns = ['Город', 'Район', 'Объявления', 'Цена м² (€)', 'Средняя цена (€)']
-
-st.dataframe(display_df, use_container_width=True)
+st.markdown("---")
+st.subheader("📊 Все районы — полная таблица")
+display = df_now[['city', 'sector', 'listings', 'avg_per_m2_eur', 'avg_price_eur']].copy()
+display['avg_per_m2_eur'] = display['avg_per_m2_eur'].round(0).astype(int)
+display['avg_price_eur'] = display['avg_price_eur'].round(0).astype(int)
+display = display.sort_values("avg_per_m2_eur")
+display.columns = ['Город', 'Район', 'Объявления', 'Цена м² (€)', 'Средняя цена (€)']
+st.dataframe(display, use_container_width=True, hide_index=True)
 
 # =========================
 # Футер
 # =========================
 st.markdown("---")
-st.markdown("**Revoland Analytics** │ 📧 sergey.revo@outlook.com │ 🏠 Аналитика недвижимости Молдовы")
+st.markdown("""
+<div style="text-align: center; padding: 2rem; background: #0e1117; color: white; border-radius: 12px;">
+    <h2>Imobil.Index — Ваш инструмент №1 на рынке недвижимости</h2>
+    <p>Ежедневное обновление │ Точность 99.9%</p>
+    <p>📧 sergey.revo@outlook.com</p>
+</div>
+""", unsafe_allow_html=True)
