@@ -47,203 +47,36 @@ if df_now.empty:
     st.stop()
 
 # =========================
-# Улучшенная шапка дашборда
+# Шапка — минимализм 
 # =========================
-
-st.markdown(f"""
-<div style="
-    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-    border-radius: 24px;
-    padding: 3rem 2rem;
-    margin-bottom: 2rem;
-    box-shadow: 0 20px 40px rgba(102, 126, 234, 0.3);
-    position: relative;
-    overflow: hidden;
-">
-    <!-- Декоративные элементы -->
-    <div style="
-        position: absolute;
-        top: -100px;
-        right: -50px;
-        width: 300px;
-        height: 300px;
-        background: rgba(255,255,255,0.1);
-        border-radius: 50%;
-        animation: float 6s ease-in-out infinite;
-    "></div>
-    <div style="
-        position: absolute;
-        bottom: -80px;
-        left: -30px;
-        width: 200px;
-        height: 200px;
-        background: rgba(255,255,255,0.05);
-        border-radius: 50%;
-        animation: float 8s ease-in-out infinite;
-    "></div>
-    
-    <div style="position: relative; z-index: 2;">
-        <!-- Заголовок -->
-        <div style="text-align: center; margin-bottom: 3rem;">
-            <div style="
-                display: inline-flex;
-                align-items: center;
-                gap: 1rem;
-                background: rgba(255,255,255,0.15);
-                padding: 1rem 2rem;
-                border-radius: 20px;
-                backdrop-filter: blur(10px);
-                border: 1px solid rgba(255,255,255,0.2);
-                margin-bottom: 1rem;
-            ">
-                <div style="font-size: 2.5rem;">🏠</div>
-                <div>
-                    <h1 style="
-                        margin: 0;
-                        font-size: 2.5rem;
-                        font-weight: 800;
-                        color: white;
-                        line-height: 1.1;
-                    ">Imobil.Index</h1>
-                    <p style="
-                        margin: 0;
-                        color: rgba(255,255,255,0.9);
-                        font-size: 1.1rem;
-                        font-weight: 500;
-                    ">Аналитика недвижимости Молдовы</p>
-                </div>
-            </div>
-        </div>
-
-        <!-- Метрики -->
-        <div style="
-            display: grid;
-            grid-template-columns: 1fr auto 1fr;
-            align-items: center;
-            gap: 3rem;
-            max-width: 700px;
-            margin: 0 auto;
-            background: rgba(255,255,255,0.1);
-            padding: 2rem;
-            border-radius: 20px;
-            backdrop-filter: blur(15px);
-            border: 1px solid rgba(255,255,255,0.2);
-        ">
-            <!-- Левая метрика -->
-            <div style="text-align: right;">
-                <div style="
-                    display: flex;
-                    flex-direction: column;
-                    gap: 0.5rem;
-                ">
-                    <div style="font-size: 0.875rem; color: rgba(255,255,255,0.8); font-weight: 600; letter-spacing: 1px;">
-                        ОБНОВЛЕНО
-                    </div>
-                    <div style="font-size: 1.5rem; color: white; font-weight: 800; text-shadow: 0 2px 4px rgba(0,0,0,0.2);">
-                        {datetime.now():%d %b %Y}
-                    </div>
-                    <div style="font-size: 1rem; color: rgba(255,255,255,0.7); font-weight: 500;">
-                        в {datetime.now():%H:%M}
-                    </div>
-                </div>
-            </div>
-
-            <!-- Разделитель -->
-            <div style="
-                width: 2px;
-                height: 80px;
-                background: linear-gradient(180deg, 
-                    transparent 0%, 
-                    rgba(255,255,255,0.5) 50%, 
-                    transparent 100%);
-                position: relative;
-            ">
-                <div style="
-                    position: absolute;
-                    top: 50%;
-                    left: 50%;
-                    transform: translate(-50%, -50%);
-                    width: 8px;
-                    height: 8px;
-                    background: white;
-                    border-radius: 50%;
-                    box-shadow: 0 0 10px rgba(255,255,255,0.5);
-                "></div>
-            </div>
-
-            <!-- Правая метрика -->
-            <div style="text-align: left;">
-                <div style="
-                    display: flex;
-                    flex-direction: column;
-                    gap: 0.5rem;
-                ">
-                    <div style="font-size: 0.875rem; color: rgba(255,255,255,0.8); font-weight: 600; letter-spacing: 1px;">
-                        АКТИВНЫХ ОБЪЯВЛЕНИЙ
-                    </div>
-                    <div style="
-                        font-size: 2.5rem;
-                        color: #fbbf24;
-                        font-weight: 900;
-                        line-height: 1;
-                        text-shadow: 0 2px 8px rgba(251, 191, 36, 0.4);
-                        background: linear-gradient(45deg, #fbbf24, #f59e0b);
-                        -webkit-background-clip: text;
-                        -webkit-text-fill-color: transparent;
-                    ">
-                        16,197
-                    </div>
-                    <div style="
-                        font-size: 0.875rem;
-                        color: rgba(255,255,255,0.7);
-                        font-weight: 500;
-                    ">
-                        +124 за сегодня
-                    </div>
-                </div>
-            </div>
-        </div>
-    </div>
+st.markdown("""
+<div style="text-align: center; padding: 3rem 1rem; background: linear-gradient(135deg, #0f172a 0%, #1e293b 100%); color: white; border-radius: 16px; box-shadow: 0 10px 30px rgba(0,0,0,0.3);">
+    <h1 style="margin:0; font-size: 3.5rem; font-weight: 800; letter-spacing: -1px;">
+        Imobil.Index
+    </h1>
+    <p style="margin: 0.5rem 0 0; font-size: 1.4rem; opacity: 0.9; font-weight: 300;">
+        Самый точный индекс недвижимости Молдовы
+    </p>
 </div>
 """, unsafe_allow_html=True)
 
-# Добавляем CSS отдельно
-st.markdown("""
-<style>
-    @keyframes float {
-        0%, 100% { transform: translateY(0px) rotate(0deg); }
-        50% { transform: translateY(-20px) rotate(180deg); }
-    }
-    
-    @keyframes glow {
-        0%, 100% { box-shadow: 0 0 20px rgba(102, 126, 234, 0.5); }
-        50% { box-shadow: 0 0 40px rgba(102, 126, 234, 0.8); }
-    }
-</style>
-""", unsafe_allow_html=True)
-
-# Стилизованный разделитель
-st.markdown("""
-<div style="
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    margin: 3rem 0;
-    gap: 1rem;
-">
-    <div style="flex: 1; height: 2px; background: linear-gradient(90deg, transparent, #667eea);"></div>
-    <div style="
-        display: flex;
-        gap: 0.5rem;
-        align-items: center;
-    ">
-        <div style="width: 6px; height: 6px; background: #667eea; border-radius: 50%;"></div>
-        <div style="width: 8px; height: 8px; background: #764ba2; border-radius: 50%;"></div>
-        <div style="width: 6px; height: 6px; background: #667eea; border-radius: 50%;"></div>
+# Подзаголовок с данными — чисто и стильно
+col1, col2, col3 = st.columns([2, 1, 2])
+with col2:
+    st.markdown(f"""
+    <div style="text-align: center; margin: 2rem 0; padding: 1rem; background: #1e293b; border-radius: 12px; color: #e2e8f0;">
+        <p style="margin:0; font-size: 0.9rem; opacity: 0.8;">Обновлено</p>
+        <p style="margin: 0.4rem 0 0; font-size: 1.1rem; font-weight: 600;">
+            {datetime.now().strftime('%d %B %Y в %H:%M')}
+        </p>
+        <p style="margin: 1rem 0 0; font-size: 0.9rem; opacity: 0.8;">Активных объявлений</p>
+        <p style="margin: 0.4rem 0 0; font-size: 1.4rem; font-weight: 700; color: #60a5fa;">
+            {df_now['listings'].sum():,}
+        </p>
     </div>
-    <div style="flex: 1; height: 2px; background: linear-gradient(90deg, #764ba2, transparent);"></div>
-</div>
-""", unsafe_allow_html=True)
+    """, unsafe_allow_html=True)
+
+st.markdown("---")
 
 # =========================
 # Ключевые метрики
