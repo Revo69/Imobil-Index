@@ -47,30 +47,20 @@ if df_now.empty:
     st.stop()
 
 # =========================
-# Шапка (минималистичный формат)
+# Шапка
 # =========================
 st.markdown(f"""
-<div style="
-    text-align: center; 
-    padding: 1.5rem; 
-    background-color: #1e3a8a; 
-    color: white; 
-    border-radius: 10px;
-    font-family: 'Segoe UI', sans-serif;
-">
-  <h1 style="margin: 0;">🏠 Imobil.Index</h1>
-  <p style="margin: 0.3rem 0; font-size: 1.1rem; opacity: 0.9;">
-    Самый точный индекс недвижимости Молдовы
-  </p>
-  <p style="margin: 0.5rem 0; font-size: 0.95rem; opacity: 0.8;">
-    📅 Обновлено: <strong>{datetime.now():%d %B %Y в %H:%M}</strong> │ 
-    📊 Активных объявлений: <strong>{df_now['listings'].sum():,}</strong>
-  </p>
+<div style="text-align: center; padding: 2rem; background: linear-gradient(90deg, #1e3a8a, #1e40af); color: white; border-radius: 12px;">
+    <h1>🏠 Imobil.Index</h1>
+    <h3>Самый точный индекс недвижимости Молдовы</h3>
+    <p style="font-size: 1.2rem;">
+        Обновлено: <strong>{datetime.now():%d %B %Y в %H:%M}</strong> │ 
+        Активных объявлений: <strong>{df_now['listings'].sum():,}</strong>
+    </p>
 </div>
 """, unsafe_allow_html=True)
 
-st.markdown("<hr style='margin:1.5rem 0; border: none; border-top: 1px solid #ddd;'>", unsafe_allow_html=True)
-
+st.markdown("---")
 
 # =========================
 # Ключевые метрики
