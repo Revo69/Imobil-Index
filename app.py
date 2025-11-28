@@ -95,7 +95,7 @@ with col_left:
         cheap,
         x="Район",
         y="Цена м² (€)",
-        text=cheap["Цена м² (€)"].round(0).astype(int).astype(str) + "€",
+        text=cheap["Цена м² (€)"].round(0).astype(int).astype(str),
         color="Цена м² (€)",
         color_continuous_scale="Blues"
     )
@@ -113,7 +113,7 @@ with col_right:
         expensive,
         x="Район",
         y="Цена м² (€)",
-        text=expensive["Цена м² (€)"].round(0).astype(int).astype(str) + "€",
+        text=expensive["Цена м² (€)"].round(0).astype(int).astype(str),
         color="Цена м² (€)",
         color_continuous_scale="Reds"
     )
