@@ -112,24 +112,47 @@ with col_right:
     st.plotly_chart(fig2, use_container_width=True)
 
 # =========================
-# Динамика цен
+# Динамика цен за 90 дней (Кишинёв)
 # =========================
 if not df_hist.empty:
     st.markdown("---")
-    st.subheader("📈 Динамика средней цены м² за 90 дней (Кишинёв)")
+    st.subheader("Динамика средней цены м² за 90 дней (Кишинёв)")
 
+    # Исправляем тип даты + фильтр по Кишинёву
     hist_kish = df_hist[df_hist['city'] == 'Кишинёв'].copy()
     if not hist_kish.empty:
+        # Превращаем строку в дату
+        hist_kish['date'] = pd.to_datetime(hist_kish['date'])
+        
+        # Берём последние 90 дней
+        cutoff_date = pd.Timestamp.now() - pd.Timedelta(days=90)
+        hist_kish = hist_kish[hist_kish['date'] >= cutoff_date]
+
+        # Топ-8 секторов по количеству точек
         top_sectors = hist_kish['sector'].value_counts().head(8).index
         hist_plot = hist_kish[hist_kish['sector'].isin(top_sectors)]
-        hist_plot = hist_plot[hist_plot['date'] >= pd.Timestamp.now() - pd.Timedelta(days=90)]
 
-        fig_line = px.line(
-            hist_plot, x="date", y="avg_per_m2_eur", color="sector",
-            markers=True, title="Изменение цены м²"
-        )
-        fig_line.update_layout(height=600, legend_title="Сектор")
-        st.plotly_chart(fig_line, use_container_width=True)
+        if not hist_plot.empty:
+            fig_line = px.line(
+                hist_plot.sort_values("date"),
+                x="date",
+                y="avg_per_m2_eur",
+                color="sector",
+                markers=True,
+                title="Изменение цены м² по секторам Кишинёва"
+            )
+            fig_line.update_layout(
+                height=600,
+                legend_title="Сектор",
+                xaxis_title="Дата",
+                yaxis_title="Цена м² (€)"
+            )
+            fig_line.update_traces(line=dict(width=3))
+            st.plotly_chart(fig_line, use_container_width=True)
+        else:
+            st.info("Недостаточно данных за последние 90 дней")
+    else:
+        st.info("Нет исторических данных по Кишинёву")
 
 # =========================
 # Полная таблица
