@@ -50,13 +50,19 @@ if df_now.empty:
 # Шапка
 # =========================
 st.markdown(f"""
-<div style="text-align: center; padding: 2rem; background: linear-gradient(90deg, #1e3a8a, #1e40af); color: white; border-radius: 12px;">
-    <h1>🏠 Imobil.Index</h1>
-    <h3>Самый точный индекс недвижимости Молдовы</h3>
-    <p style="font-size: 1.2rem;">
-        Обновлено: <strong>{datetime.now():%d %B %Y в %H:%M}</strong> │ 
-        Активных объявлений: <strong>{df_now['listings'].sum():,}</strong>
+<div style="text-align: center; padding: 2.5rem 1rem; background: #0f172a; color: white; border-radius: 16px; box-shadow: 0 8px 32px rgba(0,0,0,0.3);">
+    <h1 style="margin:0; font-size: 3rem; font-weight: 800; letter-spacing: -1px;">
+        Imobil.Index
+    </h1>
+    <p style="margin: 0.8rem 0 0; font-size: 1.25rem; opacity: 0.9; font-weight: 300;">
+        Самый точный индекс недвижимости Молдовы
     </p>
+</div>
+
+<div style="text-align: center; margin: 2rem 0; padding: 1.2rem; background: #1e293b; border-radius: 12px; color: #e2e8f0; font-size: 1rem;">
+    <strong>Обновлено:</strong> {datetime.now().strftime('%d %B %Y в %H:%M')} 
+    │ 
+    <strong>Активных объявлений:</strong> <span style="color: #60a5fa; font-size: 1.3rem; font-weight: 700;">{df_now['listings'].sum():,}</span>
 </div>
 """, unsafe_allow_html=True)
 
