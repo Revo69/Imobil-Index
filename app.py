@@ -47,21 +47,123 @@ if df_now.empty:
     st.stop()
 
 # =========================
-# Шапка
+# Современный минималистичный дизайн
 # =========================
+
 st.markdown(f"""
-<div style="text-align: center; padding: 2rem; background: linear-gradient(90deg, #1e3a8a, #1e40af); color: white; border-radius: 12px;">
-    <h1>🏠 Imobil.Index</h1>
-    <h3>Самый точный индекс недвижимости Молдовы</h3>
-    <p style="font-size: 1.2rem;">
-        Обновлено: <strong>{datetime.now():%d %B %Y в %H:%M}</strong> │ 
-        Активных объявлений: <strong>{df_now['listings'].sum():,}</strong>
-    </p>
+<div style="
+    background: #ffffff;
+    border-radius: 24px;
+    padding: 3rem;
+    margin-bottom: 2rem;
+    box-shadow: 
+        0 4px 6px -1px rgba(0, 0, 0, 0.1),
+        0 2px 4px -1px rgba(0, 0, 0, 0.06),
+        inset 0 -2px 0 rgba(0, 0, 0, 0.05);
+    border: 1px solid rgba(0,0,0,0.05);
+">
+    <div style="text-align: center;">
+        <!-- Логотип и заголовок -->
+        <div style="
+            display: inline-flex;
+            align-items: center;
+            gap: 1rem;
+            margin-bottom: 1.5rem;
+        ">
+            <div style="
+                background: linear-gradient(135deg, #10b981, #059669);
+                width: 80px;
+                height: 80px;
+                border-radius: 20px;
+                display: flex;
+                align-items: center;
+                justify-content: center;
+                font-size: 2.5rem;
+                box-shadow: 0 4px 14px rgba(16, 185, 129, 0.4);
+            ">🏠</div>
+            <div style="text-align: left;">
+                <h1 style="
+                    margin: 0;
+                    font-size: 2.5rem;
+                    font-weight: 800;
+                    color: #1f2937;
+                    line-height: 1.1;
+                ">Imobil.Index</h1>
+                <p style="
+                    margin: 0;
+                    color: #6b7280;
+                    font-size: 1.2rem;
+                    font-weight: 500;
+                ">Аналитика недвижимости Молдовы</p>
+            </div>
+        </div>
+        
+        <!-- Метрики -->
+        <div style="
+            display: grid;
+            grid-template-columns: 1fr auto 1fr;
+            align-items: center;
+            gap: 2rem;
+            max-width: 600px;
+            margin: 0 auto;
+        ">
+            <!-- Левая метрика -->
+            <div style="text-align: right;">
+                <div style="font-size: 0.875rem; color: #6b7280; font-weight: 500;">
+                    ОБНОВЛЕНО
+                </div>
+                <div style="font-size: 1.25rem; color: #1f2937; font-weight: 700;">
+                    {datetime.now():%d %b %Y}
+                </div>
+                <div style="font-size: 0.875rem; color: #9ca3af;">
+                    в {datetime.now():%H:%M}
+                </div>
+            </div>
+            
+            <!-- Разделитель -->
+            <div style="
+                width: 1px;
+                height: 50px;
+                background: linear-gradient(180deg, transparent, #e5e7eb, transparent);
+            "></div>
+            
+            <!-- Правая метрика -->
+            <div style="text-align: left;">
+                <div style="font-size: 0.875rem; color: #6b7280; font-weight: 500;">
+                    АКТИВНЫХ ОБЪЯВЛЕНИЙ
+                </div>
+                <div style="
+                    font-size: 2rem;
+                    color: #059669;
+                    font-weight: 800;
+                    line-height: 1;
+                ">
+                    {df_now['listings'].sum():,}
+                </div>
+            </div>
+        </div>
+    </div>
 </div>
 """, unsafe_allow_html=True)
 
-st.markdown("---")
-
+# Стилизованный разделитель
+st.markdown("""
+<div style="
+    display: flex;
+    align-items: center;
+    margin: 3rem 0;
+    gap: 1rem;
+">
+    <div style="flex: 1; height: 2px; background: linear-gradient(90deg, #10b981, transparent);"></div>
+    <div style="
+        width: 8px;
+        height: 8px;
+        border-radius: 50%;
+        background: #10b981;
+    "></div>
+    <div style="flex: 1; height: 2px; background: linear-gradient(90deg, transparent, #10b981);"></div>
+</div>
+""", unsafe_allow_html=True)
 
 # =========================
 # Ключевые метрики
