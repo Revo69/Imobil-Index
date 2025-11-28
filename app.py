@@ -47,28 +47,10 @@ if df_now.empty:
     st.stop()
 
 # =========================
-# ШАПКА — финальная, проверенная, без ошибок
+# Шапка
 # =========================
-st.markdown(f"""
-<div style="text-align: center; padding: 3rem 1rem 2rem;">
-    <h1 style="margin:0; font-size: 3rem; font-weight: 800; letter-spacing: -1px;">
-        Imobil.Index
-    </h1>
-    <p style="margin: 1rem 0 0; font-size: 1.3rem; color: var(--text-color); opacity: 0.85;">
-        Самый точный индекс недвижимости Молдовы
-    </p>
-</div>
-
-<div style="text-align: center; padding: 1.5rem; background: var(--secondary-background-color); border-radius: 16px; margin: 2rem 0 3rem;">
-    <p style="margin: 0; font-size: 1rem; color: var(--text-color); opacity: 0.8;">
-        Обновлено: <strong>{datetime.now().strftime('%d %B %Y в %H:%M')}</strong>
-    </p>
-    <p style="margin: 1rem 0 0; font-size: 1.1rem; color: var(--text-color);">
-        Активных объявлений: 
-        <strong style="font-size: 1.8rem; color: #3b82f6;">{df_now['listings'].sum():,}</strong>
-    </p>
-</div>
-""", unsafe_allow_html=True)
+st.title("Imobil.Index — Недвижимость Молдовы 2025")
+st.markdown(f"**Обновлено:** {datetime.now():%d %B %Y в %H:%M} │ {df_now['listings'].sum():,} активных объявлений")
 
 st.markdown("---")
 
