@@ -46,9 +46,6 @@ if df_now.empty:
     st.error("Нет данных. Запусти Silver пайплайн.")
     st.stop()
 
-import streamlit as st
-from datetime import datetime
-
 # =========================
 # Улучшенная шапка дашборда
 # =========================
@@ -208,17 +205,20 @@ st.markdown(f"""
         </div>
     </div>
 </div>
+""", unsafe_allow_html=True)
 
+# Добавляем CSS отдельно
+st.markdown("""
 <style>
     @keyframes float {
-        0%, 100% {{ transform: translateY(0px) rotate(0deg); }}
-        50% {{ transform: translateY(-20px) rotate(180deg); }}
-    }}
+        0%, 100% { transform: translateY(0px) rotate(0deg); }
+        50% { transform: translateY(-20px) rotate(180deg); }
+    }
     
-    @keyframes glow {{
-        0%, 100% {{ box-shadow: 0 0 20px rgba(102, 126, 234, 0.5); }}
-        50% {{ box-shadow: 0 0 40px rgba(102, 126, 234, 0.8); }}
-    }}
+    @keyframes glow {
+        0%, 100% { box-shadow: 0 0 20px rgba(102, 126, 234, 0.5); }
+        50% { box-shadow: 0 0 40px rgba(102, 126, 234, 0.8); }
+    }
 </style>
 """, unsafe_allow_html=True)
 
