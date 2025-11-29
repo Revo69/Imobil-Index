@@ -35,7 +35,7 @@ supabase = create_client(st.secrets["SUPABASE_URL"], st.secrets["SUPABASE_KEY"])
 def load_current():
     return pd.DataFrame(supabase.table("gold_estate_current").select("*").execute().data)
 
-@st.cache_data(ttl=86400)
+@st.cache_data(ttl=3600)
 def load_history():
     return pd.DataFrame(supabase.table("gold_estate_daily").select("*").execute().data)
 
