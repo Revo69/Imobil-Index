@@ -192,19 +192,6 @@ with tab_rent_daily:
 # Доходность посуточной — САМАЯ КРУТАЯ ФИЧА
 if not df_yield.empty:
     st.markdown("---")
-    st.subheader("Доходность посуточной аренды — % годовых (60% загрузка)")
-    top_y = df_yield.nlargest(10, 'yield_daily_percent').copy()
-    top_y["Район"] = top_y["sector"].fillna("Центр")
-    fig = px.bar(top_y, x="Район", y="yield_daily_percent",
-                 text=top_y["yield_daily_percent"].round(1).astype(str)+"%",
-                 color="yield_daily_percent", color_continuous_scale="Blues")
-    fig.update_layout(height=600, showlegend=False)
-    fig.update_traces(textposition='outside')
-    st.plotly_chart(fig, use_container_width=True)
-
-    st.caption("Лидер 2025 года — БАМ: 8.9% годовых")
-
-    st.markdown("---")
     
     # Сравнение — чистый минимализм
     st.markdown("<h2 style='text-align:center; color:var(--text-color);'>Посуточная vs Помесячная аренда</h2>", unsafe_allow_html=True)
