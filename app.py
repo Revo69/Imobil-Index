@@ -202,30 +202,36 @@ with tab_rent_daily:
         fig.update_traces(textposition='outside')
         st.plotly_chart(fig, use_container_width=True)
         st.info("Лидер по доходности — БАМ: 8.9% годовых при посуточной аренде (60% загрузка)")
-        st.info("Это в 2–3 раза выше банковских депозитов и помесячной аренды")
     st.markdown("---")
     
-    st.markdown("<h2 style='text-align:center;'>Посуточная аренда vs Помесячная</h2>", unsafe_allow_html=True)
+    st.markdown("---")
+    st.markdown("<h2 style='text-align:center; color:#00ff9d;'>Посуточная аренда — в 2–3 раза выгоднее помесячной</h2>", unsafe_allow_html=True)
     
     col_a, col_b = st.columns(2)
     with col_a:
         st.error("Помесячная аренда")
-        st.markdown("• 400–600 €/мес за квартиру\n"
-                    "• Доходность: 4–6% годовых\n"
-                    "• Стабильно, но мало")
+        st.markdown("""
+        • 400–600 €/мес за квартиру  
+        • Доходность: **4–6% годовых**  
+        • Стабильно, но медленно
+        """)
         
     with col_b:
         st.success("Посуточная аренда (60% загрузка)")
-        st.markdown("• 1 000–1 350 €/мес за ту же квартиру\n"
-                    "• Доходность: 8–14% годовых\n"
-                    "• В 2–3 раза выгоднее")
+        st.markdown("""
+        • **1 000–1 350 €/мес** за ту же квартиру  
+        • Доходность: **8–14% годовых**  
+        • В 2–3 раза больше дохода
+        """)
     
     st.markdown(
-        "<div style='text-align:center; font-size:1.5em; margin:2em;'>"
-        "Посуточная аренда приносит <b>в 2–3 раза больше денег</b> при тех же вложениях"
+        "<div style='text-align:center; font-size:1.7em; margin:2em 0; color:#00ff9d; font-weight:bold;'>"
+        "Та же квартира → в 2–3 раза больше денег"
         "</div>",
         unsafe_allow_html=True
     )
+    
+    st.info("Лидер 2025 года — **БАМ**: 8.9% годовых при посуточной аренде")
 
 # =========================
 # Футер
