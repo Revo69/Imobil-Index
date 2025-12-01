@@ -203,6 +203,18 @@ with tab_rent_daily:
         st.plotly_chart(fig, use_container_width=True)
         st.success("Внимание: Центр и Ботаника дают 40–70% годовых при посуточной аренде!")
 
+    st.markdown("---")
+    st.markdown("<h2 style='text-align:center; color:#00ff9d;'>Посуточная аренда — это ×6.5 к доходу</h2>", unsafe_allow_html=True)
+    col1, col2 = st.columns(2)
+    with col1:
+        st.markdown("<div style='text-align:center; font-size:2em; color:#ff6b6b;'>8.6 €/м²</div>", unsafe_allow_html=True)
+        st.markdown("<div style='text-align:center; font-size:1.2em; color:#ccc;'>Помесячная аренда</div>", unsafe_allow_html=True)
+    with col2:
+        st.markdown("<div style='text-align:center; font-size:3em; color:#00ff9d; font-weight:bold;'>55.8 €/м²</div>", unsafe_allow_html=True)
+        st.markdown("<div style='text-align:center; font-size:1.2em; color:#ccc;'>Посуточная (60% загрузка)</div>", unsafe_allow_html=True)
+    
+    st.markdown("<div style='text-align:center; font-size:1.5em; margin:2em;'>→ <b>В 6.5 раз выгоднее</b> сдавать посуточно</div>", unsafe_allow_html=True)
+
 # =========================
 # Футер
 # =========================
