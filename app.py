@@ -106,7 +106,7 @@ with col2:
         st.metric("Средняя цена м²", f"{avg_m2:.0f} €")
 with col3:
     cheapest = current_df.loc[current_df[price_col].idxmin()]
-    st.markdown(f"<div style='text-align:center; font-size:1.1em;'><b>Самый дешёвый</b><br>{cheapiest['city']} → {cheapiest['sector'] or 'Центр'}</div>", unsafe_allow_html=True)
+    st.markdown(f"<div style='text-align:center; font-size:1.1em;'><b>Самый дешёвый</b><br>{cheapest['city']} → {cheapest['sector'] or 'Центр'}</div>", unsafe_allow_html=True)
 with col4:
     expensive = current_df.loc[current_df[price_col].idxmax()]
     st.markdown(f"<div style='text-align:center; font-size:1.1em;'><b>Самый дорогой</b><br>{expensive['city']} → {expensive['sector'] or 'Центр'}</div>", unsafe_allow_html=True)
