@@ -189,37 +189,37 @@ with tab_rent_daily:
         fig.update_traces(texttemplate='%{y:.1f}€', textposition='outside')
         st.plotly_chart(fig, use_container_width=True)
 
-# Доходность посуточной — САМАЯ КРУТАЯ ФИЧА
-if not df_yield.empty:
-    st.markdown("---")
-    
-    # Сравнение — чистый минимализм
-    st.markdown("<h2 style='text-align:center; color:var(--text-color);'>Посуточная vs Помесячная аренда</h2>", unsafe_allow_html=True)
-    
-    col1, col2 = st.columns(2)
-    with col1:
-        st.markdown("""
-        **Помесячная**  
-        400–600 €/мес  
-        4–6% годовых  
-        стабильно
-        """)
-    
-    with col2:
-        st.markdown("""
-        **Посуточная** (60% загрузка)  
-        1 000–1 350 €/мес  
-        8–14% годовых  
-        в 2–3 раза больше
-        """)
-    
-    st.markdown("---")
-    st.markdown(
-        "<div style='text-align:center; font-size:1.4rem; color:#888; font-weight:400;'>"
-        "Та же квартира — в 2–3 раза выше доход"
-        "</div>",
-        unsafe_allow_html=True
-    )
+    # Доходность посуточной — САМАЯ КРУТАЯ ФИЧА
+    if not df_yield.empty:
+        st.markdown("---")
+        
+        # Сравнение — чистый минимализм
+        st.markdown("<h2 style='text-align:center; color:var(--text-color);'>Посуточная vs Помесячная аренда</h2>", unsafe_allow_html=True)
+        
+        col1, col2 = st.columns(2)
+        with col1:
+            st.markdown("""
+            **Помесячная**  
+            400–600 €/мес  
+            4–6% годовых  
+            стабильно
+            """)
+        
+        with col2:
+            st.markdown("""
+            **Посуточная** (60% загрузка)  
+            1 000–1 350 €/мес  
+            8–14% годовых  
+            в 2–3 раза больше
+            """)
+        
+        st.markdown("---")
+        st.markdown(
+            "<div style='text-align:center; font-size:1.4rem; color:#888; font-weight:400;'>"
+            "Та же квартира — в 2–3 раза выше доход"
+            "</div>",
+            unsafe_allow_html=True
+        )
 
 # =========================
 # Футер
