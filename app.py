@@ -205,7 +205,6 @@ with tab_rent_daily:
         st.info("Это в 2–3 раза выше банковских депозитов и помесячной аренды")
     st.markdown("---")
     
-    st.markdown("---")
     st.markdown("<h2 style='text-align:center;'>Посуточная аренда vs Помесячная</h2>", unsafe_allow_html=True)
     
     col_a, col_b = st.columns(2)
