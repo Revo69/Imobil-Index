@@ -37,15 +37,15 @@ df_sales, df_rent, df_yield, df_hist_sales, df_hist_rent = load_data()
 # Шапка
 # =========================
 st.markdown(
-    "<div style='text-align:center; font-size:3rem; font-weight:300; color:#1a1a1a; margin:2rem 0 1rem;'>"
+    "<div style='text-align:center; font-size:2.9rem; font-weight:300; color:#1a1a1a; margin:2rem 0 1rem;'>"
     "Imobil.Index"
     "</div>",
     unsafe_allow_html=True
 )
 
 st.markdown(
-    "<div style='text-align:center; font-size:1.1rem; color:#2563eb; margin-bottom:3rem; letter-spacing:1px;'>"
-    "Кишинёв · реальное время"
+    "<div style='text-align:center; font-size:1.1rem; color:#2563eb; margin-bottom:3rem;'>"
+    "Актуальные цены · каждый день"
     "</div>",
     unsafe_allow_html=True
 )
