@@ -88,14 +88,14 @@ with tab_sale:
         st.subheader("ТОП-10 самых дешёвых")
         top = df.nsmallest(10, price_col).copy()
         top["Район"] = top["city"] + " → " + top["sector"].fillna("Центр")
-        fig = px.bar(top, x="Район", y=price_col, color=price_col, color_continuous_scale=color, labels={"avg_per_m2_eur": "Цена за м² (€)"})
+        fig = px.bar(top, x="Район", y=price_col, color=price_col, color_continuous_scale=color, labels={"avg_per_m2_eur": "Цена м² (€)"})
         fig.update_traces(texttemplate='%{y:.0f}', textposition='outside')
         st.plotly_chart(fig, use_container_width=True)
     with col_r:
         st.subheader("ТОП-10 самых дорогих")
         top = df.nlargest(10, price_col).copy()
         top["Район"] = top["city"] + " → " + top["sector"].fillna("Центр")
-        fig = px.bar(top, x="Район", y=price_col, color=price_col, color_continuous_scale="Reds", labels={"avg_per_m2_eur": "Цена за м² (€)"})
+        fig = px.bar(top, x="Район", y=price_col, color=price_col, color_continuous_scale="Reds", labels={"avg_per_m2_eur": "Цена м² (€)"})
         fig.update_traces(texttemplate='%{y:.0f}', textposition='outside')
         st.plotly_chart(fig, use_container_width=True)
 
@@ -109,7 +109,7 @@ with tab_sale:
             top_sec = h['sector'].value_counts().head(8).index
             plot = h[h['sector'].isin(top_sec)]
             if not plot.empty:
-                fig = px.line(plot.sort_values("date"), x="date", y=price_col, color="sector", markers=True)
+                fig = px.line(plot.sort_values("date"), x="date", y=price_col, color="sector", markers=True, labels={"avg_per_m2_eur": "Цена м² (€)"})
                 fig.update_layout(height=600)
                 st.plotly_chart(fig, use_container_width=True)
 
