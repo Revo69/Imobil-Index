@@ -252,7 +252,7 @@ with tab_rent_daily:
 st.markdown("---")
 st.markdown("""
 <div style="text-align: center; padding: 3rem; color: #888; font-size: 0.95rem;">
-&nbsp;&nbsp;&nbsp;&nbsp;<a href="mailto:sergey.revo@outlook.com" style="color:#888; text-decoration:none;">sergey.revo@outlook.com</a><br><br>
+&nbsp;&nbsp;&nbsp;&nbsp;<a href="mailto:sergey.revo@outlook.com" style="color:#888; text-decoration:none;">✉ sergey.revo@outlook.com</a><br><br>
 &nbsp;&nbsp;&nbsp;&nbsp;<small>© 2025 - Imobil.Index</small>
 </div>
 """, unsafe_allow_html=True)
