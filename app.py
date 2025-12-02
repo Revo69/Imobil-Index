@@ -218,7 +218,7 @@ with tab_rent_daily:
         top_y["Район"] = top_y["sector"].fillna("Центр")
         fig = px.bar(top_y, x="Район", y="yield_daily_percent",
                      text=top_y["yield_daily_percent"].round(1).astype(str)+"%",
-                     color="yield_daily_percent", color_continuous_scale="Viridis", labels={"yield_daily_percent": "%")
+                     color="yield_daily_percent", color_continuous_scale="Viridis", labels={"yield_daily_percent": "%"})
         fig.update_layout(height=600)
         fig.update_traces(textposition='outside')
         st.plotly_chart(fig, use_container_width=True)
