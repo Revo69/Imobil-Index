@@ -8,7 +8,7 @@ from datetime import datetime
 # =========================
 # Конфиг
 # =========================
-st.set_page_config(page_title="Imobil.Index 2025 - цифровой индекс рынка недвижимости Молдовы", page_icon="house", layout="wide")
+st.set_page_config(page_title="Imobil.Index | Аналитика недвижимости Молдовы", page_icon="house", layout="wide")
 st.markdown("""
 <style>
     .main-title {text-align: center; font-size: 2.8em; font-weight: 300; color: #e0e0e0; margin: 0.5em 0;}
@@ -37,15 +37,22 @@ df_sales, df_rent, df_yield, df_hist_sales, df_hist_rent = load_data()
 # Шапка
 # =========================
 st.markdown(
-    "<div style='text-align:center; font-size:2.9rem; font-weight:300; color:#1a1a1a; letter-spacing:0.5px; margin:2rem 0 1rem;'>"
+    "<div style='text-align:center; font-size:3.2rem; font-weight:300; color:#1a1a1a; margin:2rem 0 0.5rem;'>"
     "Imobil<span style='color:#2563eb;'>.</span>Index"
     "</div>",
     unsafe_allow_html=True
 )
 
 st.markdown(
-    "<div style='text-align:center; font-size:1.15rem; color:#525252; margin-bottom:3rem; letter-spacing:0.3px;'>"
-    "Цифры и тренды рынка недвижимости Молдовы в реальном времени"
+    "<div style='text-align:center; font-size:1.35rem; color:#333; margin:0.5rem 0 1.5rem; letter-spacing:0.3px;'>"
+    "Честная аналитика рынка недвижимости Молдовы в реальном времени"
+    "</div>",
+    unsafe_allow_html=True
+)
+
+st.markdown(
+    "<div style='text-align:center; font-size:1.05rem; color:#555; margin-bottom:3rem;'>"
+    "Цены • Тренды • Прогнозы • Только данные"
     "</div>",
     unsafe_allow_html=True
 )
