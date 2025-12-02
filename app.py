@@ -234,8 +234,13 @@ with tab_rent_daily:
         )
 
         st.markdown("---")
-        st.markdown("Реалистичная доходность посуточной аренды: **8–19%** годовых")
-        st.markdown("<span style='color:#ff6b6b;'>109% на БАМ</span> — дома с баней (менее 1% рынка)", unsafe_allow_html=True)
+        
+        st.markdown(
+            "Реалистичная доходность посуточной аренды в Кишинёве: **8–19%** годовых\n\n"
+            "<span style='color:#d32f2f; font-weight:500;'>109% на БАМ</span> — дома с баней и мангалом (менее 1% рынка)",
+            unsafe_allow_html=True
+        )
+        
         st.markdown("---")
         
 # =========================
