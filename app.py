@@ -198,14 +198,14 @@ with tab_rent_daily:
         st.subheader("ТОП-10 самых дешёвых")
         top = df.nsmallest(10, price_col).copy()
         top["Район"] = top["city"] + " → " + top["sector"].fillna("Центр")
-        fig = px.bar(top, x="Район", y=price_col, color=price_col, color_continuous_scale="Purples", labels={"avg_price_per_m2_eur": "Цена м² (€)")
+        fig = px.bar(top, x="Район", y=price_col, color=price_col, color_continuous_scale="Purples", labels={"avg_price_per_m2_eur": "Цена м² (€)"})
         fig.update_traces(texttemplate='%{y:.1f}', textposition='outside')
         st.plotly_chart(fig, use_container_width=True)
     with col_r:
         st.subheader("ТОП-10 самых дорогих")
         top = df.nlargest(10, price_col).copy()
         top["Район"] = top["city"] + " → " + top["sector"].fillna("Центр")
-        fig = px.bar(top, x="Район", y=price_col, color=price_col, color_continuous_scale="Magenta", labels={"avg_price_per_m2_eur": "Цена м² (€)")
+        fig = px.bar(top, x="Район", y=price_col, color=price_col, color_continuous_scale="Magenta", labels={"avg_price_per_m2_eur": "Цена м² (€)"})
         fig.update_traces(texttemplate='%{y:.1f}', textposition='outside')
         st.plotly_chart(fig, use_container_width=True)
 
