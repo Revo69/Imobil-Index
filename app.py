@@ -253,9 +253,13 @@ st.markdown("---")
 st.markdown("""
 <div style="text-align:center; padding:3rem 1rem 2rem; color:#666; font-size:0.95rem; line-height:1.8;">
     <a href="mailto:sergey.revo@outlook.com" style="color:#2563eb; text-decoration:none;">
-        ✉ sergey.revo@outlook.com
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="vertical-align:-2px; margin-right:6px;">
+            <path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"></path>
+            <polyline points="22,6 12,13 2,6"></polyline>
+        </svg>
+        sergey.revo@outlook.com
     </a>
     <br><br>
-    <small style="color:#888;">© 2025 — Imobil.Index — Недвижимость Молдовы</small>
+    <small style="color:#888;">© 2025 — Imobil.Index</small>
 </div>
 """, unsafe_allow_html=True)
