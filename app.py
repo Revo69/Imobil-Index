@@ -226,7 +226,7 @@ with tab_rent_daily:
         
         st.markdown("---")
         st.markdown(
-            "<div style='text-align:center; font-size:1.25rem; color:#aaa; margin:1.5rem 0;'>"
+            "<div style='text-align:center; font-size:1.25rem; margin:1.5rem 0;'>"
             "Для обычной квартиры посуточная аренда даёт <b>в 1.5–2 раза выше доходность</b><br>"
             "109% на БАМ — редкие премиум-объекты (менее 1% рынка)"
             "</div>",
