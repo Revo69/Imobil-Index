@@ -8,7 +8,7 @@ from datetime import datetime
 # =========================
 # Конфиг
 # =========================
-st.set_page_config(page_title="Imobil.Index 2025", page_icon="house", layout="wide")
+st.set_page_config(page_title="Imobil.Index 2025 - цифровой индекс рынка недвижимости Молдовы", page_icon="house", layout="wide")
 st.markdown("""
 <style>
     .main-title {text-align: center; font-size: 2.8em; font-weight: 300; color: #e0e0e0; margin: 0.5em 0;}
