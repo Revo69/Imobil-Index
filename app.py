@@ -39,13 +39,13 @@ df_sales, df_rent, df_yield, df_hist_sales, df_hist_rent = load_data()
 st.markdown(
     "<div style='text-align:center; font-size:2.9rem; font-weight:300; color:#1a1a1a; letter-spacing:0.5px; margin:2rem 0 1rem;'>"
     "Imobil.Index"
-    "<span style='color:#2563eb; font-weight:400;'> 2025</span>"
+    "<span style='color:#2563eb; font-weight:400;'> — реальное время</span>"
     "</div>",
     unsafe_allow_html=True
 )
 
 st.markdown(
-    "<div style='text-align:center; font-size:1.15rem; color:#525252; margin-bottom:3rem; letter-spacing:0.3px;'>"
+    "<div style='text-align:center; font-size:1.15rem; color:#525252; margin-bottom:3rem;'>"
     "Недвижимость Молдовы — честная аналитика"
     "</div>",
     unsafe_allow_html=True
