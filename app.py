@@ -221,7 +221,7 @@ with tab_rent_daily:
             st.markdown("**Посуточная аренда** (60% загрузка)")
             st.markdown("• Обычные квартиры: 900–1 400 €/мес")
             st.markdown("• **8–19%** годовых")
-            st.markdown("• БАМ: до **109%** (дома с баней)")
+            st.markdown("• БАМ: до **109%** (дома с зоной отдыха)")
             st.markdown("• Высокие расходы • Сезонность")
         
         st.markdown("---")
@@ -233,13 +233,18 @@ with tab_rent_daily:
             unsafe_allow_html=True
         )
 
-        st.markdown("""
-        <div style="padding: 1rem; background: #e3f2fd; border-left: 5px solid #2196f3; border-radius: 4px; line-height: 1.7;">
-        Реалистичная доходность посуточной аренды в Кишинёве: <strong>8–19% годовых</strong><br>
-        <span style="color:#d32f2f;">109% на БАМ</span> — редкие премиум-объекты, не типичны для рынка
-        </div>
-        """, unsafe_allow_html=True)
-
+        st.markdown("---")
+        
+        st.markdown(
+            "<div style='padding:1.2rem; background:#0e1117; border-left:4px solid #4a9eff; line-height:1.7;'>"
+            "Реалистичная доходность посуточной аренды в Кишинёве: <strong>8–19%</strong> годовых<br>"
+            "<span style='color:#ff6b6b;'>109% на БАМ</span> — дома с баней и мангалом (менее 1% рынка)"
+            "</div>",
+            unsafe_allow_html=True
+        )
+        
+        st.markdown("---")
+        
 # =========================
 # Футер
 # =========================
