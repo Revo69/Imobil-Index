@@ -45,7 +45,7 @@ st.markdown(
 
 st.markdown(
     "<div style='text-align:center; font-size:1.35rem; color:#333; margin:0.5rem 0 1.5rem; letter-spacing:0.3px;'>"
-    "Честная аналитика рынка недвижимости Молдовы в реальном времени"
+    "Аналитика рынка недвижимости Молдовы в реальном времени"
     "</div>",
     unsafe_allow_html=True
 )
