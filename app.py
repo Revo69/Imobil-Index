@@ -149,15 +149,15 @@ with tab_rent_monthly:
         st.subheader("ТОП-10 самых дешёвых")
         top = df.nsmallest(10, price_col).copy()
         top["Район"] = top["city"] + " → " + top["sector"].fillna("Центр")
-        fig = px.bar(top, x="Район", y=price_col, color=price_col, color_continuous_scale="Greens")
-        fig.update_traces(texttemplate='%{y:.1f}€', textposition='outside')
+        fig = px.bar(top, x="Район", y=price_col, color=price_col, color_continuous_scale="Greens", labels={"avg_price_per_m2_eur": "Цена м² (€)"})
+        fig.update_traces(texttemplate='%{y:.1f}', textposition='outside')
         st.plotly_chart(fig, use_container_width=True)
     with col_r:
         st.subheader("ТОП-10 самых дорогих")
         top = df.nlargest(10, price_col).copy()
         top["Район"] = top["city"] + " → " + top["sector"].fillna("Центр")
-        fig = px.bar(top, x="Район", y=price_col, color=price_col, color_continuous_scale="Oranges")
-        fig.update_traces(texttemplate='%{y:.1f}€', textposition='outside')
+        fig = px.bar(top, x="Район", y=price_col, color=price_col, color_continuous_scale="Oranges", labels={"avg_price_per_m2_eur": "Цена м² (€)"})
+        fig.update_traces(texttemplate='%{y:.1f}', textposition='outside')
         st.plotly_chart(fig, use_container_width=True)
 
     # Доходность помесячной
@@ -167,8 +167,8 @@ with tab_rent_monthly:
         top_y = df_yield.nlargest(10, 'yield_monthly_percent').copy()
         top_y["Район"] = top_y["sector"].fillna("Центр")
         fig = px.bar(top_y, x="Район", y="yield_monthly_percent",
-                     text=top_y["yield_monthly_percent"].round(1).astype(str)+"%",
-                     color="yield_monthly_percent", color_continuous_scale="Blues")
+                     text=top_y["yield_monthly_percent"].round(1).astype(str),
+                     color="yield_monthly_percent", color_continuous_scale="Blues", labels={"yield_monthly_percent": "%"})
         fig.update_traces(textposition='outside')
         st.plotly_chart(fig, use_container_width=True)
 
@@ -198,15 +198,15 @@ with tab_rent_daily:
         st.subheader("ТОП-10 самых дешёвых")
         top = df.nsmallest(10, price_col).copy()
         top["Район"] = top["city"] + " → " + top["sector"].fillna("Центр")
-        fig = px.bar(top, x="Район", y=price_col, color=price_col, color_continuous_scale="Purples")
-        fig.update_traces(texttemplate='%{y:.1f}€', textposition='outside')
+        fig = px.bar(top, x="Район", y=price_col, color=price_col, color_continuous_scale="Purples", labels={"avg_price_per_m2_eur": "Цена м² (€)")
+        fig.update_traces(texttemplate='%{y:.1f}', textposition='outside')
         st.plotly_chart(fig, use_container_width=True)
     with col_r:
         st.subheader("ТОП-10 самых дорогих")
         top = df.nlargest(10, price_col).copy()
         top["Район"] = top["city"] + " → " + top["sector"].fillna("Центр")
-        fig = px.bar(top, x="Район", y=price_col, color=price_col, color_continuous_scale="Magenta")
-        fig.update_traces(texttemplate='%{y:.1f}€', textposition='outside')
+        fig = px.bar(top, x="Район", y=price_col, color=price_col, color_continuous_scale="Magenta", labels={"avg_price_per_m2_eur": "Цена м² (€)")
+        fig.update_traces(texttemplate='%{y:.1f}', textposition='outside')
         st.plotly_chart(fig, use_container_width=True)
 
     
@@ -218,7 +218,7 @@ with tab_rent_daily:
         top_y["Район"] = top_y["sector"].fillna("Центр")
         fig = px.bar(top_y, x="Район", y="yield_daily_percent",
                      text=top_y["yield_daily_percent"].round(1).astype(str)+"%",
-                     color="yield_daily_percent", color_continuous_scale="Viridis")
+                     color="yield_daily_percent", color_continuous_scale="Viridis", labels={"yield_daily_percent": "%")
         fig.update_layout(height=600)
         fig.update_traces(textposition='outside')
         st.plotly_chart(fig, use_container_width=True)
