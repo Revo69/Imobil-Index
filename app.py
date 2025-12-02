@@ -251,9 +251,11 @@ with tab_rent_daily:
 # =========================
 st.markdown("---")
 st.markdown("""
-<div style="text-align: center; padding: 3rem; color: #888; font-size: 0.95rem;">
-    <strong>Revoland Analytics</strong> • 
-    <a href="mailto:sergey.revo@outlook.com" style="color:#888; text-decoration:none;">sergey.revo@outlook.com</a><br><br>
-    <small>© 2025 — Imobil.Index — аналитика недвижимости Молдовы</small>
+<div style="text-align:center; padding:3rem 1rem 2rem; color:#666; font-size:0.95rem; line-height:1.8;">
+    <a href="mailto:sergey.revo@outlook.com" style="color:#2563eb; text-decoration:none;">
+        ✉ sergey.revo@outlook.com
+    </a>
+    <br><br>
+    <small style="color:#888;">© 2025 — Imobil.Index — Недвижимость Молдовы</small>
 </div>
 """, unsafe_allow_html=True)
