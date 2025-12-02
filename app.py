@@ -217,7 +217,7 @@ with tab_rent_daily:
         top_y = df_yield.nlargest(10, 'yield_daily_percent').copy()
         top_y["Район"] = top_y["sector"].fillna("Центр")
         fig = px.bar(top_y, x="Район", y="yield_daily_percent",
-                     text=top_y["yield_daily_percent"].round(1).astype(str)+"%",
+                     text=top_y["yield_daily_percent"].round(1).astype(str),
                      color="yield_daily_percent", color_continuous_scale="Viridis", labels={"yield_daily_percent": "%"})
         fig.update_layout(height=600)
         fig.update_traces(textposition='outside')
