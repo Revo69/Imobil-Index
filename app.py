@@ -228,21 +228,11 @@ with tab_rent_daily:
         st.markdown(
             "<div style='text-align:center; font-size:1.25rem; margin:1.5rem 0;'>"
             "Для обычной квартиры посуточная аренда даёт <b>в 1.5–2 раза выше доходность</b><br>"
-            "109% на БАМ — редкие премиум-объекты (менее 1% рынка)"
+            "<span style='color:#d32f2f; font-weight:500;'>109% на БАМ</span> — редкие премиум-объекты (менее 1% рынка)"
             "</div>",
             unsafe_allow_html=True
         )
 
-        st.markdown("---")
-        
-        st.markdown(
-            "Реалистичная доходность посуточной аренды в Кишинёве: **8–19%** годовых\n\n"
-            "<span style='color:#d32f2f; font-weight:500;'>109% на БАМ</span> — дома с баней и мангалом (менее 1% рынка)",
-            unsafe_allow_html=True
-        )
-        
-        st.markdown("---")
-        
 # =========================
 # Футер
 # =========================
