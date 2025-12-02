@@ -36,18 +36,15 @@ df_sales, df_rent, df_yield, df_hist_sales, df_hist_rent = load_data()
 # =========================
 # Шапка
 # =========================
-#st.markdown("<div class='main-title'>Imobil.Index — Недвижимость Молдовы 2025</div>", unsafe_allow_html=True)
-
 st.markdown(
-    "<div style='text-align:center; font-size:2.8rem; font-weight:300; color:#e0e0e0; letter-spacing:1px; margin:2rem 0 1rem;'>"
-    "Imobil.Index"
-    "<span style='color:#4a9eff; font-weight:400;'> 2025</span>"
+    "<div style='text-align:center; font-size:2.8rem; font-weight:300; color:#e0e0e0; margin:2rem 0 1rem;'>"
+    "Imobil<span style='color:#4a9eff;'>.</span>Index 2025"
     "</div>",
     unsafe_allow_html=True
 )
 st.markdown(
-    "<div style='text-align:center; font-size:1.1rem; color:#aaaaaa; margin-bottom:3rem;'>"
-    "Недвижимость Молдовы — честная аналитика"
+    "<div style='text-align:center; color:#888; font-size:1rem; margin-bottom:3rem;'>"
+    "Недвижимость Молдовы — без иллюзий"
     "</div>",
     unsafe_allow_html=True
 )
