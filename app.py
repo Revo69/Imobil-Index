@@ -203,37 +203,7 @@ with tab_rent_daily:
         fig.update_traces(textposition='outside')
         st.plotly_chart(fig, use_container_width=True)
 
-_="""
-        st.markdown("---")
-        st.markdown("<h2 style='text-align:center;'>Посуточная vs Помесячная аренда — реальность 2025</h2>", unsafe_allow_html=True)
-        
-        col1, col2 = st.columns(2)
 
-        with col1:
-            st.markdown("**Помесячная аренда**")
-            st.caption("• 400–650 €/мес за квартиру")
-            st.caption("• Доходность: **6.5–9.1% годовых**")
-            st.caption("• Стабильно, низкие риски")
-            st.caption("• Лучший выбор для пассивного дохода")
-        
-        with col2:
-            st.markdown("**Посуточная аренда** (60% загрузка)")
-            st.caption("• Обычные квартиры: 900–1 400 €/мес")
-            st.caption("• Доходность: **8–19% годовых**")
-            st.caption("• Премиум-объекты (БАМ): до 109%")
-            st.caption("• Высокие расходы и сезонность")
-
-        
-        
-        st.markdown("---")
-        st.markdown(
-            "<div style='text-align:center; font-size:1.4em; color:#888; margin:2em 0;'>"
-            "Для <b>обычной квартиры</b> посуточная аренда даёт в среднем <b>в 1.5–2 раза выше доходность</b></br>"
-            "БАМ (109%) — исключение: дома с зоной отдыха (менее 1% рынка)"
-            "</div>",
-            unsafe_allow_html=True
-        )
-"""
 
         st.markdown("---")
         st.markdown("<h2 style='text-align:center; color:#e0e0e0;'>Посуточная vs Помесячная аренда — реальность 2025</h2>", unsafe_allow_html=True)
