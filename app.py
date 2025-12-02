@@ -57,8 +57,7 @@ st.markdown(
     unsafe_allow_html=True
 )
 
-
-tab_sale, tab_rent_monthly, tab_rent_daily = st.tabs(["Продажа", "Аренда (помесячно)", "Посуточная аренда"])
+tab_sale, tab_rent_monthly, tab_rent_daily = st.tabs(["Продажа", "Аренда · помесячно", "Аренда · посуточно"])
 
 # --------------------- 1. ПРОДАЖА ---------------------
 with tab_sale:
