@@ -251,6 +251,9 @@ with tab_rent_daily:
             st.markdown("• **8–19%** годовых")
             st.markdown("• БАМ: до **19.2%** (дом с зоной отдыха)")
             st.markdown("• Высокие расходы • Сезонность")
+            print("yield_data columns:", yield_data.columns.tolist())
+
+
         
         st.markdown("---")
         st.markdown(
