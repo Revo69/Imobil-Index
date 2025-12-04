@@ -240,14 +240,14 @@ with tab_rent_daily:
             st.markdown("**Посуточная аренда** (60% загрузка)")
             st.markdown("• Обычные квартиры: 900–1 400 €/мес")
             st.markdown("• **8–19%** годовых")
-            st.markdown("• БАМ: до **19%** (дом с зоной отдыха)")
+            st.markdown("• БАМ: до **19.2%** (дом с зоной отдыха)")
             st.markdown("• Высокие расходы • Сезонность")
         
         st.markdown("---")
         st.markdown(
             "<div style='text-align:center; font-size:1.25rem; margin:1.5rem 0;'>"
             "Для обычной квартиры посуточная аренда даёт <b>в 1.5–2 раза выше доходность</b><br>"
-            "<span style='color:#d32f2f; font-weight:500;'>109% на БАМ</span> — редкие премиум-объекты (менее 1% рынка)"
+            "<span style='color:#d32f2f; font-weight:500;'>19.2% на БАМ</span> — редкие премиум-объекты (менее 1% рынка)"
             "</div>",
             unsafe_allow_html=True
         )
