@@ -164,12 +164,23 @@ with tab_rent_monthly:
         st.markdown("---")
         st.subheader("Доходность помесячной аренды — % годовых")
         top_y = df_yield.nlargest(10, 'yield_monthly_percent').copy()
-        top_y["Район"] = top_y["sector"].fillna("Центр")
-        fig = px.bar(top_y, x="Район", y="yield_monthly_percent",
-                     text=top_y["yield_monthly_percent"].round(1).astype(str),
-                     color="yield_monthly_percent", color_continuous_scale="Blues", labels={"yield_monthly_percent": "%"})
+        # формируем "город → сектор"
+        top_y["Район"] = top_y["city"] + " → " + top_y["sector"].fillna("Центр")
+    
+        fig = px.bar(
+            top_y,
+            x="Район",
+            y="yield_monthly_percent",
+            text=top_y["yield_monthly_percent"].round(1).astype(str),
+            color="yield_monthly_percent",
+            color_continuous_scale="Viridis",
+            labels={"yield_monthly_percent": "%"}
+        )
+        fig.update_layout(height=600)
         fig.update_traces(textposition='outside')
         st.plotly_chart(fig, use_container_width=True)
+
+
 
 # --------------------- 3. ПОСУТОЧНАЯ АРЕНДА ---------------------
 with tab_rent_daily:
