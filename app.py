@@ -268,7 +268,7 @@ with tab_rent_daily:
             "<div style='text-align:center; font-size:1.25rem; margin:1.5rem 0;'>"
             "Daily rent = <b>1.5–2× higher yield</b> vs monthly<br>"
             "<span style='color:#d32f2f; font-weight:600;'>19.2% max</span> — rare premium units"
-            "</div>"
+            "</div>",
             unsafe_allow_html=True
         )
 
