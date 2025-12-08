@@ -208,14 +208,14 @@ with tab_rent_daily:
     with col_l:
         st.subheader("Top 10 — Lowest price")
         top = df.nsmallest(10, price_col).copy()
-        top["Район"] = top["city"] + " → " + top["sector"].fillna("Центр")
+        top["Sector"] = top["city"] + " → " + top["sector"].fillna("Центр")
         fig = px.bar(top, x="Sector", y=price_col, color=price_col, color_continuous_scale="Purples", labels={"avg_price_per_m2_eur": "Price per m² (€)"})
         fig.update_traces(texttemplate='%{y:.1f}', textposition='outside')
         st.plotly_chart(fig, use_container_width=True)
     with col_r:
         st.subheader("Top 10 — Highest price")
         top = df.nlargest(10, price_col).copy()
-        top["Район"] = top["city"] + " → " + top["sector"].fillna("Центр")
+        top["Sector"] = top["city"] + " → " + top["sector"].fillna("Центр")
         fig = px.bar(top, x="Sector", y=price_col, color=price_col, color_continuous_scale="Magenta", labels={"avg_price_per_m2_eur": "Price per m² (€)"})
         fig.update_traces(texttemplate='%{y:.1f}', textposition='outside')
         st.plotly_chart(fig, use_container_width=True)
