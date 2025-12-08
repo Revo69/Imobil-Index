@@ -1,4 +1,4 @@
-# app.py — Imobil.Index 2025 — Продажа + Помесячная + Посуточная аренда
+# app.py — Imobil.Index 2025 — For Sale + Monthly Rent + Daily Rent
 import streamlit as st
 import pandas as pd
 import plotly.express as px
@@ -8,7 +8,7 @@ from datetime import datetime
 # =========================
 # Конфиг
 # =========================
-st.set_page_config(page_title="Imobil.Index | Аналитика недвижимости Молдовы", page_icon="house", layout="wide")
+st.set_page_config(page_title="Imobil.Index | Moldova Real Estate Analytics", page_icon="house", layout="wide")
 st.markdown("""
 <style>
     .main-title {text-align: center; font-size: 2.8em; font-weight: 300; color: #e0e0e0; margin: 0.5em 0;}
@@ -45,62 +45,62 @@ st.markdown(
 
 st.markdown(
     "<div style='text-align:center; font-size:1.35rem; color:#333; margin:0.5rem 0 1.5rem; letter-spacing:0.3px;'>"
-    "Аналитика рынка недвижимости Молдовы в реальном времени"
+    "Real-time Moldova property market analytics"
     "</div>",
     unsafe_allow_html=True
 )
 
 st.markdown(
     "<div style='text-align:center; font-size:1.05rem; color:#555; margin-bottom:3rem;'>"
-    "Цены • Тренды • Прогнозы • Только данные"
+    "Prices • Trends • Forecasts • Data only"
     "</div>",
     unsafe_allow_html=True
 )
 
-tab_sale, tab_rent_monthly, tab_rent_daily = st.tabs(["Продажа", "Аренда · помесячно", "Аренда · посуточно"])
+tab_sale, tab_rent_monthly, tab_rent_daily = st.tabs(["For Sale", "Monthly Rent", "Daily Rent"])
 
 # --------------------- 1. ПРОДАЖА ---------------------
 with tab_sale:
     df = df_sales.copy()
-    mode = "Продажа"
+    mode = "For Sale"
     price_col = "avg_per_m2_eur"
     hist = df_hist_sales
     color = "Blues"
     listings = int(df['listings'].sum()) if not df.empty else 0
 
-    st.markdown(f"<div class='subtitle'>Обновлено: {datetime.now():%d %B %Y в %H:%M} │ {listings:,} объявлений</div>", unsafe_allow_html=True)
-    if df.empty: st.error("Нет данных по продаже"); st.stop()
+    st.markdown(f"<div class='subtitle'>Updated: {datetime.now():%d %B %Y в %H:%M} │ {listings:,} listings</div>", unsafe_allow_html=True)
+    if df.empty: st.error("No sale listings available"); st.stop()
 
     col1, col2, col3, col4 = st.columns(4)
-    with col1: st.metric("Районов", len(df))
-    with col2: st.metric("Средняя цена м²", f"{df[price_col].mean():.0f} €")
+    with col1: st.metric("Sectors", len(df))
+    with col2: st.metric("Average price per m²", f"{df[price_col].mean():.0f} €")
     with col3:
         cheapest = df.loc[df[price_col].idxmin()]
-        st.markdown(f"<div style='text-align:center'><b>Самый дешёвый</b><br>{cheapest['city']} → {cheapest['sector'] or 'Центр'}</div>", unsafe_allow_html=True)
+        st.markdown(f"<div style='text-align:center'><b>Lowest price</b><br>{cheapest['city']} → {cheapest['sector'] or 'Center'}</div>", unsafe_allow_html=True)
     with col4:
         expensive = df.loc[df[price_col].idxmax()]
-        st.markdown(f"<div style='text-align:center'><b>Самый дорогой</b><br>{expensive['city']} → {expensive['sector'] or 'Центр'}</div>", unsafe_allow_html=True)
+        st.markdown(f"<div style='text-align:center'><b>Highest price</b><br>{expensive['city']} → {expensive['sector'] or 'Center'}</div>", unsafe_allow_html=True)
 
     st.markdown("---")
     col_l, col_r = st.columns(2)
     with col_l:
-        st.subheader("ТОП-10 самых дешёвых")
+        st.subheader("Top 10 — Lowest price")
         top = df.nsmallest(10, price_col).copy()
-        top["Район"] = top["city"] + " → " + top["sector"].fillna("Центр")
-        fig = px.bar(top, x="Район", y=price_col, color=price_col, color_continuous_scale=color, labels={"avg_per_m2_eur": "Цена м² (€)"})
+        top["Sector"] = top["city"] + " → " + top["sector"].fillna("Center")
+        fig = px.bar(top, x="Sector", y=price_col, color=price_col, color_continuous_scale=color, labels={"avg_per_m2_eur": "Price per m² (€)"})
         fig.update_traces(texttemplate='%{y:.0f}', textposition='outside')
         st.plotly_chart(fig, use_container_width=True)
     with col_r:
-        st.subheader("ТОП-10 самых дорогих")
+        st.subheader("Top 10 — Highest price")
         top = df.nlargest(10, price_col).copy()
-        top["Район"] = top["city"] + " → " + top["sector"].fillna("Центр")
-        fig = px.bar(top, x="Район", y=price_col, color=price_col, color_continuous_scale="Reds", labels={"avg_per_m2_eur": "Цена м² (€)"})
+        top["Sector"] = top["city"] + " → " + top["sector"].fillna("Center")
+        fig = px.bar(top, x="Sector", y=price_col, color=price_col, color_continuous_scale="Reds", labels={"avg_per_m2_eur": "Price per m² (€)"})
         fig.update_traces(texttemplate='%{y:.0f}', textposition='outside')
         st.plotly_chart(fig, use_container_width=True)
 
     if not hist.empty:
         st.markdown("---")
-        st.subheader("Динамика цены м² за 90 дней — Кишинёв")
+        st.subheader("90-day price per m² trend — Chișinău")
         h = hist[hist['city'] == 'Кишинёв'].copy()
         if not h.empty:
             h['date'] = pd.to_datetime(h['date'])
@@ -108,68 +108,69 @@ with tab_sale:
             top_sec = h['sector'].value_counts().head(8).index
             plot = h[h['sector'].isin(top_sec)]
             if not plot.empty:
-                fig = px.line(plot.sort_values("date"), x="date", y=price_col, color="sector", markers=True, labels={"avg_per_m2_eur": "Цена м² (€)"})
+                fig = px.line(plot.sort_values("date"), x="date", y=price_col, color="sector", markers=True, labels={"avg_per_m2_eur": "Price per m² (€)"})
                 fig.update_layout(height=600)
                 st.plotly_chart(fig, use_container_width=True)
 
     st.markdown("---")
-    st.subheader("Все районы")
+    st.subheader("All sectors")
     disp = df[['city','sector','listings','avg_per_m2_eur','avg_price_eur']].copy()
     disp['avg_per_m2_eur'] = disp['avg_per_m2_eur'].round(0).astype(int)
     disp['avg_price_eur'] = disp['avg_price_eur'].round(0).astype(int)
     disp = disp.sort_values('avg_per_m2_eur')
-    disp.columns = ['Город','Район','Объявления','Цена м² (€)','Средняя цена (€)']
+    disp.columns = ['City','Sector','Listings','Price per m² (€)','Average price per m² (€)']
     st.dataframe(disp, use_container_width=True, hide_index=True)
 
 # --------------------- 2. АРЕНДА ПОМЕСЯЧНО ---------------------
 with tab_rent_monthly:
     df = df_rent[df_rent['deal_type'] == 'Сдаю помесячно'].copy()
-    mode = "Аренда (помесячно)"
+    mode = "Monthly rent"
     price_col = "avg_price_per_m2_eur"
     hist = df_hist_rent[df_hist_rent['deal_type'] == 'Сдаю помесячно']
     listings = int(df['listings'].sum()) if not df.empty else 0
 
-    st.markdown(f"<div class='subtitle'>Обновлено: {datetime.now():%d %B %Y в %H:%M} │ {listings:,} объявлений</div>", unsafe_allow_html=True)
-    if df.empty: st.error("Нет данных по помесячной аренде"); st.stop()
+    st.markdown(f"<div class='subtitle'>Updated: {datetime.now():%d %B %Y в %H:%M} │ {listings:,} listings</div>", unsafe_allow_html=True)
+    if df.empty: st.error("No monthly rent listings available"); st.stop()
 
     col1, col2, col3, col4 = st.columns(4)
-    with col1: st.metric("Районов", len(df))
-    with col2: st.metric("Средняя цена за м²", f"{df[price_col].mean():.1f} €/мес")
+    with col1: st.metric("Sectors", len(df))
+    with col2: st.metric("Average price per m²", f"{df[price_col].mean():.1f} €/month")
     with col3:
         cheapest = df.loc[df[price_col].idxmin()]
-        st.markdown(f"<div style='text-align:center'><b>Самый дешёвый</b><br>{cheapest['city']} → {cheapest['sector'] or 'Центр'}</div>", unsafe_allow_html=True)
+        st.markdown(f"<div style='text-align:center'><b>Lowest price</b><br>{cheapest['city']} → {cheapest['sector'] or 'Center'}</div>", unsafe_allow_html=True)
     with col4:
         expensive = df.loc[df[price_col].idxmax()]
-        st.markdown(f"<div style='text-align:center'><b>Самый дорогой</b><br>{expensive['city']} → {expensive['sector'] or 'Центр'}</div>", unsafe_allow_html=True)
+        st.markdown(f"<div style='text-align:center'><b>Highest price</b><br>{expensive['city']} → {expensive['sector'] or 'Center'}</div>", unsafe_allow_html=True)
 
     st.markdown("---")
     col_l, col_r = st.columns(2)
     with col_l:
-        st.subheader("ТОП-10 самых дешёвых")
+        st.subheader("Top 10 — Lowest price")
         top = df.nsmallest(10, price_col).copy()
-        top["Район"] = top["city"] + " → " + top["sector"].fillna("Центр")
-        fig = px.bar(top, x="Район", y=price_col, color=price_col, color_continuous_scale="Greens", labels={"avg_price_per_m2_eur": "Цена м² (€)"})
+        top["Sector"] = top["city"] + " → " + top["sector"].fillna("Center")
+        fig = px.bar(top, x="Sector", y=price_col, color=price_col, color_continuous_scale="Greens", labels={"avg_price_per_m2_eur": "Price per m² (€)"})
         fig.update_traces(texttemplate='%{y:.1f}', textposition='outside')
         st.plotly_chart(fig, use_container_width=True)
     with col_r:
-        st.subheader("ТОП-10 самых дорогих")
+        st.subheader("Top 10 — Highest price")
         top = df.nlargest(10, price_col).copy()
-        top["Район"] = top["city"] + " → " + top["sector"].fillna("Центр")
-        fig = px.bar(top, x="Район", y=price_col, color=price_col, color_continuous_scale="Oranges", labels={"avg_price_per_m2_eur": "Цена м² (€)"})
+        top["Sector"] = top["city"] + " → " + top["sector"].fillna("Center")
+        fig = px.bar(top, x="Sector", y=price_col, color=price_col, color_continuous_scale="Oranges", labels={"avg_price_per_m2_eur": "Price per m² (€)"})
         fig.update_traces(texttemplate='%{y:.1f}', textposition='outside')
         st.plotly_chart(fig, use_container_width=True)
 
     # Доходность помесячной
     if not df_yield.empty:
         st.markdown("---")
-        st.subheader("Доходность помесячной аренды — % годовых")
+        # Доходность помесячной аренды — % годовых
+        st.subheader("Monthly rental yield (% per annum)")
         top_y = df_yield.nlargest(10, 'yield_monthly_percent').copy()
         # формируем "город → сектор"
-        top_y["Район"] = top_y["city"] + " → " + top_y["sector"].fillna("Центр")
+        top_y["Sector"] = top_y["city"] + " → " + top_y["sector"].fillna("Center")
     
         fig = px.bar(
             top_y,
-            x="Район",
+            x="Sector",
             y="yield_monthly_percent",
             text=top_y["yield_monthly_percent"].round(1).astype(str),
             color="yield_monthly_percent",
@@ -185,37 +186,37 @@ with tab_rent_monthly:
 # --------------------- 3. ПОСУТОЧНАЯ АРЕНДА ---------------------
 with tab_rent_daily:
     df = df_rent[df_rent['deal_type'] == 'Сдаю посуточно'].copy()
-    mode = "Посуточная аренда"
+    mode = "Daily rent"
     price_col = "avg_price_per_m2_eur"
     listings = int(df['listings'].sum()) if not df.empty else 0
 
-    st.markdown(f"<div class='subtitle'>Обновлено: {datetime.now():%d %B %Y в %H:%M} │ {listings:,} объявлений</div>", unsafe_allow_html=True)
-    if df.empty: st.error("Нет данных по посуточной аренде"); st.stop()
+    st.markdown(f"<div class='subtitle'>Updated: {datetime.now():%d %B %Y в %H:%M} │ {listings:,} listings</div>", unsafe_allow_html=True)
+    if df.empty: st.error("No daily rent listings available"); st.stop()
 
     col1, col2, col3, col4 = st.columns(4)
-    with col1: st.metric("Районов", len(df))
-    with col2: st.metric("Средняя цена за м²", f"{df[price_col].mean():.1f} €/сутки")
+    with col1: st.metric("Sectors", len(df))
+    with col2: st.metric("Average price per m²", f"{df[price_col].mean():.1f} €/daily")
     with col3:
         cheapest = df.loc[df[price_col].idxmin()]
-        st.markdown(f"<div style='text-align:center'><b>Самый дешёвый</b><br>{cheapest['city']} → {cheapest['sector'] or 'Центр'}</div>", unsafe_allow_html=True)
+        st.markdown(f"<div style='text-align:center'><b>Lowest price</b><br>{cheapest['city']} → {cheapest['sector'] or 'Center'}</div>", unsafe_allow_html=True)
     with col4:
         expensive = df.loc[df[price_col].idxmax()]
-        st.markdown(f"<div style='text-align:center'><b>Самый дорогой</b><br>{expensive['city']} → {expensive['sector'] or 'Центр'}</div>", unsafe_allow_html=True)
+        st.markdown(f"<div style='text-align:center'><b>Highest price</b><br>{expensive['city']} → {expensive['sector'] or 'Center'}</div>", unsafe_allow_html=True)
 
     st.markdown("---")
     col_l, col_r = st.columns(2)
     with col_l:
-        st.subheader("ТОП-10 самых дешёвых")
+        st.subheader("Top 10 — Lowest price")
         top = df.nsmallest(10, price_col).copy()
         top["Район"] = top["city"] + " → " + top["sector"].fillna("Центр")
-        fig = px.bar(top, x="Район", y=price_col, color=price_col, color_continuous_scale="Purples", labels={"avg_price_per_m2_eur": "Цена м² (€)"})
+        fig = px.bar(top, x="Sector", y=price_col, color=price_col, color_continuous_scale="Purples", labels={"avg_price_per_m2_eur": "Price per m² (€)"})
         fig.update_traces(texttemplate='%{y:.1f}', textposition='outside')
         st.plotly_chart(fig, use_container_width=True)
     with col_r:
-        st.subheader("ТОП-10 самых дорогих")
+        st.subheader("Top 10 — Highest price")
         top = df.nlargest(10, price_col).copy()
         top["Район"] = top["city"] + " → " + top["sector"].fillna("Центр")
-        fig = px.bar(top, x="Район", y=price_col, color=price_col, color_continuous_scale="Magenta", labels={"avg_price_per_m2_eur": "Цена м² (€)"})
+        fig = px.bar(top, x="Sector", y=price_col, color=price_col, color_continuous_scale="Magenta", labels={"avg_price_per_m2_eur": "Price per m² (€)"})
         fig.update_traces(texttemplate='%{y:.1f}', textposition='outside')
         st.plotly_chart(fig, use_container_width=True)
 
@@ -223,15 +224,15 @@ with tab_rent_daily:
     # Доходность посуточной — САМАЯ КРУТАЯ ФИЧА
     if not df_yield.empty:
         st.markdown("---")
-        st.subheader("Доходность посуточной аренды — % годовых (60% загрузка)")
+        st.subheader("Daily rental yield at 60% occupancy (% p.a.)")
     
         top_y = df_yield.nlargest(10, 'yield_daily_percent').copy()
         # формируем "город → сектор"
-        top_y["Район"] = top_y["city"] + " → " + top_y["sector"].fillna("Центр")
+        top_y["Sector"] = top_y["city"] + " → " + top_y["sector"].fillna("Center")
     
         fig = px.bar(
             top_y,
-            x="Район",
+            x="Sector",
             y="yield_daily_percent",
             text=top_y["yield_daily_percent"].round(1).astype(str),
             color="yield_daily_percent",
@@ -245,30 +246,29 @@ with tab_rent_daily:
 
 
         st.markdown("---")
-        st.markdown("<h2 style='text-align:center; color:#e0e0e0;'>Посуточная vs Помесячная аренда — реальность 2025</h2>", unsafe_allow_html=True)
+        st.markdown("<h2 style='text-align:center; color:#e0e0e0;'>Daily vs Monthly Rental — Moldova 2025 Reality</h2>", unsafe_allow_html=True)
         
         col1, col2 = st.columns(2)
         
         with col1:
-            st.markdown("**Помесячная аренда**")
-            st.markdown("• 400–650 €/мес за квартиру")
-            st.markdown("• **6.5–9.1%** годовых")
-            st.markdown("• Стабильно • Низкие риски")
-            st.markdown("• Лучший пассивный доход")
+            st.markdown("**Monthly Rent**")
+            st.markdown("• €400–650 per month")
+            st.markdown("• **6.5–9.1%** annual yield")
+            st.markdown("• Stable • Low risk • True passive income")
         
         with col2:
-            st.markdown("**Посуточная аренда** (60% загрузка)")
-            st.markdown("• Обычные квартиры: 900–1 400 €/мес")
-            st.markdown("• **8–19%** годовых")
-            st.markdown("• БАМ: до **19.2%** (дом с зоной отдыха)")
-            st.markdown("• Высокие расходы • Сезонность")
+            st.markdown("**Daily Rent** (60% occupancy)")
+            st.markdown("• €900–1,400 monthly revenue")
+            st.markdown("• **8–19%** annual yield")
+            st.markdown("• Peak: **19.2%** (house + leisure zone)")
+            st.markdown("• Higher costs • Seasonal")
         
         st.markdown("---")
         st.markdown(
             "<div style='text-align:center; font-size:1.25rem; margin:1.5rem 0;'>"
-            "Для обычной квартиры посуточная аренда даёт <b>в 1.5–2 раза выше доходность</b><br>"
-            "<span style='color:#d32f2f; font-weight:500;'>19.2% на БАМ</span> — редкие премиум-объекты (менее 1% рынка)"
-            "</div>",
+            "Daily rent = <b>1.5–2× higher yield</b> vs monthly<br>"
+            "<span style='color:#d32f2f; font-weight:600;'>19.2% max</span> — rare premium units"
+            "</div>"
             unsafe_allow_html=True
         )
 
