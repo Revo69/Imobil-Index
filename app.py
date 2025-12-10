@@ -22,16 +22,63 @@ supabase = create_client(st.secrets["SUPABASE_URL"], st.secrets["SUPABASE_KEY"])
 # =========================
 # Данные (кэш 1 час)
 # =========================
-#@st.cache_data(ttl=3600)
+
+@st.cache_data(ttl=3600)
+def load_historical_data():
+    """Загружает ВСЕ исторические данные пачками по 1000 строк"""
+    all_sales = []
+    all_rent = []
+    offset = 0
+    limit = 1000
+
+    # --- Продажа ---
+    while True:
+        resp = supabase.table("gold_estate_daily") \
+            .select("*") \
+            .range(offset, offset + limit - 1) \
+            .order("date", desc=False) \
+            .execute()
+        
+        batch = resp.data
+        if not batch:
+            break
+        all_sales.extend(batch)
+        if len(batch) < limit:
+            break
+        offset += limit
+
+    # --- Аренда ---
+    offset = 0
+    while True:
+        resp = supabase.table("gold_rent_daily") \
+            .select("*") \
+            .range(offset, offset + limit - 1) \
+            .order("date", desc=False) \
+            .execute()
+        
+        batch = resp.data
+        if not batch:
+            break
+        all_rent.extend(batch)
+        if len(batch) < limit:
+            break
+        offset += limit
+
+    return pd.DataFrame(all_sales), pd.DataFrame(all_rent)
+
+df_hist_sales, df_hist_rent = load_historical_data()
+
+
+@st.cache_data(ttl=3600)
 def load_data():
     sales = pd.DataFrame(supabase.table("gold_estate_current").select("*").execute().data)
     rent = pd.DataFrame(supabase.table("gold_rent_current").select("*").execute().data)
     yield_data = pd.DataFrame(supabase.table("gold_rent_yield").select("*").execute().data)
-    hist_sales = pd.DataFrame(supabase.table("gold_estate_daily").select("*").execute().data)
-    hist_rent = pd.DataFrame(supabase.table("gold_rent_daily").select("*").execute().data)
-    return sales, rent, yield_data, hist_sales, hist_rent
+    # hist_sales = pd.DataFrame(supabase.table("gold_estate_daily").select("*").execute().data)
+    # hist_rent = pd.DataFrame(supabase.table("gold_rent_daily").select("*").execute().data)
+    return sales, rent, yield_data
 
-df_sales, df_rent, df_yield, df_hist_sales, df_hist_rent = load_data()
+df_sales, df_rent, df_yield = load_data()
 
 # =========================
 # Шапка
