@@ -89,14 +89,14 @@ with tab_sale:
         top["Sector"] = top["city"] + " → " + top["sector"].fillna("Center")
         fig = px.bar(top, x="Sector", y=price_col, color=price_col, color_continuous_scale=color, labels={"avg_per_m2_eur": "Price per m² (€)"})
         fig.update_traces(texttemplate='%{y:.0f}', textposition='outside')
-        st.plotly_chart(fig, use_container_width=True)
+        st.plotly_chart(fig, width="stretch")
     with col_r:
         st.subheader("Top 10 — Highest price")
         top = df.nlargest(10, price_col).copy()
         top["Sector"] = top["city"] + " → " + top["sector"].fillna("Center")
         fig = px.bar(top, x="Sector", y=price_col, color=price_col, color_continuous_scale="Reds", labels={"avg_per_m2_eur": "Price per m² (€)"})
         fig.update_traces(texttemplate='%{y:.0f}', textposition='outside')
-        st.plotly_chart(fig, use_container_width=True)
+        st.plotly_chart(fig, width="stretch")
 
     if not hist.empty:
         st.markdown("---")
@@ -110,7 +110,7 @@ with tab_sale:
             if not plot.empty:
                 fig = px.line(plot.sort_values("date"), x="date", y=price_col, color="sector", markers=True, labels={"avg_per_m2_eur": "Price per m² (€)"})
                 fig.update_layout(height=600)
-                st.plotly_chart(fig, use_container_width=True)
+                st.plotly_chart(fig, width="stretch")
 
     st.markdown("---")
     st.subheader("All sectors")
@@ -119,7 +119,7 @@ with tab_sale:
     disp['avg_price_eur'] = disp['avg_price_eur'].round(0).astype(int)
     disp = disp.sort_values('avg_per_m2_eur')
     disp.columns = ['City','Sector','Listings','Price per m² (€)','Average price per m² (€)']
-    st.dataframe(disp, use_container_width=True, hide_index=True)
+    st.dataframe(disp, width="stretch", hide_index=True)
 
 # --------------------- 2. АРЕНДА ПОМЕСЯЧНО ---------------------
 with tab_rent_monthly:
@@ -150,14 +150,14 @@ with tab_rent_monthly:
         top["Sector"] = top["city"] + " → " + top["sector"].fillna("Center")
         fig = px.bar(top, x="Sector", y=price_col, color=price_col, color_continuous_scale="Greens", labels={"avg_price_per_m2_eur": "Price per m² (€)"})
         fig.update_traces(texttemplate='%{y:.1f}', textposition='outside')
-        st.plotly_chart(fig, use_container_width=True)
+        st.plotly_chart(fig, width="stretch")
     with col_r:
         st.subheader("Top 10 — Highest price")
         top = df.nlargest(10, price_col).copy()
         top["Sector"] = top["city"] + " → " + top["sector"].fillna("Center")
         fig = px.bar(top, x="Sector", y=price_col, color=price_col, color_continuous_scale="Oranges", labels={"avg_price_per_m2_eur": "Price per m² (€)"})
         fig.update_traces(texttemplate='%{y:.1f}', textposition='outside')
-        st.plotly_chart(fig, use_container_width=True)
+        st.plotly_chart(fig, width="stretch")
 
     # Доходность помесячной
     if not df_yield.empty:
@@ -179,7 +179,7 @@ with tab_rent_monthly:
         )
         fig.update_layout(height=600)
         fig.update_traces(textposition='outside')
-        st.plotly_chart(fig, use_container_width=True)
+        st.plotly_chart(fig, width="stretch")
 
 
 
@@ -211,14 +211,14 @@ with tab_rent_daily:
         top["Sector"] = top["city"] + " → " + top["sector"].fillna("Центр")
         fig = px.bar(top, x="Sector", y=price_col, color=price_col, color_continuous_scale="Purples", labels={"avg_price_per_m2_eur": "Price per m² (€)"})
         fig.update_traces(texttemplate='%{y:.1f}', textposition='outside')
-        st.plotly_chart(fig, use_container_width=True)
+        st.plotly_chart(fig, width="stretch")
     with col_r:
         st.subheader("Top 10 — Highest price")
         top = df.nlargest(10, price_col).copy()
         top["Sector"] = top["city"] + " → " + top["sector"].fillna("Центр")
         fig = px.bar(top, x="Sector", y=price_col, color=price_col, color_continuous_scale="Magenta", labels={"avg_price_per_m2_eur": "Price per m² (€)"})
         fig.update_traces(texttemplate='%{y:.1f}', textposition='outside')
-        st.plotly_chart(fig, use_container_width=True)
+        st.plotly_chart(fig, width="stretch")
 
     
     # Доходность посуточной — САМАЯ КРУТАЯ ФИЧА
@@ -241,7 +241,7 @@ with tab_rent_daily:
         )
         fig.update_layout(height=600)
         fig.update_traces(textposition='outside')
-        st.plotly_chart(fig, use_container_width=True)
+        st.plotly_chart(fig, width="stretch")
         
 
 
