@@ -6,32 +6,40 @@ from supabase import create_client
 from datetime import datetime
 
 # =========================
-# Конфиг
+# Config
 # =========================
 st.set_page_config(page_title="Imobil.Index | Moldova Real Estate Analytics", page_icon="house", layout="wide")
+
+
 st.markdown("""
-<style>
-    .main-title {text-align: center; font-size: 2.8em; font-weight: 300; color: #e0e0e0; margin: 0.5em 0;}
-    .subtitle {text-align: center; font-size: 1.2em; color: #bbbbbb; margin-bottom: 2em;}
-    .stTabs [data-baseweb="tab"] {font-size: 1.2em; font-weight: 600; padding: 1rem 2rem;}
-</style>
+<div style='text-align:center; margin:1rem 0 2rem;'>
+    <div style='font-size:2.2rem; font-weight:300; color:#1a1a1a; margin-bottom:0.3rem;'>
+        Imobil<span style='color:#2563eb;'>.</span>Index
+    </div>
+    <div style='font-size:1rem; color:#555; margin-bottom:0.2rem;'>
+        Real-time Moldova property market analytics
+    </div>
+    <div style='font-size:0.9rem; color:#777;'>
+        Prices • Trends • Forecasts • Data only
+    </div>
+</div>
 """, unsafe_allow_html=True)
 
 supabase = create_client(st.secrets["SUPABASE_URL"], st.secrets["SUPABASE_KEY"])
 
 # =========================
-# Данные (кэш 1 час)
+# Data (cache 1 hour)
 # =========================
 
 @st.cache_data(ttl=3600)
 def load_historical_data():
-    """Загружает ВСЕ исторические данные пачками по 1000 строк"""
+    """Load batches 100 string"""
     all_sales = []
     all_rent = []
     offset = 0
     limit = 1000
 
-    # --- Продажа ---
+    # --- Sale ---
     while True:
         resp = supabase.table("gold_estate_daily") \
             .select("*") \
@@ -47,7 +55,7 @@ def load_historical_data():
             break
         offset += limit
 
-    # --- Аренда ---
+    # --- Rent ---
     offset = 0
     while True:
         resp = supabase.table("gold_rent_daily") \
@@ -81,7 +89,7 @@ def load_data():
 df_sales, df_rent, df_yield = load_data()
 
 # =========================
-# Шапка
+# Header
 # =========================
 st.markdown(
     "<div style='text-align:center; font-size:3.2rem; font-weight:300; color:#1a1a1a; margin:2rem 0 0.5rem;'>"
@@ -106,7 +114,7 @@ st.markdown(
 
 tab_sale, tab_rent_monthly, tab_rent_daily = st.tabs(["For Sale", "Monthly Rent", "Daily Rent"])
 
-# --------------------- 1. ПРОДАЖА ---------------------
+# --------------------- 1. Sale ---------------------
 with tab_sale:
     df = df_sales.copy()
     mode = "For Sale"
@@ -168,7 +176,7 @@ with tab_sale:
     disp.columns = ['City','Sector','Listings','Price per m² (€)','Average price per m² (€)']
     st.dataframe(disp, width="stretch", hide_index=True)
 
-# --------------------- 2. АРЕНДА ПОМЕСЯЧНО ---------------------
+# --------------------- 2. Monthly Rental ---------------------
 with tab_rent_monthly:
     df = df_rent[df_rent['deal_type'] == 'Сдаю помесячно'].copy()
     mode = "Monthly rent"
@@ -206,13 +214,13 @@ with tab_rent_monthly:
         fig.update_traces(texttemplate='%{y:.1f}', textposition='outside')
         st.plotly_chart(fig, width="stretch")
 
-    # Доходность помесячной
+    # Yield rental monthly %
     if not df_yield.empty:
         st.markdown("---")
-        # Доходность помесячной аренды — % годовых
+
         st.subheader("Monthly rental yield (% per annum)")
         top_y = df_yield.nlargest(10, 'yield_monthly_percent').copy()
-        # формируем "город → сектор"
+
         top_y["Sector"] = top_y["city"] + " → " + top_y["sector"].fillna("Center")
     
         fig = px.bar(
@@ -230,7 +238,7 @@ with tab_rent_monthly:
 
 
 
-# --------------------- 3. ПОСУТОЧНАЯ АРЕНДА ---------------------
+# --------------------- 3. Daily Rental ---------------------
 with tab_rent_daily:
     df = df_rent[df_rent['deal_type'] == 'Сдаю посуточно'].copy()
     mode = "Daily rent"
@@ -268,13 +276,13 @@ with tab_rent_daily:
         st.plotly_chart(fig, width="stretch")
 
     
-    # Доходность посуточной — САМАЯ КРУТАЯ ФИЧА
+    # Daily rental yield — cool feature
     if not df_yield.empty:
         st.markdown("---")
         st.subheader("Daily rental yield at 60% occupancy (% p.a.)")
     
         top_y = df_yield.nlargest(10, 'yield_daily_percent').copy()
-        # формируем "город → сектор"
+
         top_y["Sector"] = top_y["city"] + " → " + top_y["sector"].fillna("Center")
     
         fig = px.bar(
@@ -320,7 +328,7 @@ with tab_rent_daily:
         )
 
 # =========================
-# Футер
+# footer
 # =========================
 st.markdown("---")
 st.markdown("""
