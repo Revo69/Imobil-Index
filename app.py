@@ -10,20 +10,6 @@ from datetime import datetime
 # =========================
 st.set_page_config(page_title="Imobil.Index | Moldova Real Estate Analytics", page_icon="house", layout="wide")
 
-st.markdown("""
-<div style='text-align:center; margin:1rem 0 2rem;'>
-    <div style='font-size:2.2rem; font-weight:300; color:#1a1a1a; margin-bottom:0.3rem;'>
-        Imobil<span style='color:#2563eb;'>.</span>Index
-    </div>
-    <div style='font-size:1rem; color:#555; margin-bottom:0.2rem;'>
-        Real-time Moldova property market analytics
-    </div>
-    <div style='font-size:0.9rem; color:#777;'>
-        Prices • Trends • Forecasts • Data only
-    </div>
-</div>
-""", unsafe_allow_html=True)
-
 supabase = create_client(st.secrets["SUPABASE_URL"], st.secrets["SUPABASE_KEY"])
 
 # =========================
@@ -90,26 +76,19 @@ df_sales, df_rent, df_yield = load_data()
 # =========================
 # Header
 # =========================
-st.markdown(
-    "<div style='text-align:center; font-size:3.2rem; font-weight:300; color:#1a1a1a; margin:2rem 0 0.5rem;'>"
-    "Imobil<span style='color:#2563eb;'>.</span>Index"
-    "</div>",
-    unsafe_allow_html=True
-)
-
-st.markdown(
-    "<div style='text-align:center; font-size:1.35rem; color:#333; margin:0.5rem 0 1.5rem; letter-spacing:0.3px;'>"
-    "Real-time Moldova property market analytics"
-    "</div>",
-    unsafe_allow_html=True
-)
-
-st.markdown(
-    "<div style='text-align:center; font-size:1.05rem; color:#555; margin-bottom:3rem;'>"
-    "Prices • Trends • Forecasts • Data only"
-    "</div>",
-    unsafe_allow_html=True
-)
+st.markdown("""
+<div style='text-align:center; margin:1rem 0 2rem;'>
+    <div style='font-size:2.2rem; font-weight:300; color:#1a1a1a; margin-bottom:0.3rem;'>
+        Imobil<span style='color:#2563eb;'>.</span>Index
+    </div>
+    <div style='font-size:1rem; color:#555; margin-bottom:0.2rem;'>
+        Real-time Moldova property market analytics
+    </div>
+    <div style='font-size:0.9rem; color:#777;'>
+        Prices • Trends • Forecasts • Data only
+    </div>
+</div>
+""", unsafe_allow_html=True)
 
 tab_sale, tab_rent_monthly, tab_rent_daily = st.tabs(["For Sale", "Monthly Rent", "Daily Rent"])
 
