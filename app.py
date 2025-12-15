@@ -10,7 +10,6 @@ from datetime import datetime
 # =========================
 st.set_page_config(page_title="Imobil.Index | Moldova Real Estate Analytics", page_icon="house", layout="wide")
 
-
 st.markdown("""
 <div style='text-align:center; margin:1rem 0 2rem;'>
     <div style='font-size:2.2rem; font-weight:300; color:#1a1a1a; margin-bottom:0.3rem;'>
