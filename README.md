@@ -1,4 +1,4 @@
-# Imobil.Index 2025 - Real Estate Analytics Dashboard 🏠
+# Imobil.Index - Real Estate Analytics Dashboard 🏠
 
 **Imobil.Index** is a data pipeline and analytics dashboard for the Moldovan real estate market.  
 It collects property listings, processes them through a structured *bronze → silver → gold* pipeline, and visualizes key market insights in an interactive Streamlit app.
