@@ -151,7 +151,7 @@ with tab_sale:
     disp['avg_per_m2_eur'] = disp['avg_per_m2_eur'].round(0).astype(int)
     disp['avg_price_eur'] = disp['avg_price_eur'].round(0).astype(int)
     disp = disp.sort_values('avg_per_m2_eur')
-    disp.columns = ['City','Sector','Listings','Price per m² (€)','Average price per m² (€)']
+    disp.columns = ['City','Sector','Listings','Price per m² (€)','Average price (€)']
     st.dataframe(disp, width="stretch", hide_index=True)
 
 # --------------------- 2. Monthly Rental ---------------------
