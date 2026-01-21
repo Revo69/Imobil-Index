@@ -1,4 +1,4 @@
-# app.py — Imobil.Index 2025 — For Sale + Monthly Rent + Daily Rent
+# app.py — Imobil.Index 2026 — For Sale + Monthly Rent + Daily Rent
 import streamlit as st
 import pandas as pd
 import plotly.express as px
@@ -279,7 +279,7 @@ with tab_rent_daily:
 
 
         st.markdown("---")
-        st.markdown("<h2 style='text-align:center; color:#e0e0e0;'>Daily vs Monthly Rental — Moldova 2025 Reality</h2>", unsafe_allow_html=True)
+        st.markdown("<h2 style='text-align:center; color:#e0e0e0;'>Daily vs Monthly Rental — Moldova 2026 Reality</h2>", unsafe_allow_html=True)
         
         col1, col2 = st.columns(2)
         
@@ -312,6 +312,6 @@ st.markdown("---")
 st.markdown("""
 <div style="text-align: center; padding: 3rem; color: #888; font-size: 0.95rem;">
 &nbsp;&nbsp;&nbsp;&nbsp;<a href="mailto:sergey.revo@outlook.com" style="color:#888; text-decoration:none;">✉ sergey.revo@outlook.com</a><br><br>
-&nbsp;&nbsp;&nbsp;&nbsp;<small>© 2025 - Imobil.Index</small>
+&nbsp;&nbsp;&nbsp;&nbsp;<small>© 2026 - Imobil.Index</small>
 </div>
 """, unsafe_allow_html=True)
