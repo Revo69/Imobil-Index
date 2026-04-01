@@ -16,7 +16,7 @@ supabase = create_client(st.secrets["SUPABASE_URL"], st.secrets["SUPABASE_KEY"])
 # Data (cache 1 hour)
 # =========================
 
-@st.cache_data(ttl=3600)
+#@st.cache_data(ttl=3600)
 def load_historical_data():
     """Load batches 100 string"""
     all_sales = []
@@ -62,7 +62,7 @@ def load_historical_data():
 df_hist_sales, df_hist_rent = load_historical_data()
 
 
-@st.cache_data(ttl=3600)
+#@st.cache_data(ttl=3600)
 def load_data():
     sales = pd.DataFrame(supabase.table("gold_estate_current").select("*").execute().data)
     rent = pd.DataFrame(supabase.table("gold_rent_current").select("*").execute().data)
