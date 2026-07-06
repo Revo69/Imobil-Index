@@ -1,0 +1,26 @@
+name: Keep Streamlit Awake
+
+on:
+  schedule:
+    - cron: '0 3,9,15,21 * * *' 
+  workflow_dispatch:
+
+jobs:
+  wake-streamlit:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+
+    steps:
+      - uses: actions/checkout@v6
+
+      - uses: actions/setup-python@v6
+        with:
+          python-version: '3.12'
+
+      - name: Install Playwright
+        run: |
+          pip install playwright
+          playwright install chromium --with-deps
+
+      - name: Wake up imobil-index.streamlit.app
+        run: python wake_streamlit.py
