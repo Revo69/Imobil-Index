@@ -3,7 +3,7 @@ import streamlit as st
 import pandas as pd
 import plotly.express as px
 from supabase import create_client
-from datetime import datetime
+from datetime import datetime, timedelta
 
 # =========================
 # Config
@@ -16,18 +16,30 @@ supabase = create_client(st.secrets["SUPABASE_URL"], st.secrets["SUPABASE_KEY"])
 # Data (cache 1 hour)
 # =========================
 
+HISTORY_WINDOW_DAYS = 90
+# Only the columns actually used by the 90-day trend chart — no need to pull
+# every column (e.g. raw listing text, ids) across the wire and into memory.
+HISTORY_SALE_COLUMNS = "date,city,sector,avg_per_m2_eur"
+
+
 @st.cache_data(ttl=3600)
 def load_historical_data():
-    """Load batches 100 string"""
+    """
+    Loads only the last HISTORY_WINDOW_DAYS of sale history, filtered at the
+    database level, since that's all the 90-day trend chart ever uses.
+    (df_hist_rent used to be fetched here too, but it was never referenced
+    anywhere in the UI — dropped to cut load time roughly in half.)
+    """
+    cutoff = (datetime.now() - timedelta(days=HISTORY_WINDOW_DAYS)).strftime("%Y-%m-%d")
+
     all_sales = []
-    all_rent = []
     offset = 0
     limit = 1000
 
-    # --- Sale ---
     while True:
         resp = supabase.table("gold_estate_daily") \
-            .select("*") \
+            .select(HISTORY_SALE_COLUMNS) \
+            .gte("date", cutoff) \
             .range(offset, offset + limit - 1) \
             .order("date", desc=False) \
             .execute()
@@ -40,26 +52,9 @@ def load_historical_data():
             break
         offset += limit
 
-    # --- Rent ---
-    offset = 0
-    while True:
-        resp = supabase.table("gold_rent_daily") \
-            .select("*") \
-            .range(offset, offset + limit - 1) \
-            .order("date", desc=False) \
-            .execute()
+    return pd.DataFrame(all_sales)
 
-        batch = resp.data
-        if not batch:
-            break
-        all_rent.extend(batch)
-        if len(batch) < limit:
-            break
-        offset += limit
-
-    return pd.DataFrame(all_sales), pd.DataFrame(all_rent)
-
-df_hist_sales, df_hist_rent = load_historical_data()
+df_hist_sales = load_historical_data()
 
 
 @st.cache_data(ttl=3600)
@@ -185,7 +180,6 @@ with tab_sale:
 with tab_rent_monthly:
     df = df_rent[df_rent['deal_type'] == 'Сдаю помесячно'].copy()
     price_col = "avg_price_per_m2_eur"
-    hist = df_hist_rent[df_hist_rent['deal_type'] == 'Сдаю помесячно']
 
     if render_header(df, price_col, "No monthly rent listings available", price_fmt="{:.1f}", price_suffix="/month"):
         st.markdown("---")
