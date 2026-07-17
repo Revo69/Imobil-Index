@@ -100,7 +100,7 @@ def render_header(df: pd.DataFrame, price_col: str, empty_message: str, price_fm
         )
     
         avg_price = price_fmt.format(weighted_avg_price)
-        st.metric("Average price per m²", f"{avg_price}{price_suffix} €")
+        st.metric("Average listing price per m²", f"{avg_price}{price_suffix} €")
     with col3:
         cheapest = df.loc[df[price_col].idxmin()]
         st.markdown(
