@@ -78,9 +78,11 @@ def render_header(df: pd.DataFrame, price_col: str, empty_message: str, price_fm
     the rest of its body WITHOUT calling st.stop() (which would kill other tabs too).
     """
     listings = int(df['listings'].sum()) if not df.empty else 0
+    data_date = pd.to_datetime(df["date"]).max()
+
     st.markdown(
-        f"<div class='subtitle'>Updated: {datetime.now():%d %B %Y at %H:%M} │ {listings:,} listings</div>",
-        unsafe_allow_html=True
+        f"<div class='subtitle'>Data as of: {data_date:%d %B %Y} │ {listings:,} listings</div>",
+        unsafe_allow_html=True,
     )
 
     if df.empty:
