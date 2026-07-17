@@ -91,7 +91,15 @@ def render_header(df: pd.DataFrame, price_col: str, empty_message: str, price_fm
     with col1:
         st.metric("Sectors", len(df))
     with col2:
-        avg_price = price_fmt.format(df[price_col].mean())
+        total_listings = df["listings"].sum()
+    
+        weighted_avg_price = (
+            (df[price_col] * df["listings"]).sum() / total_listings
+            if total_listings > 0
+            else 0
+        )
+    
+        avg_price = price_fmt.format(weighted_avg_price)
         st.metric("Average price per m²", f"{avg_price}{price_suffix} €")
     with col3:
         cheapest = df.loc[df[price_col].idxmin()]
