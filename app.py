@@ -690,30 +690,6 @@ all_cities = sorted(
     }
 )
 
-with st.sidebar:
-    st.markdown("### Filters")
-    st.caption("Leave cities empty to include all cities.")
-    selected_cities = st.multiselect(
-        "Cities",
-        options=all_cities,
-        default=[],
-        placeholder="All cities",
-        key="filter_cities",
-    )
-    min_listings = st.number_input(
-        "Minimum listings per sector",
-        min_value=1,
-        value=1,
-        step=1,
-        key="filter_min_listings",
-    )
-
-    selected_count = len(selected_cities) if selected_cities else len(all_cities)
-    st.metric("Cities in view", f"{selected_count}/{len(all_cities)}")
-
-    st.markdown("---")
-    st.caption("Cached for one hour. Filters affect presentation only.")
-
 # =========================
 # Header
 # =========================
@@ -726,92 +702,114 @@ latest_dates = [date for date in latest_dates if date is not None]
 latest_snapshot = f"Data as of {max(latest_dates):%d %B %Y}" if latest_dates else "No snapshot"
 render_app_header(latest_snapshot)
 
+filter_col, main_col = st.columns([0.95, 4.5], gap="large")
 
-tab_sale, tab_rent_monthly, tab_rent_daily = st.tabs(["For Sale", "Monthly Rent", "Daily Rent"])
+with filter_col:
+    with st.container(border=True):
+        st.markdown("### Filters")
+        st.caption("Leave cities empty to include all cities.")
+        selected_cities = st.multiselect(
+            "Cities",
+            options=all_cities,
+            default=[],
+            placeholder="All cities",
+            key="filter_cities",
+        )
+        min_listings = st.number_input(
+            "Min. listings",
+            min_value=1,
+            value=1,
+            step=1,
+            key="filter_min_listings",
+        )
 
+        selected_count = len(selected_cities) if selected_cities else len(all_cities)
+        st.metric("Cities in view", f"{selected_count}/{len(all_cities)}")
+        st.caption("Cached for one hour. Filters affect presentation only.")
 
-# --------------------- 1. Sale ---------------------
-with tab_sale:
-    price_col = "avg_per_m2_eur"
-    df = filter_by_city_and_listings(df_sales, selected_cities, min_listings)
+with main_col:
+    tab_sale, tab_rent_monthly, tab_rent_daily = st.tabs(["For Sale", "Monthly Rent", "Daily Rent"])
 
-    if render_tab_header(df, price_col, "No sale listings match the current filters.", price_fmt="{:.0f}"):
-        render_price_sections(
+    # --------------------- 1. Sale ---------------------
+    with tab_sale:
+        price_col = "avg_per_m2_eur"
+        df = filter_by_city_and_listings(df_sales, selected_cities, min_listings)
+
+        if render_tab_header(df, price_col, "No sale listings match the current filters.", price_fmt="{:.0f}"):
+            render_price_sections(
+                df,
+                price_col,
+                "Price per m2 (EUR)",
+                SALE_COLOR_SCALE,
+                ["#fee2e2", "#fca5a5", "#ef4444", "#991b1b"],
+                0,
+            )
+            render_sales_trend(df_hist_sales, selected_cities)
+            render_sector_table(
+                df,
+                ["city", "sector", "listings", "avg_per_m2_eur", "avg_price_eur"],
+                ["City", "Sector", "Listings", "Price per m2 (EUR)", "Average price (EUR)"],
+                "avg_per_m2_eur",
+            )
+
+    # --------------------- 2. Monthly Rental ---------------------
+    with tab_rent_monthly:
+        price_col = "avg_price_per_m2_eur"
+        df = df_rent[df_rent["deal_type"] == MONTHLY_RENT_DEAL].copy()
+        df = filter_by_city_and_listings(df, selected_cities, min_listings)
+        filtered_yield = filter_by_city_and_listings(df_yield, selected_cities, min_listings)
+
+        if render_tab_header(
             df,
             price_col,
-            "Price per m2 (EUR)",
-            SALE_COLOR_SCALE,
-            ["#fee2e2", "#fca5a5", "#ef4444", "#991b1b"],
-            0,
-        )
-        render_sales_trend(df_hist_sales, selected_cities)
-        render_sector_table(
-            df,
-            ["city", "sector", "listings", "avg_per_m2_eur", "avg_price_eur"],
-            ["City", "Sector", "Listings", "Price per m2 (EUR)", "Average price (EUR)"],
-            "avg_per_m2_eur",
-        )
+            "No monthly rent listings match the current filters.",
+            price_fmt="{:.1f}",
+            price_suffix="/month",
+        ):
+            render_price_sections(
+                df,
+                price_col,
+                "Price per m2 (EUR/month)",
+                RENT_COLOR_SCALE,
+                DAILY_COLOR_SCALE,
+                1,
+            )
+            render_yield_chart(
+                filtered_yield,
+                "yield_monthly_percent",
+                "Monthly rental yield",
+                "Indicative gross annual yield by sector.",
+            )
 
+    # --------------------- 3. Daily Rental ---------------------
+    with tab_rent_daily:
+        price_col = "avg_price_per_m2_eur"
+        df = df_rent[df_rent["deal_type"] == DAILY_RENT_DEAL].copy()
+        df = filter_by_city_and_listings(df, selected_cities, min_listings)
+        filtered_yield = filter_by_city_and_listings(df_yield, selected_cities, min_listings)
 
-# --------------------- 2. Monthly Rental ---------------------
-with tab_rent_monthly:
-    price_col = "avg_price_per_m2_eur"
-    df = df_rent[df_rent["deal_type"] == MONTHLY_RENT_DEAL].copy()
-    df = filter_by_city_and_listings(df, selected_cities, min_listings)
-    filtered_yield = filter_by_city_and_listings(df_yield, selected_cities, min_listings)
-
-    if render_tab_header(
-        df,
-        price_col,
-        "No monthly rent listings match the current filters.",
-        price_fmt="{:.1f}",
-        price_suffix="/month",
-    ):
-        render_price_sections(
+        if render_tab_header(
             df,
             price_col,
-            "Price per m2 (EUR/month)",
-            RENT_COLOR_SCALE,
-            DAILY_COLOR_SCALE,
-            1,
-        )
-        render_yield_chart(
-            filtered_yield,
-            "yield_monthly_percent",
-            "Monthly rental yield",
-            "Indicative gross annual yield by sector.",
-        )
-
-
-# --------------------- 3. Daily Rental ---------------------
-with tab_rent_daily:
-    price_col = "avg_price_per_m2_eur"
-    df = df_rent[df_rent["deal_type"] == DAILY_RENT_DEAL].copy()
-    df = filter_by_city_and_listings(df, selected_cities, min_listings)
-    filtered_yield = filter_by_city_and_listings(df_yield, selected_cities, min_listings)
-
-    if render_tab_header(
-        df,
-        price_col,
-        "No daily rent listings match the current filters.",
-        price_fmt="{:.1f}",
-        price_suffix="/day",
-    ):
-        render_price_sections(
-            df,
-            price_col,
-            "Price per m2 (EUR/day)",
-            DAILY_COLOR_SCALE,
-            ["#f3e8ff", "#c084fc", "#9333ea", "#581c87"],
-            1,
-        )
-        render_yield_chart(
-            filtered_yield,
-            "yield_daily_percent",
-            "Daily rental yield at 60% occupancy",
-            "Indicative gross annual yield, before operating costs.",
-        )
-        render_daily_rent_context(filtered_yield)
+            "No daily rent listings match the current filters.",
+            price_fmt="{:.1f}",
+            price_suffix="/day",
+        ):
+            render_price_sections(
+                df,
+                price_col,
+                "Price per m2 (EUR/day)",
+                DAILY_COLOR_SCALE,
+                ["#f3e8ff", "#c084fc", "#9333ea", "#581c87"],
+                1,
+            )
+            render_yield_chart(
+                filtered_yield,
+                "yield_daily_percent",
+                "Daily rental yield at 60% occupancy",
+                "Indicative gross annual yield, before operating costs.",
+            )
+            render_daily_rent_context(filtered_yield)
 
 
 # =========================
