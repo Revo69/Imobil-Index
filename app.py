@@ -349,7 +349,7 @@ def render_app_header(latest_snapshot: str) -> None:
                     <div class="brand-title">Imobil<span class="brand-dot">.</span>Index</div>
                     <div class="brand-copy">
                         Moldova residential real estate analytics across sale prices,
-                        monthly rent, short-term rent, and gross yield indicators.
+                        monthly rent, short-term rent and gross yield indicators.
                     </div>
                 </div>
                 <div class="status-pill">{latest_snapshot}</div>
@@ -483,7 +483,7 @@ def render_tab_header(
     avg_price = price_fmt.format(weighted_average(df, price_col))
 
     render_section(
-        "Market Snapshot",
+        "Market Overview",
         f"{data_freshness(df)} | {format_int(listings)} listings after filters",
     )
 
