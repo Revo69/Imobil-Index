@@ -22,8 +22,12 @@ supabase = create_client(st.secrets["SUPABASE_URL"], st.secrets["SUPABASE_KEY"])
 
 HISTORY_WINDOW_DAYS = 90
 HISTORY_SALE_COLUMNS = "date,city,sector,avg_per_m2_eur"
-MONTHLY_RENT_DEAL = "\u0421\u0434\u0430\u044e \u043f\u043e\u043c\u0435\u0441\u044f\u0447\u043d\u043e"
-DAILY_RENT_DEAL = "\u0421\u0434\u0430\u044e \u043f\u043e\u0441\u0443\u0442\u043e\u0447\u043d\u043e"
+MONTHLY_RENT_DEAL = (
+    "\u0421\u0434\u0430\u044e \u043f\u043e\u043c\u0435\u0441\u044f\u0447\u043d\u043e"
+)
+DAILY_RENT_DEAL = (
+    "\u0421\u0434\u0430\u044e \u043f\u043e\u0441\u0443\u0442\u043e\u0447\u043d\u043e"
+)
 CHISINAU_CITY = "\u041a\u0438\u0448\u0438\u043d\u0451\u0432"
 
 SALE_COLOR_SCALE = ["#dbeafe", "#93c5fd", "#2563eb", "#1e3a8a"]
@@ -286,9 +290,13 @@ def load_historical_data() -> pd.DataFrame:
 
 @st.cache_data(ttl=3600)
 def load_data() -> tuple[pd.DataFrame, pd.DataFrame, pd.DataFrame]:
-    sales = pd.DataFrame(supabase.table("gold_estate_current").select("*").execute().data)
+    sales = pd.DataFrame(
+        supabase.table("gold_estate_current").select("*").execute().data
+    )
     rent = pd.DataFrame(supabase.table("gold_rent_current").select("*").execute().data)
-    yield_data = pd.DataFrame(supabase.table("gold_rent_yield").select("*").execute().data)
+    yield_data = pd.DataFrame(
+        supabase.table("gold_rent_yield").select("*").execute().data
+    )
     return sales, rent, yield_data
 
 
@@ -385,31 +393,31 @@ def render_empty_state(message: str) -> None:
 def apply_common_chart_style(fig, height: int = 430, show_legend: bool = False):
     fig.update_layout(
         height=height,
-        margin=dict(l=12, r=12, t=28, b=12),
+        margin={"l": 12, "r": 12, "t": 28, "b": 12},
         paper_bgcolor="rgba(0,0,0,0)",
         plot_bgcolor="rgba(0,0,0,0)",
-        font=dict(family="Inter, Segoe UI, sans-serif", size=13, color="#111827"),
-        hoverlabel=dict(bgcolor="#111827", font_size=13, font_color="#ffffff"),
+        font={"family": "Inter, Segoe UI, sans-serif", "size": 13, "color": "#111827"},
+        hoverlabel={"bgcolor": "#111827", "font_size": 13, "font_color": "#ffffff"},
         coloraxis_showscale=False,
         showlegend=show_legend,
-        legend=dict(
-            orientation="h",
-            yanchor="bottom",
-            y=1.02,
-            xanchor="right",
-            x=1,
-            title_text="",
-        ),
+        legend={
+            "orientation": "h",
+            "yanchor": "bottom",
+            "y": 1.02,
+            "xanchor": "right",
+            "x": 1,
+            "title_text": "",
+        },
     )
     fig.update_xaxes(
         title_text="",
         showgrid=False,
         tickangle=-35,
-        tickfont=dict(color="#475569"),
+        tickfont={"color": "#475569"},
     )
     fig.update_yaxes(
-        title_font=dict(color="#475569"),
-        tickfont=dict(color="#475569"),
+        title_font={"color": "#475569"},
+        tickfont={"color": "#475569"},
         gridcolor="#e2e8f0",
         zeroline=False,
     )
@@ -430,7 +438,11 @@ def render_ranked_bars(
         render_empty_state("No sectors match the current filters.")
         return
 
-    top = df.nsmallest(10, price_col).copy() if mode == "lowest" else df.nlargest(10, price_col).copy()
+    top = (
+        df.nsmallest(10, price_col).copy()
+        if mode == "lowest"
+        else df.nlargest(10, price_col).copy()
+    )
     top["Sector"] = sector_label(top)
     top = top.sort_values(price_col, ascending=(mode == "lowest"))
 
@@ -510,9 +522,19 @@ def render_price_sections(
 ) -> None:
     col_l, col_r = st.columns(2)
     with col_l:
-        render_ranked_bars(df, "Lowest priced sectors", price_col, y_label, low_scale, "lowest", digits)
+        render_ranked_bars(
+            df, "Lowest priced sectors", price_col, y_label, low_scale, "lowest", digits
+        )
     with col_r:
-        render_ranked_bars(df, "Highest priced sectors", price_col, y_label, high_scale, "highest", digits)
+        render_ranked_bars(
+            df,
+            "Highest priced sectors",
+            price_col,
+            y_label,
+            high_scale,
+            "highest",
+            digits,
+        )
 
 
 def render_yield_chart(
@@ -591,8 +613,12 @@ def render_sales_trend(hist: pd.DataFrame, selected_cities: list[str]) -> None:
         st.plotly_chart(fig, width="stretch")
 
 
-def render_sector_table(df: pd.DataFrame, columns: list[str], labels: list[str], sort_col: str) -> None:
-    render_section("All sectors", "Sortable table with the exact values used in this view.")
+def render_sector_table(
+    df: pd.DataFrame, columns: list[str], labels: list[str], sort_col: str
+) -> None:
+    render_section(
+        "All sectors", "Sortable table with the exact values used in this view."
+    )
     if df.empty:
         render_empty_state("No rows match the current filters.")
         return
@@ -699,7 +725,9 @@ latest_dates = [
     if not df.empty and "date" in df.columns
 ]
 latest_dates = [date for date in latest_dates if date is not None]
-latest_snapshot = f"Data as of {max(latest_dates):%d %B %Y}" if latest_dates else "No snapshot"
+latest_snapshot = (
+    f"Data as of {max(latest_dates):%d %B %Y}" if latest_dates else "No snapshot"
+)
 render_app_header(latest_snapshot)
 
 filter_col, main_col = st.columns([1.35, 4.0], gap="medium")
@@ -728,14 +756,21 @@ with filter_col:
         st.caption("Cached for one hour. Filters affect presentation only.")
 
 with main_col:
-    tab_sale, tab_rent_monthly, tab_rent_daily = st.tabs(["For Sale", "Monthly Rent", "Daily Rent"])
+    tab_sale, tab_rent_monthly, tab_rent_daily = st.tabs(
+        ["For Sale", "Monthly Rent", "Daily Rent"]
+    )
 
     # --------------------- 1. Sale ---------------------
     with tab_sale:
         price_col = "avg_per_m2_eur"
         df = filter_by_city_and_listings(df_sales, selected_cities, min_listings)
 
-        if render_tab_header(df, price_col, "No sale listings match the current filters.", price_fmt="{:.0f}"):
+        if render_tab_header(
+            df,
+            price_col,
+            "No sale listings match the current filters.",
+            price_fmt="{:.0f}",
+        ):
             render_price_sections(
                 df,
                 price_col,
@@ -748,7 +783,13 @@ with main_col:
             render_sector_table(
                 df,
                 ["city", "sector", "listings", "avg_per_m2_eur", "avg_price_eur"],
-                ["City", "Sector", "Listings", "Price per m2 (EUR)", "Average price (EUR)"],
+                [
+                    "City",
+                    "Sector",
+                    "Listings",
+                    "Price per m2 (EUR)",
+                    "Average price (EUR)",
+                ],
                 "avg_per_m2_eur",
             )
 
@@ -757,7 +798,9 @@ with main_col:
         price_col = "avg_price_per_m2_eur"
         df = df_rent[df_rent["deal_type"] == MONTHLY_RENT_DEAL].copy()
         df = filter_by_city_and_listings(df, selected_cities, min_listings)
-        filtered_yield = filter_by_city_and_listings(df_yield, selected_cities, min_listings)
+        filtered_yield = filter_by_city_and_listings(
+            df_yield, selected_cities, min_listings
+        )
 
         if render_tab_header(
             df,
@@ -786,7 +829,9 @@ with main_col:
         price_col = "avg_price_per_m2_eur"
         df = df_rent[df_rent["deal_type"] == DAILY_RENT_DEAL].copy()
         df = filter_by_city_and_listings(df, selected_cities, min_listings)
-        filtered_yield = filter_by_city_and_listings(df_yield, selected_cities, min_listings)
+        filtered_yield = filter_by_city_and_listings(
+            df_yield, selected_cities, min_listings
+        )
 
         if render_tab_header(
             df,
