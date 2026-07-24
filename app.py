@@ -352,7 +352,7 @@ def render_app_header(latest_snapshot: str) -> None:
                         monthly rent, short-term rent, and gross yield indicators.
                     </div>
                 </div>
-                <div class="status-pill">{latest_snapshot} | Gold-layer metrics</div>
+                <div class="status-pill">{latest_snapshot}</div>
             </div>
         </div>
         """,
@@ -657,7 +657,7 @@ def filter_by_city_and_listings(
 def render_daily_rent_context(df_yield: pd.DataFrame) -> None:
     render_section(
         "Daily vs monthly rent context",
-        "Gross yield comparison based on the current Gold-layer yield model.",
+        "Indicative gross yield comparison for the current market snapshot.",
     )
 
     top_daily_yield = None
@@ -695,7 +695,7 @@ def render_daily_rent_context(df_yield: pd.DataFrame) -> None:
 # Load data
 # =========================
 try:
-    with st.spinner("Loading Gold-layer market data..."):
+    with st.spinner("Loading market data..."):
         df_hist_sales = load_historical_data()
         df_sales, df_rent, df_yield = load_data()
 except Exception as exc:
@@ -753,7 +753,7 @@ with filter_col:
 
         selected_count = len(selected_cities) if selected_cities else len(all_cities)
         st.metric("Cities in view", f"{selected_count}/{len(all_cities)}")
-        st.caption("Cached for one hour. Filters affect presentation only.")
+        st.caption("Use filters to focus the dashboard view.")
 
 with main_col:
     tab_sale, tab_rent_monthly, tab_rent_daily = st.tabs(
