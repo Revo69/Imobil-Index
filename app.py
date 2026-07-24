@@ -61,6 +61,8 @@ st.markdown(
 
         [data-testid="stToolbar"],
         [data-testid="stDecoration"],
+        [data-testid="stSidebarCollapsedControl"],
+        [data-testid="collapsedControl"],
         #MainMenu,
         footer {
             visibility: hidden;
@@ -212,6 +214,12 @@ st.markdown(
             border-radius: 8px;
             background: #ffffff;
             color: var(--muted);
+        }
+
+        .filter-note {
+            color: var(--muted);
+            font-size: 0.86rem;
+            line-height: 1.4;
         }
 
         div[data-testid="stDataFrame"] {
@@ -668,7 +676,7 @@ except Exception as exc:
 
 
 # =========================
-# Sidebar filters
+# Filter options
 # =========================
 all_cities = sorted(
     {
@@ -678,15 +686,6 @@ all_cities = sorted(
         for city in dataset["city"].dropna().unique()
     }
 )
-
-with st.sidebar:
-    st.markdown("### Filters")
-    selected_cities = st.multiselect("Cities", options=all_cities, default=all_cities)
-    min_listings = st.number_input("Minimum listings per sector", min_value=1, value=1, step=1)
-
-    st.markdown("### Data")
-    st.caption("Cached for one hour. Metrics are calculated from Gold-layer aggregate tables.")
-
 
 # =========================
 # Header
@@ -699,6 +698,32 @@ latest_dates = [
 latest_dates = [date for date in latest_dates if date is not None]
 latest_snapshot = f"Data as of {max(latest_dates):%d %B %Y}" if latest_dates else "No snapshot"
 render_app_header(latest_snapshot)
+
+render_section("Filters", "Narrow the visible dashboard without changing the Gold-layer source data.")
+with st.container(border=True):
+    col_city, col_min, col_count = st.columns([4, 1.25, 1])
+    with col_city:
+        selected_cities = st.multiselect(
+            "Cities",
+            options=all_cities,
+            default=all_cities,
+            key="filter_cities",
+        )
+    with col_min:
+        min_listings = st.number_input(
+            "Min. listings",
+            min_value=1,
+            value=1,
+            step=1,
+            key="filter_min_listings",
+        )
+    with col_count:
+        st.metric("Selected", f"{len(selected_cities)}/{len(all_cities)}")
+
+    st.markdown(
+        '<div class="filter-note">Cached for one hour. Filters affect dashboard presentation only; source tables and calculations stay unchanged.</div>',
+        unsafe_allow_html=True,
+    )
 
 
 tab_sale, tab_rent_monthly, tab_rent_daily = st.tabs(["For Sale", "Monthly Rent", "Daily Rent"])
