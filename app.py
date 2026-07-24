@@ -1,34 +1,242 @@
-# app.py — Imobil.Index 2026 — For Sale + Monthly Rent + Daily Rent
-import streamlit as st
+# app.py - Imobil.Index 2026 - For Sale + Monthly Rent + Daily Rent
+from datetime import datetime, timedelta
+from typing import Iterable
+
 import pandas as pd
 import plotly.express as px
+import streamlit as st
 from supabase import create_client
-from datetime import datetime, timedelta
+
 
 # =========================
 # Config
 # =========================
-st.set_page_config(page_title="Imobil.Index | Moldova Real Estate Analytics", page_icon="house", layout="wide")
+st.set_page_config(
+    page_title="Imobil.Index | Moldova Real Estate Analytics",
+    page_icon="house",
+    layout="wide",
+    initial_sidebar_state="expanded",
+)
 
 supabase = create_client(st.secrets["SUPABASE_URL"], st.secrets["SUPABASE_KEY"])
+
+HISTORY_WINDOW_DAYS = 90
+HISTORY_SALE_COLUMNS = "date,city,sector,avg_per_m2_eur"
+MONTHLY_RENT_DEAL = "\u0421\u0434\u0430\u044e \u043f\u043e\u043c\u0435\u0441\u044f\u0447\u043d\u043e"
+DAILY_RENT_DEAL = "\u0421\u0434\u0430\u044e \u043f\u043e\u0441\u0443\u0442\u043e\u0447\u043d\u043e"
+CHISINAU_CITY = "\u041a\u0438\u0448\u0438\u043d\u0451\u0432"
+
+SALE_COLOR_SCALE = ["#dbeafe", "#93c5fd", "#2563eb", "#1e3a8a"]
+RENT_COLOR_SCALE = ["#dcfce7", "#86efac", "#16a34a", "#14532d"]
+DAILY_COLOR_SCALE = ["#fef3c7", "#fbbf24", "#f97316", "#9a3412"]
+YIELD_COLOR_SCALE = ["#e0f2fe", "#67e8f9", "#0e7490", "#164e63"]
+
+
+# =========================
+# Style
+# =========================
+st.markdown(
+    """
+    <style>
+        :root {
+            --bg: #f8fafc;
+            --surface: #ffffff;
+            --text: #111827;
+            --muted: #64748b;
+            --border: #e2e8f0;
+            --blue: #2563eb;
+            --green: #16a34a;
+            --amber: #d97706;
+            --cyan: #0891b2;
+        }
+
+        .stApp {
+            background: var(--bg);
+            color: var(--text);
+        }
+
+        .block-container {
+            max-width: 1360px;
+            padding-top: 1.25rem;
+            padding-bottom: 3rem;
+        }
+
+        [data-testid="stSidebar"] {
+            background: #ffffff;
+            border-right: 1px solid var(--border);
+        }
+
+        h1, h2, h3 {
+            letter-spacing: 0;
+            color: var(--text);
+        }
+
+        div[data-testid="stTabs"] button {
+            padding: 0.75rem 1rem;
+            font-weight: 650;
+            color: #475569;
+        }
+
+        div[data-testid="stTabs"] button[aria-selected="true"] {
+            color: var(--blue);
+            border-bottom-color: var(--blue);
+        }
+
+        .app-header {
+            position: sticky;
+            top: 0;
+            z-index: 999;
+            margin: -1.25rem 0 1rem;
+            padding: 1.25rem 0 1rem;
+            background: rgba(248, 250, 252, 0.94);
+            border-bottom: 1px solid rgba(226, 232, 240, 0.85);
+            backdrop-filter: blur(10px);
+        }
+
+        .brand-row {
+            display: flex;
+            align-items: flex-end;
+            justify-content: space-between;
+            gap: 1rem;
+        }
+
+        .brand-title {
+            font-size: clamp(2rem, 4vw, 3.1rem);
+            line-height: 1;
+            font-weight: 760;
+            color: var(--text);
+        }
+
+        .brand-dot {
+            color: var(--blue);
+        }
+
+        .brand-copy {
+            max-width: 760px;
+            margin-top: 0.65rem;
+            color: var(--muted);
+            font-size: 1rem;
+            line-height: 1.6;
+        }
+
+        .status-pill {
+            display: inline-flex;
+            align-items: center;
+            gap: 0.5rem;
+            padding: 0.55rem 0.8rem;
+            border: 1px solid var(--border);
+            border-radius: 999px;
+            background: var(--surface);
+            color: #334155;
+            font-size: 0.86rem;
+            white-space: nowrap;
+        }
+
+        .section {
+            padding: 1.1rem 0 0.25rem;
+        }
+
+        .section-title {
+            margin: 0 0 0.2rem;
+            font-size: 1.1rem;
+            font-weight: 720;
+            color: var(--text);
+        }
+
+        .section-caption {
+            margin: 0 0 0.75rem;
+            color: var(--muted);
+            font-size: 0.92rem;
+        }
+
+        .kpi-card {
+            min-height: 132px;
+            padding: 1rem;
+            border: 1px solid var(--border);
+            border-radius: 8px;
+            background: var(--surface);
+            box-shadow: 0 1px 2px rgba(15, 23, 42, 0.04);
+        }
+
+        .kpi-label {
+            color: var(--muted);
+            font-size: 0.78rem;
+            font-weight: 700;
+            letter-spacing: 0.04em;
+            text-transform: uppercase;
+        }
+
+        .kpi-value {
+            margin-top: 0.45rem;
+            color: var(--text);
+            font-size: clamp(1.35rem, 2vw, 1.8rem);
+            line-height: 1.12;
+            font-weight: 760;
+        }
+
+        .kpi-note {
+            margin-top: 0.45rem;
+            color: var(--muted);
+            font-size: 0.86rem;
+            line-height: 1.35;
+        }
+
+        .chart-shell {
+            padding: 1rem 1rem 0.35rem;
+            border: 1px solid var(--border);
+            border-radius: 8px;
+            background: var(--surface);
+            box-shadow: 0 1px 2px rgba(15, 23, 42, 0.04);
+        }
+
+        .insight-strip {
+            padding: 1rem;
+            border-left: 4px solid var(--cyan);
+            border-radius: 8px;
+            background: #f0f9ff;
+            color: #164e63;
+            line-height: 1.55;
+        }
+
+        .empty-state {
+            padding: 1.25rem;
+            border: 1px dashed #cbd5e1;
+            border-radius: 8px;
+            background: #ffffff;
+            color: var(--muted);
+        }
+
+        div[data-testid="stDataFrame"] {
+            border: 1px solid var(--border);
+            border-radius: 8px;
+            overflow: hidden;
+            background: var(--surface);
+        }
+
+        @media (max-width: 760px) {
+            .brand-row {
+                align-items: flex-start;
+                flex-direction: column;
+            }
+
+            .status-pill {
+                white-space: normal;
+            }
+        }
+    </style>
+    """,
+    unsafe_allow_html=True,
+)
+
 
 # =========================
 # Data (cache 1 hour)
 # =========================
-
-HISTORY_WINDOW_DAYS = 90
-# Only the columns actually used by the 90-day trend chart — no need to pull
-# every column (e.g. raw listing text, ids) across the wire and into memory.
-HISTORY_SALE_COLUMNS = "date,city,sector,avg_per_m2_eur"
-
-
 @st.cache_data(ttl=3600)
-def load_historical_data():
+def load_historical_data() -> pd.DataFrame:
     """
     Loads only the last HISTORY_WINDOW_DAYS of sale history, filtered at the
-    database level, since that's all the 90-day trend chart ever uses.
-    (df_hist_rent used to be fetched here too, but it was never referenced
-    anywhere in the UI — dropped to cut load time roughly in half.)
+    database level, since that's all the 90-day trend chart uses.
     """
     cutoff = (datetime.now() - timedelta(days=HISTORY_WINDOW_DAYS)).strftime("%Y-%m-%d")
 
@@ -37,12 +245,14 @@ def load_historical_data():
     limit = 1000
 
     while True:
-        resp = supabase.table("gold_estate_daily") \
-            .select(HISTORY_SALE_COLUMNS) \
-            .gte("date", cutoff) \
-            .range(offset, offset + limit - 1) \
-            .order("date", desc=False) \
+        resp = (
+            supabase.table("gold_estate_daily")
+            .select(HISTORY_SALE_COLUMNS)
+            .gte("date", cutoff)
+            .range(offset, offset + limit - 1)
+            .order("date", desc=False)
             .execute()
+        )
 
         batch = resp.data
         if not batch:
@@ -54,254 +264,532 @@ def load_historical_data():
 
     return pd.DataFrame(all_sales)
 
-df_hist_sales = load_historical_data()
-
 
 @st.cache_data(ttl=3600)
-def load_data():
+def load_data() -> tuple[pd.DataFrame, pd.DataFrame, pd.DataFrame]:
     sales = pd.DataFrame(supabase.table("gold_estate_current").select("*").execute().data)
     rent = pd.DataFrame(supabase.table("gold_rent_current").select("*").execute().data)
     yield_data = pd.DataFrame(supabase.table("gold_rent_yield").select("*").execute().data)
     return sales, rent, yield_data
 
-df_sales, df_rent, df_yield = load_data()
-
 
 # =========================
-# Shared header + top metrics block
+# UI helpers
 # =========================
-def render_header(df: pd.DataFrame, price_col: str, empty_message: str, price_fmt: str = "{:.0f}", price_suffix: str = "") -> bool:
-    """
-    Renders the 'Updated: ...' line and the 4-column metrics row for a tab.
-    Returns True if the tab has data and the rest of the tab should be rendered,
-    False if the tab is empty (error already shown) and the caller should skip
-    the rest of its body WITHOUT calling st.stop() (which would kill other tabs too).
-    """
-    listings = int(df['listings'].sum()) if not df.empty else 0
-    data_date = pd.to_datetime(df["date"]).max()
+def format_int(value: float | int) -> str:
+    return f"{value:,.0f}"
 
+
+def sector_label(df: pd.DataFrame) -> pd.Series:
+    return df["city"].astype(str) + " -> " + df["sector"].fillna("Center").astype(str)
+
+
+def place_label(row: pd.Series) -> str:
+    sector = row.get("sector")
+    sector = sector if pd.notna(sector) and str(sector).strip() else "Center"
+    return f"{row['city']} -> {sector}"
+
+
+def weighted_average(df: pd.DataFrame, price_col: str) -> float:
+    total_listings = df["listings"].sum()
+    if total_listings <= 0:
+        return 0.0
+    return float((df[price_col] * df["listings"]).sum() / total_listings)
+
+
+def latest_data_date(df: pd.DataFrame) -> pd.Timestamp | None:
+    if df.empty or "date" not in df.columns:
+        return None
+    data_date = pd.to_datetime(df["date"], errors="coerce").max()
+    if pd.isna(data_date):
+        return None
+    return data_date
+
+
+def data_freshness(df: pd.DataFrame) -> str:
+    data_date = latest_data_date(df)
+    if data_date is None:
+        return "No snapshot"
+    return f"Data as of {data_date:%d %B %Y}"
+
+
+def render_app_header(latest_snapshot: str) -> None:
     st.markdown(
-        f"<div class='subtitle'>Data as of: {data_date:%d %B %Y} │ {listings:,} listings</div>",
+        f"""
+        <div class="app-header">
+            <div class="brand-row">
+                <div>
+                    <div class="brand-title">Imobil<span class="brand-dot">.</span>Index</div>
+                    <div class="brand-copy">
+                        Moldova residential real estate analytics across sale prices,
+                        monthly rent, short-term rent, and gross yield indicators.
+                    </div>
+                </div>
+                <div class="status-pill">{latest_snapshot} | Gold-layer metrics</div>
+            </div>
+        </div>
+        """,
         unsafe_allow_html=True,
     )
 
+
+def render_section(title: str, caption: str | None = None) -> None:
+    caption_html = f'<p class="section-caption">{caption}</p>' if caption else ""
+    st.markdown(
+        f"""
+        <div class="section">
+            <h3 class="section-title">{title}</h3>
+            {caption_html}
+        </div>
+        """,
+        unsafe_allow_html=True,
+    )
+
+
+def render_kpi_card(label: str, value: str, note: str = "") -> None:
+    st.markdown(
+        f"""
+        <div class="kpi-card">
+            <div class="kpi-label">{label}</div>
+            <div class="kpi-value">{value}</div>
+            <div class="kpi-note">{note}</div>
+        </div>
+        """,
+        unsafe_allow_html=True,
+    )
+
+
+def render_empty_state(message: str) -> None:
+    st.markdown(f'<div class="empty-state">{message}</div>', unsafe_allow_html=True)
+
+
+def apply_common_chart_style(fig, height: int = 430, show_legend: bool = False):
+    fig.update_layout(
+        height=height,
+        margin=dict(l=12, r=12, t=28, b=12),
+        paper_bgcolor="rgba(0,0,0,0)",
+        plot_bgcolor="rgba(0,0,0,0)",
+        font=dict(family="Inter, Segoe UI, sans-serif", size=13, color="#111827"),
+        hoverlabel=dict(bgcolor="#111827", font_size=13, font_color="#ffffff"),
+        coloraxis_showscale=False,
+        showlegend=show_legend,
+        legend=dict(
+            orientation="h",
+            yanchor="bottom",
+            y=1.02,
+            xanchor="right",
+            x=1,
+            title_text="",
+        ),
+    )
+    fig.update_xaxes(
+        title_text="",
+        showgrid=False,
+        tickangle=-35,
+        tickfont=dict(color="#475569"),
+    )
+    fig.update_yaxes(
+        title_font=dict(color="#475569"),
+        tickfont=dict(color="#475569"),
+        gridcolor="#e2e8f0",
+        zeroline=False,
+    )
+    return fig
+
+
+def render_ranked_bars(
+    df: pd.DataFrame,
+    title: str,
+    price_col: str,
+    y_label: str,
+    color_scale: list[str],
+    mode: str,
+    digits: int,
+) -> None:
+    render_section(title)
     if df.empty:
-        st.error(empty_message)
+        render_empty_state("No sectors match the current filters.")
+        return
+
+    top = df.nsmallest(10, price_col).copy() if mode == "lowest" else df.nlargest(10, price_col).copy()
+    top["Sector"] = sector_label(top)
+    top = top.sort_values(price_col, ascending=(mode == "lowest"))
+
+    fig = px.bar(
+        top,
+        x="Sector",
+        y=price_col,
+        color=price_col,
+        color_continuous_scale=color_scale,
+        labels={price_col: y_label},
+    )
+    fig.update_traces(
+        texttemplate=f"%{{y:.{digits}f}}",
+        textposition="outside",
+        marker_line_width=0,
+        cliponaxis=False,
+    )
+    fig = apply_common_chart_style(fig)
+
+    with st.container(border=True):
+        st.plotly_chart(fig, width="stretch")
+
+
+def render_tab_header(
+    df: pd.DataFrame,
+    price_col: str,
+    empty_message: str,
+    price_fmt: str = "{:.0f}",
+    price_suffix: str = "",
+) -> bool:
+    if df.empty:
+        render_empty_state(empty_message)
         return False
+
+    listings = int(df["listings"].sum())
+    lowest = df.loc[df[price_col].idxmin()]
+    highest = df.loc[df[price_col].idxmax()]
+    avg_price = price_fmt.format(weighted_average(df, price_col))
+
+    render_section(
+        "Market Snapshot",
+        f"{data_freshness(df)} | {format_int(listings)} listings after filters",
+    )
 
     col1, col2, col3, col4 = st.columns(4)
     with col1:
-        st.metric("Sectors", len(df))
+        render_kpi_card("Sectors", format_int(len(df)), "Active city-sector groups")
     with col2:
-        total_listings = df["listings"].sum()
-    
-        weighted_avg_price = (
-            (df[price_col] * df["listings"]).sum() / total_listings
-            if total_listings > 0
-            else 0
+        render_kpi_card(
+            "Average Listing Price per m2",
+            f"{avg_price} EUR{price_suffix}",
+            "Weighted by listing count",
         )
-    
-        avg_price = price_fmt.format(weighted_avg_price)
-        st.metric("Average listing price per m²", f"{avg_price}{price_suffix} €")
     with col3:
-        cheapest = df.loc[df[price_col].idxmin()]
-        st.markdown(
-            f"<div style='text-align:center'><b>Lowest price</b><br>{cheapest['city']} → {cheapest['sector'] or 'Center'}</div>",
-            unsafe_allow_html=True
+        render_kpi_card(
+            "Lowest Price",
+            f"{price_fmt.format(lowest[price_col])} EUR{price_suffix}",
+            place_label(lowest),
         )
     with col4:
-        expensive = df.loc[df[price_col].idxmax()]
-        st.markdown(
-            f"<div style='text-align:center'><b>Highest price</b><br>{expensive['city']} → {expensive['sector'] or 'Center'}</div>",
-            unsafe_allow_html=True
+        render_kpi_card(
+            "Highest Price",
+            f"{price_fmt.format(highest[price_col])} EUR{price_suffix}",
+            place_label(highest),
         )
 
     return True
 
 
+def render_price_sections(
+    df: pd.DataFrame,
+    price_col: str,
+    y_label: str,
+    low_scale: list[str],
+    high_scale: list[str],
+    digits: int,
+) -> None:
+    col_l, col_r = st.columns(2)
+    with col_l:
+        render_ranked_bars(df, "Lowest priced sectors", price_col, y_label, low_scale, "lowest", digits)
+    with col_r:
+        render_ranked_bars(df, "Highest priced sectors", price_col, y_label, high_scale, "highest", digits)
+
+
+def render_yield_chart(
+    df_yield: pd.DataFrame,
+    metric: str,
+    title: str,
+    caption: str,
+) -> None:
+    render_section(title, caption)
+    if df_yield.empty or metric not in df_yield.columns:
+        render_empty_state("Yield data is not available for the current snapshot.")
+        return
+
+    top_y = df_yield.nlargest(10, metric).copy()
+    top_y["Sector"] = sector_label(top_y)
+
+    fig = px.bar(
+        top_y,
+        x="Sector",
+        y=metric,
+        text=top_y[metric].round(1).astype(str),
+        color=metric,
+        color_continuous_scale=YIELD_COLOR_SCALE,
+        labels={metric: "Gross yield, % p.a."},
+    )
+    fig.update_traces(textposition="outside", marker_line_width=0, cliponaxis=False)
+    fig = apply_common_chart_style(fig, height=460)
+
+    with st.container(border=True):
+        st.plotly_chart(fig, width="stretch")
+
+
+def render_sales_trend(hist: pd.DataFrame, selected_cities: list[str]) -> None:
+    render_section(
+        "90-day price trend",
+        "Top active Chisinau sectors by recent historical observations.",
+    )
+    if hist.empty:
+        render_empty_state("Historical sale data is not available.")
+        return
+
+    h = hist.copy()
+    h["date"] = pd.to_datetime(h["date"], errors="coerce")
+    h = h.dropna(subset=["date"])
+    h = h[h["date"] >= pd.Timestamp.now() - pd.Timedelta(days=HISTORY_WINDOW_DAYS)]
+    h = h[h["city"] == CHISINAU_CITY]
+
+    if CHISINAU_CITY not in selected_cities:
+        render_empty_state("Chisinau is not selected, so the 90-day trend is hidden.")
+        return
+
+    if h.empty:
+        render_empty_state("No Chisinau history is available for the last 90 days.")
+        return
+
+    top_sec = h["sector"].value_counts().head(8).index
+    plot = h[h["sector"].isin(top_sec)].sort_values("date")
+
+    if plot.empty:
+        render_empty_state("No sectors have enough historical observations to plot.")
+        return
+
+    fig = px.line(
+        plot,
+        x="date",
+        y="avg_per_m2_eur",
+        color="sector",
+        markers=False,
+        labels={"avg_per_m2_eur": "Price per m2 (EUR)", "date": "Date"},
+    )
+    fig.update_traces(line_width=2.4)
+    fig = apply_common_chart_style(fig, height=520, show_legend=True)
+    fig.update_xaxes(tickangle=0)
+
+    with st.container(border=True):
+        st.plotly_chart(fig, width="stretch")
+
+
+def render_sector_table(df: pd.DataFrame, columns: list[str], labels: list[str], sort_col: str) -> None:
+    render_section("All sectors", "Sortable table with the exact values used in this view.")
+    if df.empty:
+        render_empty_state("No rows match the current filters.")
+        return
+
+    disp = df[columns].copy().sort_values(sort_col)
+    numeric_cols = disp.select_dtypes(include="number").columns
+    for col in numeric_cols:
+        disp[col] = disp[col].round(1 if "per_m2" in col else 0)
+    disp.columns = labels
+
+    st.dataframe(
+        disp,
+        width="stretch",
+        hide_index=True,
+        height=min(560, 44 + len(disp) * 35),
+    )
+
+
+def filter_by_city_and_listings(
+    df: pd.DataFrame,
+    selected_cities: Iterable[str],
+    min_listings: int,
+) -> pd.DataFrame:
+    if df.empty:
+        return df
+
+    filtered = df.copy()
+    selected_cities = list(selected_cities)
+    if "city" in filtered.columns:
+        filtered = filtered[filtered["city"].isin(selected_cities)]
+    if "listings" in filtered.columns:
+        filtered = filtered[filtered["listings"] >= min_listings]
+    return filtered
+
+
+def render_daily_rent_context(df_yield: pd.DataFrame) -> None:
+    render_section(
+        "Daily vs monthly rent context",
+        "Gross yield comparison based on the current Gold-layer yield model.",
+    )
+
+    top_daily_yield = None
+    if not df_yield.empty and "yield_daily_percent" in df_yield.columns:
+        top_daily_yield = df_yield["yield_daily_percent"].max()
+
+    st.markdown(
+        f"""
+        <div class="insight-strip">
+            Daily rent can show materially higher gross yield than monthly rent,
+            but it depends on occupancy, seasonality, and operating costs.
+            The current model assumes 60% daily occupancy.
+            {f"Top observed gross daily yield: <strong>{top_daily_yield:.1f}%</strong> p.a." if top_daily_yield is not None else ""}
+        </div>
+        """,
+        unsafe_allow_html=True,
+    )
+
+    col1, col2 = st.columns(2)
+    with col1:
+        render_kpi_card(
+            "Monthly Rent",
+            "Stable income",
+            "Lower operational effort; yield is shown as indicative gross yield.",
+        )
+    with col2:
+        render_kpi_card(
+            "Daily Rent",
+            "Higher variance",
+            "Potentially higher gross yield, with occupancy and cost sensitivity.",
+        )
+
+
+# =========================
+# Load data
+# =========================
+try:
+    with st.spinner("Loading Gold-layer market data..."):
+        df_hist_sales = load_historical_data()
+        df_sales, df_rent, df_yield = load_data()
+except Exception as exc:
+    st.error("Could not load dashboard data from Supabase.")
+    st.caption(str(exc))
+    st.stop()
+
+
+# =========================
+# Sidebar filters
+# =========================
+all_cities = sorted(
+    {
+        city
+        for dataset in (df_sales, df_rent)
+        if not dataset.empty and "city" in dataset.columns
+        for city in dataset["city"].dropna().unique()
+    }
+)
+
+with st.sidebar:
+    st.markdown("### Filters")
+    selected_cities = st.multiselect("Cities", options=all_cities, default=all_cities)
+    min_listings = st.number_input("Minimum listings per sector", min_value=1, value=1, step=1)
+
+    st.markdown("### Data")
+    st.caption("Cached for one hour. Metrics are calculated from Gold-layer aggregate tables.")
+
+
 # =========================
 # Header
 # =========================
-st.markdown("""
-<div style='text-align:center; margin:1rem 0 2rem;'>
-    <div style='font-size:2.2rem; font-weight:300; color:#1a1a1a; margin-bottom:0.3rem;'>
-        Imobil<span style='color:#2563eb;'>.</span>Index
-    </div>
-    <div style='font-size:1rem; color:#555; margin-bottom:0.2rem;'>
-        Real-time Moldova property market analytics
-    </div>
-    <div style='font-size:0.9rem; color:#777;'>
-        Prices • Trends • Forecasts • Data only
-    </div>
-</div>
-""", unsafe_allow_html=True)
+latest_dates = [
+    latest_data_date(df)
+    for df in (df_sales, df_rent, df_yield)
+    if not df.empty and "date" in df.columns
+]
+latest_dates = [date for date in latest_dates if date is not None]
+latest_snapshot = f"Data as of {max(latest_dates):%d %B %Y}" if latest_dates else "No snapshot"
+render_app_header(latest_snapshot)
+
 
 tab_sale, tab_rent_monthly, tab_rent_daily = st.tabs(["For Sale", "Monthly Rent", "Daily Rent"])
 
+
 # --------------------- 1. Sale ---------------------
 with tab_sale:
-    df = df_sales.copy()
     price_col = "avg_per_m2_eur"
-    hist = df_hist_sales
-    color = "Blues"
+    df = filter_by_city_and_listings(df_sales, selected_cities, min_listings)
 
-    if render_header(df, price_col, "No sale listings available", price_fmt="{:.0f}"):
-        st.markdown("---")
-        col_l, col_r = st.columns(2)
-        with col_l:
-            st.subheader("Top 10 — Lowest price")
-            top = df.nsmallest(10, price_col).copy()
-            top["Sector"] = top["city"] + " → " + top["sector"].fillna("Center")
-            fig = px.bar(top, x="Sector", y=price_col, color=price_col, color_continuous_scale=color, labels={"avg_per_m2_eur": "Price per m² (€)"})
-            fig.update_traces(texttemplate='%{y:.0f}', textposition='outside')
-            st.plotly_chart(fig, width="stretch")
-        with col_r:
-            st.subheader("Top 10 — Highest price")
-            top = df.nlargest(10, price_col).copy()
-            top["Sector"] = top["city"] + " → " + top["sector"].fillna("Center")
-            fig = px.bar(top, x="Sector", y=price_col, color=price_col, color_continuous_scale="Reds", labels={"avg_per_m2_eur": "Price per m² (€)"})
-            fig.update_traces(texttemplate='%{y:.0f}', textposition='outside')
-            st.plotly_chart(fig, width="stretch")
+    if render_tab_header(df, price_col, "No sale listings match the current filters.", price_fmt="{:.0f}"):
+        render_price_sections(
+            df,
+            price_col,
+            "Price per m2 (EUR)",
+            SALE_COLOR_SCALE,
+            ["#fee2e2", "#fca5a5", "#ef4444", "#991b1b"],
+            0,
+        )
+        render_sales_trend(df_hist_sales, selected_cities)
+        render_sector_table(
+            df,
+            ["city", "sector", "listings", "avg_per_m2_eur", "avg_price_eur"],
+            ["City", "Sector", "Listings", "Price per m2 (EUR)", "Average price (EUR)"],
+            "avg_per_m2_eur",
+        )
 
-        if not hist.empty:
-            st.markdown("---")
-            st.subheader("90-day price per m² trend — Chișinău")
-            h = hist[hist['city'] == 'Кишинёв'].copy()
-            if not h.empty:
-                h['date'] = pd.to_datetime(h['date'])
-                h = h[h['date'] >= pd.Timestamp.now() - pd.Timedelta(days=90)]
-                top_sec = h['sector'].value_counts().head(8).index
-                plot = h[h['sector'].isin(top_sec)]
-                if not plot.empty:
-                    fig = px.line(plot.sort_values("date"), x="date", y=price_col, color="sector", markers=True, labels={"avg_per_m2_eur": "Price per m² (€)"})
-                    fig.update_layout(height=600)
-                    st.plotly_chart(fig, width="stretch")
-
-        st.markdown("---")
-        st.subheader("All sectors")
-        disp = df[['city', 'sector', 'listings', 'avg_per_m2_eur', 'avg_price_eur']].copy()
-        disp['avg_per_m2_eur'] = disp['avg_per_m2_eur'].round(0).astype(int)
-        disp['avg_price_eur'] = disp['avg_price_eur'].round(0).astype(int)
-        disp = disp.sort_values('avg_per_m2_eur')
-        disp.columns = ['City', 'Sector', 'Listings', 'Price per m² (€)', 'Average price (€)']
-        st.dataframe(disp, width="stretch", hide_index=True)
 
 # --------------------- 2. Monthly Rental ---------------------
 with tab_rent_monthly:
-    df = df_rent[df_rent['deal_type'] == 'Сдаю помесячно'].copy()
     price_col = "avg_price_per_m2_eur"
+    df = df_rent[df_rent["deal_type"] == MONTHLY_RENT_DEAL].copy()
+    df = filter_by_city_and_listings(df, selected_cities, min_listings)
+    filtered_yield = filter_by_city_and_listings(df_yield, selected_cities, min_listings)
 
-    if render_header(df, price_col, "No monthly rent listings available", price_fmt="{:.1f}", price_suffix="/month"):
-        st.markdown("---")
-        col_l, col_r = st.columns(2)
-        with col_l:
-            st.subheader("Top 10 — Lowest price")
-            top = df.nsmallest(10, price_col).copy()
-            top["Sector"] = top["city"] + " → " + top["sector"].fillna("Center")
-            fig = px.bar(top, x="Sector", y=price_col, color=price_col, color_continuous_scale="Greens", labels={"avg_price_per_m2_eur": "Price per m² (€)"})
-            fig.update_traces(texttemplate='%{y:.1f}', textposition='outside')
-            st.plotly_chart(fig, width="stretch")
-        with col_r:
-            st.subheader("Top 10 — Highest price")
-            top = df.nlargest(10, price_col).copy()
-            top["Sector"] = top["city"] + " → " + top["sector"].fillna("Center")
-            fig = px.bar(top, x="Sector", y=price_col, color=price_col, color_continuous_scale="Oranges", labels={"avg_price_per_m2_eur": "Price per m² (€)"})
-            fig.update_traces(texttemplate='%{y:.1f}', textposition='outside')
-            st.plotly_chart(fig, width="stretch")
+    if render_tab_header(
+        df,
+        price_col,
+        "No monthly rent listings match the current filters.",
+        price_fmt="{:.1f}",
+        price_suffix="/month",
+    ):
+        render_price_sections(
+            df,
+            price_col,
+            "Price per m2 (EUR/month)",
+            RENT_COLOR_SCALE,
+            DAILY_COLOR_SCALE,
+            1,
+        )
+        render_yield_chart(
+            filtered_yield,
+            "yield_monthly_percent",
+            "Monthly rental yield",
+            "Indicative gross annual yield by sector.",
+        )
 
-        if not df_yield.empty:
-            st.markdown("---")
-            st.subheader("Monthly rental yield (% per annum)")
-            top_y = df_yield.nlargest(10, 'yield_monthly_percent').copy()
-            top_y["Sector"] = top_y["city"] + " → " + top_y["sector"].fillna("Center")
-
-            fig = px.bar(
-                top_y,
-                x="Sector",
-                y="yield_monthly_percent",
-                text=top_y["yield_monthly_percent"].round(1).astype(str),
-                color="yield_monthly_percent",
-                color_continuous_scale="Viridis",
-                labels={"yield_monthly_percent": "%"}
-            )
-            fig.update_layout(height=600)
-            fig.update_traces(textposition='outside')
-            st.plotly_chart(fig, width="stretch")
 
 # --------------------- 3. Daily Rental ---------------------
 with tab_rent_daily:
-    df = df_rent[df_rent['deal_type'] == 'Сдаю посуточно'].copy()
     price_col = "avg_price_per_m2_eur"
+    df = df_rent[df_rent["deal_type"] == DAILY_RENT_DEAL].copy()
+    df = filter_by_city_and_listings(df, selected_cities, min_listings)
+    filtered_yield = filter_by_city_and_listings(df_yield, selected_cities, min_listings)
 
-    if render_header(df, price_col, "No daily rent listings available", price_fmt="{:.1f}", price_suffix="/day"):
-        st.markdown("---")
-        col_l, col_r = st.columns(2)
-        with col_l:
-            st.subheader("Top 10 — Lowest price")
-            top = df.nsmallest(10, price_col).copy()
-            top["Sector"] = top["city"] + " → " + top["sector"].fillna("Центр")
-            fig = px.bar(top, x="Sector", y=price_col, color=price_col, color_continuous_scale="Purples", labels={"avg_price_per_m2_eur": "Price per m² (€)"})
-            fig.update_traces(texttemplate='%{y:.1f}', textposition='outside')
-            st.plotly_chart(fig, width="stretch")
-        with col_r:
-            st.subheader("Top 10 — Highest price")
-            top = df.nlargest(10, price_col).copy()
-            top["Sector"] = top["city"] + " → " + top["sector"].fillna("Центр")
-            fig = px.bar(top, x="Sector", y=price_col, color=price_col, color_continuous_scale="Plasma", labels={"avg_price_per_m2_eur": "Price per m² (€)"})
-            fig.update_traces(texttemplate='%{y:.1f}', textposition='outside')
-            st.plotly_chart(fig, width="stretch")
+    if render_tab_header(
+        df,
+        price_col,
+        "No daily rent listings match the current filters.",
+        price_fmt="{:.1f}",
+        price_suffix="/day",
+    ):
+        render_price_sections(
+            df,
+            price_col,
+            "Price per m2 (EUR/day)",
+            DAILY_COLOR_SCALE,
+            ["#f3e8ff", "#c084fc", "#9333ea", "#581c87"],
+            1,
+        )
+        render_yield_chart(
+            filtered_yield,
+            "yield_daily_percent",
+            "Daily rental yield at 60% occupancy",
+            "Indicative gross annual yield, before operating costs.",
+        )
+        render_daily_rent_context(filtered_yield)
 
-        if not df_yield.empty:
-            st.markdown("---")
-            st.subheader("Daily rental yield at 60% occupancy (% p.a.)")
-            top_y = df_yield.nlargest(10, 'yield_daily_percent').copy()
-            top_y["Sector"] = top_y["city"] + " → " + top_y["sector"].fillna("Center")
-
-            fig = px.bar(
-                top_y,
-                x="Sector",
-                y="yield_daily_percent",
-                text=top_y["yield_daily_percent"].round(1).astype(str),
-                color="yield_daily_percent",
-                color_continuous_scale="Viridis",
-                labels={"yield_daily_percent": "%"}
-            )
-            fig.update_layout(height=600)
-            fig.update_traces(textposition='outside')
-            st.plotly_chart(fig, width="stretch")
-
-            st.markdown("---")
-            st.markdown("<h2 style='text-align:center; color:#e0e0e0;'>Daily vs Monthly Rental — Moldova 2026 Reality</h2>", unsafe_allow_html=True)
-
-            col1, col2 = st.columns(2)
-            with col1:
-                st.markdown("**Monthly Rent**")
-                st.markdown("• €400–650 per month")
-                st.markdown("• **6.5–9.1%** annual yield")
-                st.markdown("• Stable • Low risk • True passive income")
-            with col2:
-                st.markdown("**Daily Rent** (60% occupancy)")
-                st.markdown("• €900–1,400 monthly revenue")
-                st.markdown("• **8–19%** annual yield")
-                st.markdown("• Peak: **19.2%** (house + leisure zone)")
-                st.markdown("• Higher costs • Seasonal")
-
-            st.markdown("---")
-            st.markdown(
-                "<div style='text-align:center; font-size:1.25rem; margin:1.5rem 0;'>"
-                "Daily rent = <b>1.5–2× higher yield</b> vs monthly<br>"
-                "<span style='color:#d32f2f; font-weight:600;'>19.2% max</span> — rare premium units"
-                "</div>",
-                unsafe_allow_html=True
-            )
 
 # =========================
-# footer
+# Footer
 # =========================
-st.markdown("---")
-st.markdown("""
-<div style="text-align: center; padding: 3rem; color: #888; font-size: 0.95rem;">
-&nbsp;&nbsp;&nbsp;&nbsp;<a href="mailto:sergey.revo@outlook.com" style="color:#888; text-decoration:none;">✉ sergey.revo@outlook.com</a><br><br>
-&nbsp;&nbsp;&nbsp;&nbsp;<small>© 2026 - Imobil.Index</small>
-</div>
-""", unsafe_allow_html=True)
+st.markdown(
+    """
+    <div style="text-align: center; padding: 2.5rem 0 1rem; color: #64748b; font-size: 0.9rem;">
+        <a href="mailto:sergey.revo@outlook.com" style="color:#475569; text-decoration:none;">sergey.revo@outlook.com</a>
+        <br><br>
+        <small>Copyright 2026 - Imobil.Index</small>
+    </div>
+    """,
+    unsafe_allow_html=True,
+)
