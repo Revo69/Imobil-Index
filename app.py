@@ -55,9 +55,21 @@ st.markdown(
             color: var(--text);
         }
 
+        header[data-testid="stHeader"] {
+            display: none;
+        }
+
+        [data-testid="stToolbar"],
+        [data-testid="stDecoration"],
+        #MainMenu,
+        footer {
+            visibility: hidden;
+            height: 0;
+        }
+
         .block-container {
             max-width: 1360px;
-            padding-top: 1.25rem;
+            padding-top: 2rem;
             padding-bottom: 3rem;
         }
 
@@ -83,8 +95,8 @@ st.markdown(
         }
 
         .app-header {
-            margin: 0 0 1rem;
-            padding: 0.75rem 0 1rem;
+            margin: 0 0 1.25rem;
+            padding: 0 0 1.25rem;
             background: transparent;
             border-bottom: 1px solid rgba(226, 232, 240, 0.85);
         }
