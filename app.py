@@ -61,8 +61,6 @@ st.markdown(
 
         [data-testid="stToolbar"],
         [data-testid="stDecoration"],
-        [data-testid="stSidebarCollapsedControl"],
-        [data-testid="collapsedControl"],
         #MainMenu,
         footer {
             visibility: hidden;
@@ -78,6 +76,11 @@ st.markdown(
         [data-testid="stSidebar"] {
             background: #ffffff;
             border-right: 1px solid var(--border);
+        }
+
+        [data-testid="stSidebar"] .block-container {
+            padding-top: 2rem;
+            padding-bottom: 2rem;
         }
 
         h1, h2, h3 {
@@ -557,7 +560,7 @@ def render_sales_trend(hist: pd.DataFrame, selected_cities: list[str]) -> None:
     h = h[h["date"] >= pd.Timestamp.now() - pd.Timedelta(days=HISTORY_WINDOW_DAYS)]
     h = h[h["city"] == CHISINAU_CITY]
 
-    if CHISINAU_CITY not in selected_cities:
+    if selected_cities and CHISINAU_CITY not in selected_cities:
         render_empty_state("Chisinau is not selected, so the 90-day trend is hidden.")
         return
 
@@ -618,7 +621,7 @@ def filter_by_city_and_listings(
 
     filtered = df.copy()
     selected_cities = list(selected_cities)
-    if "city" in filtered.columns:
+    if selected_cities and "city" in filtered.columns:
         filtered = filtered[filtered["city"].isin(selected_cities)]
     if "listings" in filtered.columns:
         filtered = filtered[filtered["listings"] >= min_listings]
@@ -687,6 +690,30 @@ all_cities = sorted(
     }
 )
 
+with st.sidebar:
+    st.markdown("### Filters")
+    st.caption("Leave cities empty to include all cities.")
+    selected_cities = st.multiselect(
+        "Cities",
+        options=all_cities,
+        default=[],
+        placeholder="All cities",
+        key="filter_cities",
+    )
+    min_listings = st.number_input(
+        "Minimum listings per sector",
+        min_value=1,
+        value=1,
+        step=1,
+        key="filter_min_listings",
+    )
+
+    selected_count = len(selected_cities) if selected_cities else len(all_cities)
+    st.metric("Cities in view", f"{selected_count}/{len(all_cities)}")
+
+    st.markdown("---")
+    st.caption("Cached for one hour. Filters affect presentation only.")
+
 # =========================
 # Header
 # =========================
@@ -698,32 +725,6 @@ latest_dates = [
 latest_dates = [date for date in latest_dates if date is not None]
 latest_snapshot = f"Data as of {max(latest_dates):%d %B %Y}" if latest_dates else "No snapshot"
 render_app_header(latest_snapshot)
-
-render_section("Filters", "Narrow the visible dashboard without changing the Gold-layer source data.")
-with st.container(border=True):
-    col_city, col_min, col_count = st.columns([4, 1.25, 1])
-    with col_city:
-        selected_cities = st.multiselect(
-            "Cities",
-            options=all_cities,
-            default=all_cities,
-            key="filter_cities",
-        )
-    with col_min:
-        min_listings = st.number_input(
-            "Min. listings",
-            min_value=1,
-            value=1,
-            step=1,
-            key="filter_min_listings",
-        )
-    with col_count:
-        st.metric("Selected", f"{len(selected_cities)}/{len(all_cities)}")
-
-    st.markdown(
-        '<div class="filter-note">Cached for one hour. Filters affect dashboard presentation only; source tables and calculations stay unchanged.</div>',
-        unsafe_allow_html=True,
-    )
 
 
 tab_sale, tab_rent_monthly, tab_rent_daily = st.tabs(["For Sale", "Monthly Rent", "Daily Rent"])
