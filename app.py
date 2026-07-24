@@ -83,14 +83,10 @@ st.markdown(
         }
 
         .app-header {
-            position: sticky;
-            top: 0;
-            z-index: 999;
-            margin: -1.25rem 0 1rem;
-            padding: 1.25rem 0 1rem;
-            background: rgba(248, 250, 252, 0.94);
+            margin: 0 0 1rem;
+            padding: 0.75rem 0 1rem;
+            background: transparent;
             border-bottom: 1px solid rgba(226, 232, 240, 0.85);
-            backdrop-filter: blur(10px);
         }
 
         .brand-row {
