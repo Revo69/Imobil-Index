@@ -702,7 +702,7 @@ latest_dates = [date for date in latest_dates if date is not None]
 latest_snapshot = f"Data as of {max(latest_dates):%d %B %Y}" if latest_dates else "No snapshot"
 render_app_header(latest_snapshot)
 
-filter_col, main_col = st.columns([0.95, 4.5], gap="large")
+filter_col, main_col = st.columns([1.35, 4.0], gap="medium")
 
 with filter_col:
     with st.container(border=True):
