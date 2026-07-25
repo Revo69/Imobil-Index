@@ -471,7 +471,7 @@ def render_ranked_bars(
         else df.nlargest(10, price_col).copy()
     )
     top["Sector"] = sector_label(top)
-    top["ChartLabel"] = top["Sector"].str.replace(" -> ", " · ", regex=False)
+    top["ChartLabel"] = top["Sector"].str.replace(" -> ", " - ", regex=False)
     top = top.sort_values(price_col, ascending=True)
     top["Label"] = top[price_col].map(lambda value: f"{value:.{digits}f}")
 
@@ -681,7 +681,6 @@ def render_yield_chart(
         marker_line_width=0,
         cliponaxis=False,
     )
-    top_y["ChartLabel"] = top_y["Sector"].str.replace(" -> ", " · ", regex=False)
     fig = apply_common_chart_style(fig, height=max(340, min(460, 125 + len(top_y) * 34)))
     fig.update_layout(margin={"l": 4, "r": 58, "t": 8, "b": 4}, bargap=0.24)
     fig.update_xaxes(
@@ -705,8 +704,8 @@ def render_yield_chart(
 
 def render_sales_trend(hist: pd.DataFrame, selected_cities: list[str]) -> None:
     render_section(
-        "90-day price trend",
-        "Top active Chisinau sectors by recent historical observations.",
+        "90-day price movement",
+        "Most active Chisinau sectors, shown as comparable price paths.",
     )
     if hist.empty:
         render_empty_state("Historical sale data is not available.")
@@ -727,11 +726,27 @@ def render_sales_trend(hist: pd.DataFrame, selected_cities: list[str]) -> None:
         return
 
     top_sec = h["sector"].value_counts().head(8).index
-    plot = h[h["sector"].isin(top_sec)].sort_values("date")
+    plot = h[h["sector"].isin(top_sec)].copy().sort_values("date")
 
     if plot.empty:
         render_empty_state("No sectors have enough historical observations to plot.")
         return
+
+    plot["sector"] = plot["sector"].fillna("Center").astype(str)
+    trend_colors = [
+        "#2563eb",
+        "#0f766e",
+        "#f97316",
+        "#dc2626",
+        "#7c3aed",
+        "#0891b2",
+        "#65a30d",
+        "#ca8a04",
+    ]
+    color_map = {
+        sector: trend_colors[index % len(trend_colors)]
+        for index, sector in enumerate(plot["sector"].drop_duplicates())
+    }
 
     fig = px.line(
         plot,
@@ -739,11 +754,51 @@ def render_sales_trend(hist: pd.DataFrame, selected_cities: list[str]) -> None:
         y="avg_per_m2_eur",
         color="sector",
         markers=False,
-        labels={"avg_per_m2_eur": "Price per m2 (EUR)", "date": "Date"},
+        color_discrete_map=color_map,
+        labels={"avg_per_m2_eur": "EUR per m2", "date": "Date", "sector": "Sector"},
     )
-    fig.update_traces(line_width=2.4)
-    fig = apply_common_chart_style(fig, height=520, show_legend=True)
-    fig.update_xaxes(tickangle=0)
+    fig.update_traces(
+        line_width=2.2,
+        hovertemplate=(
+            "<b>%{fullData.name}</b><br>"
+            "%{x|%d %b %Y}<br>"
+            "%{y:,.0f} EUR per m2<extra></extra>"
+        ),
+    )
+
+    last_points = plot.sort_values("date").groupby("sector", as_index=False).tail(1)
+    last_points = last_points.sort_values("avg_per_m2_eur")
+    for _, row in last_points.iterrows():
+        sector = row["sector"]
+        fig.add_scatter(
+            x=[row["date"]],
+            y=[row["avg_per_m2_eur"]],
+            mode="markers+text",
+            marker={"size": 6, "color": color_map.get(sector, "#64748b")},
+            text=[f"{sector} {row['avg_per_m2_eur']:.0f}"],
+            textposition="middle right",
+            textfont={"size": 12, "color": "#334155"},
+            hoverinfo="skip",
+            showlegend=False,
+            cliponaxis=False,
+        )
+
+    fig = apply_common_chart_style(fig, height=500, show_legend=False)
+    fig.update_layout(
+        hovermode="x unified",
+        margin={"l": 16, "r": 150, "t": 10, "b": 18},
+    )
+    fig.update_xaxes(
+        title_text="",
+        tickangle=0,
+        showgrid=False,
+        tickformat="%d %b",
+    )
+    fig.update_yaxes(
+        title_text="EUR per m2",
+        gridcolor="#e5e7eb",
+        zeroline=False,
+    )
 
     with st.container(border=True):
         st.plotly_chart(fig, width="stretch")
