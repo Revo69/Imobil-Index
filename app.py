@@ -73,8 +73,8 @@ st.markdown(
         }
 
         .block-container {
-            max-width: 1360px;
-            padding-top: 2rem;
+            max-width: 1400px;
+            padding-top: 1.25rem;
             padding-bottom: 3rem;
         }
 
@@ -93,22 +93,34 @@ st.markdown(
             color: var(--text);
         }
 
+        div[data-testid="stTabs"] [role="tablist"] {
+            display: inline-flex;
+            gap: 0.25rem;
+            padding: 0.25rem;
+            border: 1px solid var(--border);
+            border-radius: 8px;
+            background: #ffffff;
+        }
+
         div[data-testid="stTabs"] button {
-            padding: 0.75rem 1rem;
+            min-height: 2.25rem;
+            padding: 0.45rem 0.9rem;
+            border-radius: 6px;
             font-weight: 650;
             color: #475569;
         }
 
         div[data-testid="stTabs"] button[aria-selected="true"] {
-            color: var(--blue);
-            border-bottom-color: var(--blue);
+            background: #111827;
+            color: #ffffff;
+            border-bottom-color: transparent;
         }
 
         .app-header {
-            margin: 0 0 1.25rem;
-            padding: 0 0 1.25rem;
+            margin: 0 0 1rem;
+            padding: 0 0 1rem;
             background: transparent;
-            border-bottom: 1px solid rgba(226, 232, 240, 0.85);
+            border-bottom: 1px solid rgba(226, 232, 240, 0.9);
         }
 
         .brand-row {
@@ -119,7 +131,7 @@ st.markdown(
         }
 
         .brand-title {
-            font-size: clamp(2rem, 4vw, 3.1rem);
+            font-size: clamp(2.15rem, 4vw, 2.85rem);
             line-height: 1;
             font-weight: 760;
             color: var(--text);
@@ -151,7 +163,7 @@ st.markdown(
         }
 
         .section {
-            padding: 1rem 0 0.2rem;
+            padding: 0.85rem 0 0.2rem;
         }
 
         .section-title {
@@ -170,28 +182,28 @@ st.markdown(
         }
 
         .kpi-card {
-            min-height: 132px;
-            padding: 1rem;
+            min-height: 112px;
+            padding: 0.9rem 0.95rem;
             border: 1px solid var(--border);
             border-radius: 8px;
-            background: var(--surface);
-            box-shadow: 0 1px 2px rgba(15, 23, 42, 0.04);
+            background: linear-gradient(180deg, #ffffff 0%, #fbfdff 100%);
+            box-shadow: 0 1px 2px rgba(15, 23, 42, 0.035);
         }
 
         .kpi-label {
             color: var(--muted);
-            font-size: 0.78rem;
-            font-weight: 700;
+            font-size: 0.72rem;
+            font-weight: 760;
             letter-spacing: 0.04em;
             text-transform: uppercase;
         }
 
         .kpi-value {
-            margin-top: 0.45rem;
+            margin-top: 0.38rem;
             color: var(--text);
-            font-size: clamp(1.35rem, 2vw, 1.8rem);
-            line-height: 1.12;
-            font-weight: 760;
+            font-size: clamp(1.35rem, 2vw, 1.72rem);
+            line-height: 1.08;
+            font-weight: 780;
         }
 
         .kpi-note {
@@ -234,7 +246,7 @@ st.markdown(
 
 
         div[data-testid="stButton"] button {
-            min-height: 2.4rem;
+            min-height: 2.25rem;
             border: 1px solid var(--border);
             border-radius: 8px;
             background: #ffffff;
@@ -370,8 +382,8 @@ def render_app_header(latest_snapshot: str) -> None:
                         Imobil<span class="brand-dot">.</span>Index
                     </div>
                     <div class="brand-copy">
-                        Moldova residential real estate analytics across sale prices,
-                        monthly rent, short-term rent and gross yield indicators.
+                        Residential real estate analytics for sale prices, rent,
+                        short-term rent, and gross yield across Moldova.
                     </div>
                 </div>
                 <div class="status-pill">{latest_snapshot}</div>
@@ -534,7 +546,7 @@ def render_tab_header(
     avg_price = price_fmt.format(weighted_average(df, price_col))
 
     render_section(
-        "Market Overview",
+        "Current market view",
         f"{data_freshness(df)} | {format_int(listings)} listings after filters",
     )
 
@@ -543,19 +555,19 @@ def render_tab_header(
         render_kpi_card("Sectors", format_int(len(df)), "Active city-sector groups")
     with col2:
         render_kpi_card(
-            "Average Listing Price per m2",
+            "Avg price per m2",
             f"{avg_price} EUR{price_suffix}",
-            "Weighted by listing count",
+            "Weighted by listings",
         )
     with col3:
         render_kpi_card(
-            "Lowest Price",
+            "Lowest price",
             f"{price_fmt.format(lowest[price_col])} EUR{price_suffix}",
             place_label(lowest),
         )
     with col4:
         render_kpi_card(
-            "Highest Price",
+            "Highest price",
             f"{price_fmt.format(highest[price_col])} EUR{price_suffix}",
             place_label(highest),
         )
@@ -623,7 +635,7 @@ def render_market_highlights(
     highest = df.loc[df[price_col].idxmax()]
     spread = highest[price_col] - lowest[price_col]
 
-    render_section("Highlights", "The main signals in the current filtered view.")
+    render_section("Key signals", "Quick read of the current filtered market.")
     col1, col2, col3 = st.columns(3)
     with col1:
         render_kpi_card(
@@ -985,19 +997,22 @@ filter_col, main_col = st.columns([1.35, 4.25], gap="medium")
 
 with filter_col, st.container(border=True):
     st.markdown("### Explore")
-    st.caption("Start broad, then narrow the view when needed.")
+    st.caption("Use presets first, then refine the visible market.")
 
-    st.markdown("**Quick presets**")
-    if st.button("All cities", width="stretch"):
-        st.session_state["filter_cities"] = []
-        st.session_state["filter_min_listings"] = 1
-    if CHISINAU_CITY in all_cities and st.button("Chișinău", width="stretch"):
-        st.session_state["filter_cities"] = [CHISINAU_CITY]
-    if BALTI_CITY in all_cities and st.button("Bălți", width="stretch"):
-        st.session_state["filter_cities"] = [BALTI_CITY]
-    if st.button("High liquidity", width="stretch"):
-        st.session_state["filter_cities"] = []
-        st.session_state["filter_min_listings"] = 50
+    st.markdown("**Presets**")
+    preset_col_1, preset_col_2 = st.columns(2)
+    with preset_col_1:
+        if st.button("All", width="stretch"):
+            st.session_state["filter_cities"] = []
+            st.session_state["filter_min_listings"] = 1
+        if CHISINAU_CITY in all_cities and st.button("Chișinău", width="stretch"):
+            st.session_state["filter_cities"] = [CHISINAU_CITY]
+    with preset_col_2:
+        if st.button("Liquid", width="stretch"):
+            st.session_state["filter_cities"] = []
+            st.session_state["filter_min_listings"] = 50
+        if BALTI_CITY in all_cities and st.button("Bălți", width="stretch"):
+            st.session_state["filter_cities"] = [BALTI_CITY]
 
     st.markdown("**Filters**")
     selected_cities = st.multiselect(
