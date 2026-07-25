@@ -34,6 +34,7 @@ SALE_COLOR_SCALE = ["#dbeafe", "#93c5fd", "#2563eb", "#1e3a8a"]
 RENT_COLOR_SCALE = ["#dcfce7", "#86efac", "#16a34a", "#14532d"]
 DAILY_COLOR_SCALE = ["#fef3c7", "#fbbf24", "#f97316", "#9a3412"]
 YIELD_COLOR_SCALE = ["#e0f2fe", "#67e8f9", "#0e7490", "#164e63"]
+CHART_NEUTRAL = "#cbd5e1"
 
 
 # =========================
@@ -227,6 +228,21 @@ st.markdown(
             color: var(--muted);
             font-size: 0.86rem;
             line-height: 1.4;
+        }
+
+
+        div[data-testid="stButton"] button {
+            min-height: 2.4rem;
+            border: 1px solid var(--border);
+            border-radius: 8px;
+            background: #ffffff;
+            color: #334155;
+            font-weight: 650;
+        }
+
+        div[data-testid="stButton"] button:hover {
+            border-color: var(--blue);
+            color: var(--blue);
         }
 
         div[data-testid="stDataFrame"] {
@@ -437,7 +453,12 @@ def render_ranked_bars(
     mode: str,
     digits: int,
 ) -> None:
-    render_section(title)
+    caption = (
+        "Sectors with the lowest values in the current view."
+        if mode == "lowest"
+        else "Sectors with the highest values in the current view."
+    )
+    render_section(title, caption)
     if df.empty:
         render_empty_state("No sectors match the current filters.")
         return
@@ -448,23 +469,37 @@ def render_ranked_bars(
         else df.nlargest(10, price_col).copy()
     )
     top["Sector"] = sector_label(top)
-    top = top.sort_values(price_col, ascending=(mode == "lowest"))
+    top = top.sort_values(price_col, ascending=True)
+    top["Label"] = top[price_col].map(lambda value: f"{value:.{digits}f}")
+
+    accent_color = color_scale[1] if mode == "lowest" else color_scale[-1]
+    colors = [CHART_NEUTRAL] * len(top)
+    if colors:
+        colors[0 if mode == "lowest" else -1] = accent_color
 
     fig = px.bar(
         top,
-        x="Sector",
-        y=price_col,
-        color=price_col,
-        color_continuous_scale=color_scale,
-        labels={price_col: y_label},
+        x=price_col,
+        y="Sector",
+        orientation="h",
+        text="Label",
+        labels={price_col: y_label, "Sector": ""},
     )
     fig.update_traces(
-        texttemplate=f"%{{y:.{digits}f}}",
-        textposition="outside",
+        marker_color=colors,
         marker_line_width=0,
+        textposition="outside",
         cliponaxis=False,
     )
-    fig = apply_common_chart_style(fig)
+    fig = apply_common_chart_style(fig, height=max(360, min(520, 130 + len(top) * 34)))
+    fig.update_xaxes(title_text=y_label, tickangle=0)
+    fig.update_yaxes(
+        categoryorder="array",
+        categoryarray=top["Sector"].tolist()[::-1],
+        tickangle=0,
+        automargin=True,
+        title_text="",
+    )
 
     with st.container(border=True):
         st.plotly_chart(fig, width="stretch")
@@ -576,7 +611,7 @@ def render_market_highlights(
     highest = df.loc[df[price_col].idxmax()]
     spread = highest[price_col] - lowest[price_col]
 
-    render_section("Highlights", "Quick read of the current filtered market view.")
+    render_section("Highlights", "The main signals in the current filtered view.")
     col1, col2, col3 = st.columns(3)
     with col1:
         render_kpi_card(
@@ -611,18 +646,36 @@ def render_yield_chart(
 
     top_y = df_yield.nlargest(10, metric).copy()
     top_y["Sector"] = sector_label(top_y)
+    top_y = top_y.sort_values(metric, ascending=True)
+    top_y["Label"] = top_y[metric].map(lambda value: f"{value:.1f}%")
+
+    colors = [CHART_NEUTRAL] * len(top_y)
+    if colors:
+        colors[-1] = YIELD_COLOR_SCALE[-1]
 
     fig = px.bar(
         top_y,
-        x="Sector",
-        y=metric,
-        text=top_y[metric].round(1).astype(str),
-        color=metric,
-        color_continuous_scale=YIELD_COLOR_SCALE,
-        labels={metric: "Gross yield, % p.a."},
+        x=metric,
+        y="Sector",
+        orientation="h",
+        text="Label",
+        labels={metric: "Gross yield, % p.a.", "Sector": ""},
     )
-    fig.update_traces(textposition="outside", marker_line_width=0, cliponaxis=False)
-    fig = apply_common_chart_style(fig, height=460)
+    fig.update_traces(
+        marker_color=colors,
+        textposition="outside",
+        marker_line_width=0,
+        cliponaxis=False,
+    )
+    fig = apply_common_chart_style(fig, height=max(380, min(540, 140 + len(top_y) * 34)))
+    fig.update_xaxes(title_text="Gross yield, % p.a.", tickangle=0)
+    fig.update_yaxes(
+        categoryorder="array",
+        categoryarray=top_y["Sector"].tolist()[::-1],
+        tickangle=0,
+        automargin=True,
+        title_text="",
+    )
 
     with st.container(border=True):
         st.plotly_chart(fig, width="stretch")
@@ -677,9 +730,7 @@ def render_sales_trend(hist: pd.DataFrame, selected_cities: list[str]) -> None:
 def render_sector_table(
     df: pd.DataFrame, columns: list[str], labels: list[str], sort_col: str
 ) -> None:
-    render_section(
-        "All sectors", "Sortable table with the exact values used in this view."
-    )
+    render_section("All sectors", "Detailed sector values for the current view.")
     if df.empty:
         render_empty_state("No rows match the current filters.")
         return
@@ -690,11 +741,19 @@ def render_sector_table(
         disp[col] = disp[col].round(1 if "per_m2" in col else 0)
     disp.columns = labels
 
+    column_config = {}
+    for col in disp.columns:
+        if col == "Listings":
+            column_config[col] = st.column_config.NumberColumn(col, format="%d")
+        elif "EUR" in col:
+            column_config[col] = st.column_config.NumberColumn(col, format="%.0f")
+
     st.dataframe(
         disp,
         width="stretch",
         hide_index=True,
         height=min(560, 44 + len(disp) * 35),
+        column_config=column_config,
     )
 
 
@@ -799,7 +858,7 @@ latest_snapshot = (
 )
 render_app_header(latest_snapshot)
 
-filter_col, main_col = st.columns([1.35, 4.0], gap="medium")
+filter_col, main_col = st.columns([1.45, 4.0], gap="medium")
 
 with filter_col, st.container(border=True):
     st.markdown("### Explore")
