@@ -807,29 +807,75 @@ def render_sales_trend(hist: pd.DataFrame, selected_cities: list[str]) -> None:
 def render_sector_table(
     df: pd.DataFrame, columns: list[str], labels: list[str], sort_col: str
 ) -> None:
-    render_section("All sectors", "Detailed sector values for the current view.")
+    label_map = dict(zip(columns, labels, strict=True))
+    compact_labels = {
+        "Price per m2 (EUR)": "EUR/m2",
+        "Price per m2 (EUR/month)": "EUR/m2/month",
+        "Price per m2 (EUR/day)": "EUR/m2/day",
+        "Average price (EUR)": "Avg price",
+    }
+    sort_label = compact_labels.get(label_map.get(sort_col, sort_col), sort_col)
+    render_section(
+        "Sector details",
+        f"{len(df):,} visible city-sector groups. Sorted by {sort_label}.",
+    )
     if df.empty:
         render_empty_state("No rows match the current filters.")
         return
 
-    disp = df[columns].copy().sort_values(sort_col)
+    disp = df[columns].copy().sort_values(sort_col).reset_index(drop=True)
     numeric_cols = disp.select_dtypes(include="number").columns
     for col in numeric_cols:
         disp[col] = disp[col].round(1 if "per_m2" in col else 0)
-    disp.columns = labels
+
+    disp = disp.rename(columns=label_map).rename(columns=compact_labels)
+    if "Listings" in disp.columns and disp["Listings"].sum() > 0:
+        share = (disp["Listings"] / disp["Listings"].sum() * 100).round(1)
+        disp.insert(disp.columns.get_loc("Listings") + 1, "Share", share)
 
     column_config = {}
+    if "City" in disp.columns:
+        column_config["City"] = st.column_config.TextColumn("City", width="medium")
+    if "Sector" in disp.columns:
+        column_config["Sector"] = st.column_config.TextColumn("Sector", width="medium")
+    if "Listings" in disp.columns:
+        column_config["Listings"] = st.column_config.NumberColumn(
+            "Listings",
+            help="Listings in this city-sector group.",
+            format="%d",
+            width="small",
+        )
+    if "Share" in disp.columns:
+        column_config["Share"] = st.column_config.ProgressColumn(
+            "Share",
+            help="Share of listings inside the current filtered table.",
+            format="%.1f%%",
+            min_value=0.0,
+            max_value=max(1.0, float(disp["Share"].max())),
+            width="medium",
+        )
+
     for col in disp.columns:
-        if col == "Listings":
-            column_config[col] = st.column_config.NumberColumn(col, format="%d")
-        elif "EUR" in col:
-            column_config[col] = st.column_config.NumberColumn(col, format="%.0f")
+        if col.startswith("EUR/m2"):
+            column_config[col] = st.column_config.NumberColumn(
+                col,
+                help="Average listing price per square meter.",
+                format="%.0f",
+                width="small",
+            )
+        elif col == "Avg price":
+            column_config[col] = st.column_config.NumberColumn(
+                col,
+                help="Average full listing price.",
+                format="%.0f",
+                width="medium",
+            )
 
     st.dataframe(
         disp,
         width="stretch",
         hide_index=True,
-        height=min(560, 44 + len(disp) * 35),
+        height=min(620, 48 + len(disp) * 36),
         column_config=column_config,
     )
 
