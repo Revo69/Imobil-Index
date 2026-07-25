@@ -29,6 +29,7 @@ DAILY_RENT_DEAL = (
     "\u0421\u0434\u0430\u044e \u043f\u043e\u0441\u0443\u0442\u043e\u0447\u043d\u043e"
 )
 CHISINAU_CITY = "\u041a\u0438\u0448\u0438\u043d\u0451\u0432"
+BALTI_CITY = "\u0411\u0435\u043b\u044c\u0446\u044b"
 
 SALE_COLOR_SCALE = ["#dbeafe", "#93c5fd", "#2563eb", "#1e3a8a"]
 RENT_COLOR_SCALE = ["#dcfce7", "#86efac", "#16a34a", "#14532d"]
@@ -537,6 +538,63 @@ def render_price_sections(
         )
 
 
+def render_listing_sections(df: pd.DataFrame, color_scale: list[str]) -> None:
+    col_l, col_r = st.columns(2)
+    with col_l:
+        render_ranked_bars(
+            df,
+            "Lowest inventory sectors",
+            "listings",
+            "Listings",
+            color_scale,
+            "lowest",
+            0,
+        )
+    with col_r:
+        render_ranked_bars(
+            df,
+            "Highest inventory sectors",
+            "listings",
+            "Listings",
+            color_scale,
+            "highest",
+            0,
+        )
+
+
+def render_market_highlights(
+    df: pd.DataFrame, price_col: str, price_fmt: str = "{:.0f}", price_suffix: str = ""
+) -> None:
+    if df.empty:
+        return
+
+    most_listings = df.loc[df["listings"].idxmax()]
+    lowest = df.loc[df[price_col].idxmin()]
+    highest = df.loc[df[price_col].idxmax()]
+    spread = highest[price_col] - lowest[price_col]
+
+    render_section("Highlights", "Quick read of the current filtered market view.")
+    col1, col2, col3 = st.columns(3)
+    with col1:
+        render_kpi_card(
+            "Most Active Sector",
+            format_int(most_listings["listings"]),
+            place_label(most_listings),
+        )
+    with col2:
+        render_kpi_card(
+            "Price Range",
+            f"{price_fmt.format(spread)} EUR{price_suffix}",
+            f"{place_label(lowest)} to {place_label(highest)}",
+        )
+    with col3:
+        render_kpi_card(
+            "Median Sector Price",
+            f"{price_fmt.format(df[price_col].median())} EUR{price_suffix}",
+            "Median across visible sectors",
+        )
+
+
 def render_yield_chart(
     df_yield: pd.DataFrame,
     metric: str,
@@ -734,8 +792,22 @@ filter_col, main_col = st.columns([1.35, 4.0], gap="medium")
 
 with filter_col:
     with st.container(border=True):
-        st.markdown("### Filters")
-        st.caption("Leave cities empty to include all cities.")
+        st.markdown("### Explore")
+        st.caption("Start broad, then narrow the view when needed.")
+
+        st.markdown("**Quick presets**")
+        if st.button("All cities", width="stretch"):
+            st.session_state["filter_cities"] = []
+            st.session_state["filter_min_listings"] = 1
+        if CHISINAU_CITY in all_cities and st.button("Chișinău", width="stretch"):
+            st.session_state["filter_cities"] = [CHISINAU_CITY]
+        if BALTI_CITY in all_cities and st.button("Bălți", width="stretch"):
+            st.session_state["filter_cities"] = [BALTI_CITY]
+        if st.button("High liquidity", width="stretch"):
+            st.session_state["filter_cities"] = []
+            st.session_state["filter_min_listings"] = 50
+
+        st.markdown("**Filters**")
         selected_cities = st.multiselect(
             "Cities",
             options=all_cities,
@@ -750,10 +822,16 @@ with filter_col:
             step=1,
             key="filter_min_listings",
         )
+        market_lens = st.radio(
+            "Chart focus",
+            ["Prices", "Listings"],
+            horizontal=True,
+            key="market_lens",
+        )
 
         selected_count = len(selected_cities) if selected_cities else len(all_cities)
         st.metric("Cities in view", f"{selected_count}/{len(all_cities)}")
-        st.caption("Use filters to focus the dashboard view.")
+        st.caption("Use presets for fast exploration or filters for a specific view.")
 
 with main_col:
     tab_sale, tab_rent_monthly, tab_rent_daily = st.tabs(
@@ -771,14 +849,18 @@ with main_col:
             "No sale listings match the current filters.",
             price_fmt="{:.0f}",
         ):
-            render_price_sections(
-                df,
-                price_col,
-                "Price per m2 (EUR)",
-                SALE_COLOR_SCALE,
-                ["#fee2e2", "#fca5a5", "#ef4444", "#991b1b"],
-                0,
-            )
+            render_market_highlights(df, price_col, price_fmt="{:.0f}")
+            if market_lens == "Listings":
+                render_listing_sections(df, SALE_COLOR_SCALE)
+            else:
+                render_price_sections(
+                    df,
+                    price_col,
+                    "Price per m2 (EUR)",
+                    SALE_COLOR_SCALE,
+                    ["#fee2e2", "#fca5a5", "#ef4444", "#991b1b"],
+                    0,
+                )
             render_sales_trend(df_hist_sales, selected_cities)
             render_sector_table(
                 df,
@@ -809,14 +891,20 @@ with main_col:
             price_fmt="{:.1f}",
             price_suffix="/month",
         ):
-            render_price_sections(
-                df,
-                price_col,
-                "Price per m2 (EUR/month)",
-                RENT_COLOR_SCALE,
-                DAILY_COLOR_SCALE,
-                1,
+            render_market_highlights(
+                df, price_col, price_fmt="{:.1f}", price_suffix="/month"
             )
+            if market_lens == "Listings":
+                render_listing_sections(df, RENT_COLOR_SCALE)
+            else:
+                render_price_sections(
+                    df,
+                    price_col,
+                    "Price per m2 (EUR/month)",
+                    RENT_COLOR_SCALE,
+                    DAILY_COLOR_SCALE,
+                    1,
+                )
             render_yield_chart(
                 filtered_yield,
                 "yield_monthly_percent",
@@ -840,14 +928,20 @@ with main_col:
             price_fmt="{:.1f}",
             price_suffix="/day",
         ):
-            render_price_sections(
-                df,
-                price_col,
-                "Price per m2 (EUR/day)",
-                DAILY_COLOR_SCALE,
-                ["#f3e8ff", "#c084fc", "#9333ea", "#581c87"],
-                1,
+            render_market_highlights(
+                df, price_col, price_fmt="{:.1f}", price_suffix="/day"
             )
+            if market_lens == "Listings":
+                render_listing_sections(df, DAILY_COLOR_SCALE)
+            else:
+                render_price_sections(
+                    df,
+                    price_col,
+                    "Price per m2 (EUR/day)",
+                    DAILY_COLOR_SCALE,
+                    ["#f3e8ff", "#c084fc", "#9333ea", "#581c87"],
+                    1,
+                )
             render_yield_chart(
                 filtered_yield,
                 "yield_daily_percent",
