@@ -6,6 +6,7 @@ A plain HTTP GET is NOT enough — it only returns the static sleep-page shell
 without starting the Python process.
 """
 import sys
+
 from playwright.sync_api import sync_playwright
 
 APP_URL = "https://imobil-index.streamlit.app"

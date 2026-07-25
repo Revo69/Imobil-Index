@@ -1,12 +1,11 @@
 # app.py - Imobil.Index 2026 - For Sale + Monthly Rent + Daily Rent
-from datetime import datetime, timedelta
-from typing import Iterable
+from collections.abc import Iterable
+from datetime import UTC, datetime, timedelta
 
 import pandas as pd
 import plotly.express as px
 import streamlit as st
 from supabase import create_client
-
 
 # =========================
 # Config
@@ -262,7 +261,9 @@ def load_historical_data() -> pd.DataFrame:
     Loads only the last HISTORY_WINDOW_DAYS of sale history, filtered at the
     database level, since that's all the 90-day trend chart uses.
     """
-    cutoff = (datetime.now() - timedelta(days=HISTORY_WINDOW_DAYS)).strftime("%Y-%m-%d")
+    cutoff = (datetime.now(UTC) - timedelta(days=HISTORY_WINDOW_DAYS)).strftime(
+        "%Y-%m-%d"
+    )
 
     all_sales = []
     offset = 0
@@ -304,7 +305,7 @@ def load_data() -> tuple[pd.DataFrame, pd.DataFrame, pd.DataFrame]:
 # =========================
 # UI helpers
 # =========================
-def format_int(value: float | int) -> str:
+def format_int(value: float) -> str:
     return f"{value:,.0f}"
 
 
@@ -347,7 +348,9 @@ def render_app_header(latest_snapshot: str) -> None:
         <div class="app-header">
             <div class="brand-row">
                 <div>
-                    <div class="brand-title">Imobil<span class="brand-dot">.</span>Index</div>
+                    <div class="brand-title">
+                        Imobil<span class="brand-dot">.</span>Index
+                    </div>
                     <div class="brand-copy">
                         Moldova residential real estate analytics across sale prices,
                         monthly rent, short-term rent and gross yield indicators.
@@ -728,7 +731,14 @@ def render_daily_rent_context(df_yield: pd.DataFrame) -> None:
             Daily rent can show materially higher gross yield than monthly rent,
             but it depends on occupancy, seasonality, and operating costs.
             The current model assumes 60% daily occupancy.
-            {f"Top observed gross daily yield: <strong>{top_daily_yield:.1f}%</strong> p.a." if top_daily_yield is not None else ""}
+            {
+                (
+                    f"Top gross daily yield: <strong>{top_daily_yield:.1f}%</strong> "
+                    "p.a."
+                )
+                if top_daily_yield is not None
+                else ""
+            }
         </div>
         """,
         unsafe_allow_html=True,
@@ -756,7 +766,8 @@ try:
     with st.spinner("Loading market data..."):
         df_hist_sales = load_historical_data()
         df_sales, df_rent, df_yield = load_data()
-except Exception as exc:
+# Keep the dashboard readable if the upstream API or local cache fails.
+except Exception as exc:  # noqa: BLE001
     st.error("Could not load dashboard data from Supabase.")
     st.caption(str(exc))
     st.stop()
@@ -790,48 +801,47 @@ render_app_header(latest_snapshot)
 
 filter_col, main_col = st.columns([1.35, 4.0], gap="medium")
 
-with filter_col:
-    with st.container(border=True):
-        st.markdown("### Explore")
-        st.caption("Start broad, then narrow the view when needed.")
+with filter_col, st.container(border=True):
+    st.markdown("### Explore")
+    st.caption("Start broad, then narrow the view when needed.")
 
-        st.markdown("**Quick presets**")
-        if st.button("All cities", width="stretch"):
-            st.session_state["filter_cities"] = []
-            st.session_state["filter_min_listings"] = 1
-        if CHISINAU_CITY in all_cities and st.button("Chișinău", width="stretch"):
-            st.session_state["filter_cities"] = [CHISINAU_CITY]
-        if BALTI_CITY in all_cities and st.button("Bălți", width="stretch"):
-            st.session_state["filter_cities"] = [BALTI_CITY]
-        if st.button("High liquidity", width="stretch"):
-            st.session_state["filter_cities"] = []
-            st.session_state["filter_min_listings"] = 50
+    st.markdown("**Quick presets**")
+    if st.button("All cities", width="stretch"):
+        st.session_state["filter_cities"] = []
+        st.session_state["filter_min_listings"] = 1
+    if CHISINAU_CITY in all_cities and st.button("Chișinău", width="stretch"):
+        st.session_state["filter_cities"] = [CHISINAU_CITY]
+    if BALTI_CITY in all_cities and st.button("Bălți", width="stretch"):
+        st.session_state["filter_cities"] = [BALTI_CITY]
+    if st.button("High liquidity", width="stretch"):
+        st.session_state["filter_cities"] = []
+        st.session_state["filter_min_listings"] = 50
 
-        st.markdown("**Filters**")
-        selected_cities = st.multiselect(
-            "Cities",
-            options=all_cities,
-            default=[],
-            placeholder="All cities",
-            key="filter_cities",
-        )
-        min_listings = st.number_input(
-            "Min. listings",
-            min_value=1,
-            value=1,
-            step=1,
-            key="filter_min_listings",
-        )
-        market_lens = st.radio(
-            "Chart focus",
-            ["Prices", "Listings"],
-            horizontal=True,
-            key="market_lens",
-        )
+    st.markdown("**Filters**")
+    selected_cities = st.multiselect(
+        "Cities",
+        options=all_cities,
+        default=[],
+        placeholder="All cities",
+        key="filter_cities",
+    )
+    min_listings = st.number_input(
+        "Min. listings",
+        min_value=1,
+        value=1,
+        step=1,
+        key="filter_min_listings",
+    )
+    market_lens = st.radio(
+        "Chart focus",
+        ["Prices", "Listings"],
+        horizontal=True,
+        key="market_lens",
+    )
 
-        selected_count = len(selected_cities) if selected_cities else len(all_cities)
-        st.metric("Cities in view", f"{selected_count}/{len(all_cities)}")
-        st.caption("Use presets for fast exploration or filters for a specific view.")
+    selected_count = len(selected_cities) if selected_cities else len(all_cities)
+    st.metric("Cities in view", f"{selected_count}/{len(all_cities)}")
+    st.caption("Use presets for fast exploration or filters for a specific view.")
 
 with main_col:
     tab_sale, tab_rent_monthly, tab_rent_daily = st.tabs(
@@ -956,8 +966,20 @@ with main_col:
 # =========================
 st.markdown(
     """
-    <div style="text-align: center; padding: 2.5rem 0 1rem; color: #64748b; font-size: 0.9rem;">
-        <a href="mailto:sergey.revo@outlook.com" style="color:#475569; text-decoration:none;">sergey.revo@outlook.com</a>
+    <div
+        style="
+            text-align: center;
+            padding: 2.5rem 0 1rem;
+            color: #64748b;
+            font-size: 0.9rem;
+        "
+    >
+        <a
+            href="mailto:sergey.revo@outlook.com"
+            style="color:#475569; text-decoration:none;"
+        >
+            sergey.revo@outlook.com
+        </a>
         <br><br>
         <small>Copyright 2026 - Imobil.Index</small>
     </div>
