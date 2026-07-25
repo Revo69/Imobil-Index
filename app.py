@@ -151,20 +151,22 @@ st.markdown(
         }
 
         .section {
-            padding: 1.1rem 0 0.25rem;
+            padding: 1rem 0 0.2rem;
         }
 
         .section-title {
-            margin: 0 0 0.2rem;
-            font-size: 1.1rem;
-            font-weight: 720;
+            margin: 0 0 0.18rem;
+            font-size: clamp(1.35rem, 2vw, 1.9rem);
+            line-height: 1.15;
+            font-weight: 760;
             color: var(--text);
         }
 
         .section-caption {
-            margin: 0 0 0.75rem;
+            margin: 0 0 0.7rem;
             color: var(--muted);
-            font-size: 0.92rem;
+            font-size: 0.95rem;
+            line-height: 1.45;
         }
 
         .kpi-card {
@@ -200,11 +202,11 @@ st.markdown(
         }
 
         .chart-shell {
-            padding: 1rem 1rem 0.35rem;
+            padding: 0.85rem 0.9rem 0.25rem;
             border: 1px solid var(--border);
             border-radius: 8px;
             background: var(--surface);
-            box-shadow: 0 1px 2px rgba(15, 23, 42, 0.04);
+            box-shadow: 0 1px 2px rgba(15, 23, 42, 0.035);
         }
 
         .insight-strip {
@@ -454,9 +456,9 @@ def render_ranked_bars(
     digits: int,
 ) -> None:
     caption = (
-        "Sectors with the lowest values in the current view."
+        "Lowest visible sectors, sorted from lower to higher value."
         if mode == "lowest"
-        else "Sectors with the highest values in the current view."
+        else "Highest visible sectors, sorted from lower to higher value."
     )
     render_section(title, caption)
     if df.empty:
@@ -469,6 +471,7 @@ def render_ranked_bars(
         else df.nlargest(10, price_col).copy()
     )
     top["Sector"] = sector_label(top)
+    top["ChartLabel"] = top["Sector"].str.replace(" -> ", " · ", regex=False)
     top = top.sort_values(price_col, ascending=True)
     top["Label"] = top[price_col].map(lambda value: f"{value:.{digits}f}")
 
@@ -480,22 +483,31 @@ def render_ranked_bars(
     fig = px.bar(
         top,
         x=price_col,
-        y="Sector",
+        y="ChartLabel",
         orientation="h",
         text="Label",
-        labels={price_col: y_label, "Sector": ""},
+        labels={price_col: y_label, "ChartLabel": ""},
+        custom_data=["Sector"],
     )
     fig.update_traces(
         marker_color=colors,
         marker_line_width=0,
         textposition="outside",
         cliponaxis=False,
+        hovertemplate="<b>%{customdata[0]}</b><br>%{x}<extra></extra>",
     )
-    fig = apply_common_chart_style(fig, height=max(360, min(520, 130 + len(top) * 34)))
-    fig.update_xaxes(title_text=y_label, tickangle=0)
+    fig = apply_common_chart_style(fig, height=max(350, min(500, 120 + len(top) * 32)))
+    fig.update_layout(margin={"l": 4, "r": 58, "t": 8, "b": 4}, bargap=0.24)
+    fig.update_xaxes(
+        title_text="",
+        showgrid=True,
+        showticklabels=False,
+        ticks="",
+        zeroline=False,
+    )
     fig.update_yaxes(
         categoryorder="array",
-        categoryarray=top["Sector"].tolist()[::-1],
+        categoryarray=top["ChartLabel"].tolist()[::-1],
         tickangle=0,
         automargin=True,
         title_text="",
@@ -656,10 +668,11 @@ def render_yield_chart(
     fig = px.bar(
         top_y,
         x=metric,
-        y="Sector",
+        y="ChartLabel",
         orientation="h",
         text="Label",
-        labels={metric: "Gross yield, % p.a.", "Sector": ""},
+        labels={metric: "Gross yield, % p.a.", "ChartLabel": ""},
+        custom_data=["Sector"],
     )
     fig.update_traces(
         marker_color=colors,
@@ -667,11 +680,19 @@ def render_yield_chart(
         marker_line_width=0,
         cliponaxis=False,
     )
-    fig = apply_common_chart_style(fig, height=max(380, min(540, 140 + len(top_y) * 34)))
-    fig.update_xaxes(title_text="Gross yield, % p.a.", tickangle=0)
+    top_y["ChartLabel"] = top_y["Sector"].str.replace(" -> ", " · ", regex=False)
+    fig = apply_common_chart_style(fig, height=max(340, min(460, 125 + len(top_y) * 34)))
+    fig.update_layout(margin={"l": 4, "r": 58, "t": 8, "b": 4}, bargap=0.24)
+    fig.update_xaxes(
+        title_text="",
+        showgrid=True,
+        showticklabels=False,
+        ticks="",
+        zeroline=False,
+    )
     fig.update_yaxes(
         categoryorder="array",
-        categoryarray=top_y["Sector"].tolist()[::-1],
+        categoryarray=top_y["ChartLabel"].tolist()[::-1],
         tickangle=0,
         automargin=True,
         title_text="",
@@ -858,7 +879,7 @@ latest_snapshot = (
 )
 render_app_header(latest_snapshot)
 
-filter_col, main_col = st.columns([1.45, 4.0], gap="medium")
+filter_col, main_col = st.columns([1.35, 4.25], gap="medium")
 
 with filter_col, st.container(border=True):
     st.markdown("### Explore")
