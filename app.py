@@ -658,6 +658,7 @@ def render_yield_chart(
 
     top_y = df_yield.nlargest(10, metric).copy()
     top_y["Sector"] = sector_label(top_y)
+    top_y["ChartLabel"] = top_y["Sector"].str.replace(" -> ", " - ", regex=False)
     top_y = top_y.sort_values(metric, ascending=True)
     top_y["Label"] = top_y[metric].map(lambda value: f"{value:.1f}%")
 
