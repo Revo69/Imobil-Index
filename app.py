@@ -841,9 +841,6 @@ def render_sector_table(
         disp[col] = disp[col].round(1 if "per_m2" in col else 0)
 
     disp = disp.rename(columns=label_map).rename(columns=compact_labels)
-    if "Listings" in disp.columns and disp["Listings"].sum() > 0:
-        share = (disp["Listings"] / disp["Listings"].sum() * 100).round(1)
-        disp.insert(disp.columns.get_loc("Listings") + 1, "Share", share)
 
     column_config = {}
     if "City" in disp.columns:
@@ -856,15 +853,6 @@ def render_sector_table(
             help="Listings in this city-sector group.",
             format="%d",
             width="small",
-        )
-    if "Share" in disp.columns:
-        column_config["Share"] = st.column_config.ProgressColumn(
-            "Share",
-            help="Share of listings inside the current filtered table.",
-            format="%.1f%%",
-            min_value=0.0,
-            max_value=max(1.0, float(disp["Share"].max())),
-            width="medium",
         )
 
     for col in disp.columns:
@@ -880,7 +868,7 @@ def render_sector_table(
                 col,
                 help="Average full listing price.",
                 format="%.0f",
-                width="medium",
+                width="small",
             )
 
     st.dataframe(
