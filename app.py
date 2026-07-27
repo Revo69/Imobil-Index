@@ -1,4 +1,4 @@
-# app.py - Imobil.Index 2026 - For Sale + Monthly Rent + Daily Rent
+﻿# app.py - Imobil.Index 2026 - For Sale + Monthly Rent + Daily Rent
 from collections.abc import Iterable
 from datetime import UTC, datetime, timedelta
 from html import escape
@@ -472,22 +472,22 @@ def render_insight_cards(
         render_empty_state("Not enough data for this insight yet.")
         return
 
-    card_html = []
-    for label, value, note in cards:
-        card_html.append(
-            f"""
-            <div class="insight-card">
-                <div class="insight-card-label">{escape(label)}</div>
-                <div class="insight-card-value">{escape(value)}</div>
-                <div class="insight-card-note">{escape(note)}</div>
-            </div>
-            """
-        )
-
-    st.markdown(
-        f'<div class="insight-grid">{"".join(card_html)}</div>',
-        unsafe_allow_html=True,
-    )
+    for start in range(0, len(cards), 3):
+        row_cards = cards[start : start + 3]
+        columns = st.columns(len(row_cards))
+        for column, (label, value, note) in zip(columns, row_cards, strict=True):
+            with column:
+                card_html = (
+                    '<div class="insight-card">'
+                    f'<div class="insight-card-label">{escape(label)}</div>'
+                    f'<div class="insight-card-value">{escape(value)}</div>'
+                    f'<div class="insight-card-note">{escape(note)}</div>'
+                    "</div>"
+                )
+                st.markdown(
+                    card_html,
+                    unsafe_allow_html=True,
+                )
 
 
 def render_empty_state(message: str) -> None:
@@ -1530,3 +1530,4 @@ st.markdown(
     """,
     unsafe_allow_html=True,
 )
+
