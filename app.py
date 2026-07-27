@@ -1,6 +1,7 @@
 # app.py - Imobil.Index 2026 - For Sale + Monthly Rent + Daily Rent
 from collections.abc import Iterable
 from datetime import UTC, datetime, timedelta
+from html import escape
 
 import pandas as pd
 import plotly.express as px
@@ -230,6 +231,45 @@ st.markdown(
             line-height: 1.55;
         }
 
+        .insight-grid {
+            display: grid;
+            grid-template-columns: repeat(3, minmax(0, 1fr));
+            gap: 0.75rem;
+            margin: 0.2rem 0 1rem;
+        }
+
+        .insight-card {
+            min-height: 118px;
+            padding: 0.95rem 1rem;
+            border: 1px solid var(--border);
+            border-radius: 8px;
+            background: #ffffff;
+            box-shadow: 0 1px 2px rgba(15, 23, 42, 0.035);
+        }
+
+        .insight-card-label {
+            color: var(--muted);
+            font-size: 0.72rem;
+            font-weight: 760;
+            letter-spacing: 0.04em;
+            text-transform: uppercase;
+        }
+
+        .insight-card-value {
+            margin-top: 0.4rem;
+            color: var(--text);
+            font-size: clamp(1.15rem, 1.7vw, 1.45rem);
+            line-height: 1.16;
+            font-weight: 760;
+        }
+
+        .insight-card-note {
+            margin-top: 0.45rem;
+            color: var(--muted);
+            font-size: 0.86rem;
+            line-height: 1.38;
+        }
+
         .empty-state {
             padding: 1.25rem;
             border: 1px dashed #cbd5e1;
@@ -274,6 +314,10 @@ st.markdown(
 
             .status-pill {
                 white-space: normal;
+            }
+
+            .insight-grid {
+                grid-template-columns: 1fr;
             }
         }
     </style>
@@ -416,6 +460,32 @@ def render_kpi_card(label: str, value: str, note: str = "") -> None:
             <div class="kpi-note">{note}</div>
         </div>
         """,
+        unsafe_allow_html=True,
+    )
+
+
+def render_insight_cards(
+    title: str, caption: str, cards: list[tuple[str, str, str]]
+) -> None:
+    render_section(title, caption)
+    if not cards:
+        render_empty_state("Not enough data for this insight yet.")
+        return
+
+    card_html = []
+    for label, value, note in cards:
+        card_html.append(
+            f"""
+            <div class="insight-card">
+                <div class="insight-card-label">{escape(label)}</div>
+                <div class="insight-card-value">{escape(value)}</div>
+                <div class="insight-card-note">{escape(note)}</div>
+            </div>
+            """
+        )
+
+    st.markdown(
+        f'<div class="insight-grid">{"".join(card_html)}</div>',
         unsafe_allow_html=True,
     )
 
@@ -655,6 +725,263 @@ def render_market_highlights(
             f"{price_fmt.format(df[price_col].median())} EUR{price_suffix}",
             "Median across visible sectors",
         )
+
+
+def render_decision_notes(
+    df: pd.DataFrame,
+    price_col: str,
+    price_fmt: str = "{:.0f}",
+    price_suffix: str = "",
+) -> None:
+    if df.empty:
+        return
+
+    total_listings = df["listings"].sum()
+    if total_listings <= 0:
+        return
+
+    lowest = df.loc[df[price_col].idxmin()]
+    highest = df.loc[df[price_col].idxmax()]
+    most_listings = df.loc[df["listings"].idxmax()]
+    weighted_price = weighted_average(df, price_col)
+    median_price = float(df[price_col].median())
+    spread_pct = (
+        ((highest[price_col] - lowest[price_col]) / lowest[price_col]) * 100
+        if lowest[price_col] > 0
+        else 0
+    )
+    inventory_share = most_listings["listings"] / total_listings * 100
+    premium_or_discount = weighted_price - median_price
+    direction = "above" if premium_or_discount >= 0 else "below"
+
+    cards = [
+        (
+            "Entry point",
+            f"{price_fmt.format(lowest[price_col])} EUR{price_suffix}",
+            f"Lowest visible value: {place_label(lowest)}.",
+        ),
+        (
+            "Liquidity hub",
+            f"{inventory_share:.1f}% of listings",
+            f"Most active visible sector: {place_label(most_listings)}.",
+        ),
+        (
+            "Market spread",
+            f"{spread_pct:.0f}%",
+            f"From {place_label(lowest)} to {place_label(highest)}.",
+        ),
+        (
+            "Weighted vs median",
+            f"{abs(premium_or_discount):.1f} EUR {direction}",
+            "Shows whether larger listing pools sit above or below the median sector.",
+        ),
+    ]
+    render_insight_cards(
+        "Decision notes",
+        "Rule-based signals from the current filtered data.",
+        cards,
+    )
+
+
+def build_break_even_table(
+    df_rent: pd.DataFrame,
+    selected_cities: Iterable[str],
+    min_listings: int,
+) -> pd.DataFrame:
+    required = {"city", "sector", "deal_type", "avg_price_per_m2_eur", "listings"}
+    if df_rent.empty or not required.issubset(df_rent.columns):
+        return pd.DataFrame()
+
+    monthly = df_rent[df_rent["deal_type"] == MONTHLY_RENT_DEAL].copy()
+    daily = df_rent[df_rent["deal_type"] == DAILY_RENT_DEAL].copy()
+    monthly = filter_by_city_and_listings(monthly, selected_cities, min_listings)
+    daily = filter_by_city_and_listings(daily, selected_cities, min_listings)
+    if monthly.empty or daily.empty:
+        return pd.DataFrame()
+
+    merged = monthly.merge(
+        daily,
+        on=["city", "sector"],
+        suffixes=("_monthly", "_daily"),
+    )
+    merged = merged[
+        (merged["avg_price_per_m2_eur_monthly"] > 0)
+        & (merged["avg_price_per_m2_eur_daily"] > 0)
+    ].copy()
+    if merged.empty:
+        return merged
+
+    merged["break_even_days"] = (
+        merged["avg_price_per_m2_eur_monthly"]
+        / merged["avg_price_per_m2_eur_daily"]
+    )
+    merged["Sector"] = sector_label(merged)
+    return merged.sort_values("break_even_days")
+
+
+def render_break_even_analysis(df_break_even: pd.DataFrame) -> None:
+    render_section(
+        "Daily vs monthly break-even",
+        "Approximate number of daily-rent days that equals one month of rent per m2.",
+    )
+    if df_break_even.empty:
+        render_empty_state("Not enough matching monthly and daily rent data.")
+        return
+
+    fastest = df_break_even.iloc[0]
+    slowest = df_break_even.iloc[-1]
+    median_days = df_break_even["break_even_days"].median()
+    cards = [
+        (
+            "Fastest switch point",
+            f"{fastest['break_even_days']:.0f} days",
+            f"After this, monthly rent can be cheaper in {fastest['Sector']}.",
+        ),
+        (
+            "Median switch point",
+            f"{median_days:.0f} days",
+            "Middle value across visible sectors with both rent modes.",
+        ),
+        (
+            "Longest daily window",
+            f"{slowest['break_even_days']:.0f} days",
+            f"Daily rent stays competitive longest in {slowest['Sector']}.",
+        ),
+    ]
+    render_insight_cards(
+        "Stay calculator",
+        "Useful for temporary housing and relocation scenarios.",
+        cards,
+    )
+
+    top = df_break_even.nsmallest(10, "break_even_days").copy()
+    top["ChartLabel"] = top["Sector"].str.replace(" -> ", " - ", regex=False)
+    top = top.sort_values("break_even_days", ascending=True)
+    top["Label"] = top["break_even_days"].map(lambda value: f"{value:.0f} days")
+
+    fig = px.bar(
+        top,
+        x="break_even_days",
+        y="ChartLabel",
+        orientation="h",
+        text="Label",
+        labels={"break_even_days": "Days", "ChartLabel": ""},
+        custom_data=["Sector"],
+    )
+    colors = [CHART_NEUTRAL] * len(top)
+    if colors:
+        colors[0] = DAILY_COLOR_SCALE[2]
+    fig.update_traces(
+        marker_color=colors,
+        marker_line_width=0,
+        textposition="outside",
+        cliponaxis=False,
+        hovertemplate="<b>%{customdata[0]}</b><br>%{x:.1f} days<extra></extra>",
+    )
+    fig = apply_common_chart_style(fig, height=max(320, min(460, 120 + len(top) * 34)))
+    fig.update_layout(margin={"l": 4, "r": 68, "t": 8, "b": 4}, bargap=0.24)
+    fig.update_xaxes(title_text="", showticklabels=False, ticks="")
+    fig.update_yaxes(tickangle=0, automargin=True, title_text="")
+    with st.container(border=True):
+        st.plotly_chart(fig, width="stretch")
+
+
+def render_outside_chisinau_radar(df_sales: pd.DataFrame) -> None:
+    price_col = "avg_per_m2_eur"
+    if df_sales.empty or "city" not in df_sales.columns or price_col not in df_sales:
+        return
+
+    outside = df_sales[df_sales["city"] != CHISINAU_CITY].copy()
+    if outside.empty:
+        return
+
+    outside["weighted_value"] = outside[price_col] * outside["listings"]
+    city_stats = outside.groupby("city", as_index=False).agg(
+        listings=("listings", "sum"),
+        weighted_value=("weighted_value", "sum"),
+    )
+    city_stats = city_stats[city_stats["listings"] > 0].copy()
+    if city_stats.empty:
+        return
+
+    city_stats["avg_per_m2_eur"] = (
+        city_stats["weighted_value"] / city_stats["listings"]
+    )
+    most_active = city_stats.loc[city_stats["listings"].idxmax()]
+    lowest_city = city_stats.loc[city_stats[price_col].idxmin()]
+    outside_avg = (
+        city_stats["weighted_value"].sum() / city_stats["listings"].sum()
+        if city_stats["listings"].sum() > 0
+        else 0
+    )
+
+    chisinau = df_sales[df_sales["city"] == CHISINAU_CITY]
+    if chisinau.empty:
+        comparison = "Chisinau is outside the current view."
+    else:
+        chisinau_avg = weighted_average(chisinau, price_col)
+        gap = chisinau_avg - outside_avg
+        comparison = f"Chisinau is {gap:.0f} EUR/m2 higher than the outside-city average."
+
+    cards = [
+        (
+            "Most active outside city",
+            str(most_active["city"]),
+            f"{format_int(most_active['listings'])} listings in the visible data.",
+        ),
+        (
+            "Lowest outside-city price",
+            f"{lowest_city[price_col]:.0f} EUR/m2",
+            str(lowest_city["city"]),
+        ),
+        (
+            "Chisinau gap",
+            f"{outside_avg:.0f} EUR/m2",
+            comparison,
+        ),
+    ]
+    render_insight_cards(
+        "Outside Chisinau radar",
+        "A first lightweight suburban view using current sale data.",
+        cards,
+    )
+
+
+def render_yield_opportunity_notes(df_yield: pd.DataFrame) -> None:
+    required = {"yield_monthly_percent", "yield_daily_percent", "city", "sector"}
+    if df_yield.empty or not required.issubset(df_yield.columns):
+        return
+
+    data = df_yield.copy()
+    data["daily_uplift"] = (
+        data["yield_daily_percent"] - data["yield_monthly_percent"]
+    )
+    best_monthly = data.loc[data["yield_monthly_percent"].idxmax()]
+    best_daily = data.loc[data["yield_daily_percent"].idxmax()]
+    strongest_uplift = data.loc[data["daily_uplift"].idxmax()]
+
+    cards = [
+        (
+            "Best monthly yield",
+            f"{best_monthly['yield_monthly_percent']:.1f}%",
+            place_label(best_monthly),
+        ),
+        (
+            "Best daily yield",
+            f"{best_daily['yield_daily_percent']:.1f}%",
+            f"{place_label(best_daily)} at the dashboard occupancy assumption.",
+        ),
+        (
+            "Daily uplift",
+            f"+{strongest_uplift['daily_uplift']:.1f} pp",
+            f"Highest daily-vs-monthly spread: {place_label(strongest_uplift)}.",
+        ),
+    ]
+    render_insight_cards(
+        "Yield opportunities",
+        "Indicative gross yield signals before operating costs and vacancy risk.",
+        cards,
+    )
 
 
 def render_yield_chart(
@@ -1029,8 +1356,8 @@ with filter_col, st.container(border=True):
     st.caption("Use presets for fast exploration or filters for a specific view.")
 
 with main_col:
-    tab_sale, tab_rent_monthly, tab_rent_daily = st.tabs(
-        ["For Sale", "Monthly Rent", "Daily Rent"]
+    tab_sale, tab_rent_monthly, tab_rent_daily, tab_insights = st.tabs(
+        ["For Sale", "Monthly Rent", "Daily Rent", "Insights"]
     )
 
     # --------------------- 1. Sale ---------------------
@@ -1144,6 +1471,38 @@ with main_col:
                 "Indicative gross annual yield, before operating costs.",
             )
             render_daily_rent_context(filtered_yield)
+
+    # --------------------- 4. Insights ---------------------
+    with tab_insights:
+        sale_df = filter_by_city_and_listings(
+            df_sales, selected_cities, min_listings
+        )
+        monthly_df = df_rent[df_rent["deal_type"] == MONTHLY_RENT_DEAL].copy()
+        monthly_df = filter_by_city_and_listings(
+            monthly_df, selected_cities, min_listings
+        )
+        daily_df = df_rent[df_rent["deal_type"] == DAILY_RENT_DEAL].copy()
+        daily_df = filter_by_city_and_listings(
+            daily_df, selected_cities, min_listings
+        )
+        yield_df = filter_by_city_and_listings(
+            df_yield, selected_cities, min_listings
+        )
+
+        render_section(
+            "Insight center",
+            "Practical signals inspired by common real-estate decisions.",
+        )
+
+        if sale_df.empty and monthly_df.empty and daily_df.empty and yield_df.empty:
+            render_empty_state("No market data matches the current filters.")
+        else:
+            render_decision_notes(sale_df, "avg_per_m2_eur", price_fmt="{:.0f}")
+            render_outside_chisinau_radar(sale_df)
+            render_break_even_analysis(
+                build_break_even_table(df_rent, selected_cities, min_listings)
+            )
+            render_yield_opportunity_notes(yield_df)
 
 
 # =========================
