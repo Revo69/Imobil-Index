@@ -239,6 +239,7 @@ st.markdown(
         }
 
         .insight-card {
+            height: 100%;
             min-height: 118px;
             padding: 0.95rem 1rem;
             border: 1px solid var(--border);
@@ -261,6 +262,7 @@ st.markdown(
             font-size: clamp(1.15rem, 1.7vw, 1.45rem);
             line-height: 1.16;
             font-weight: 760;
+            overflow-wrap: anywhere;
         }
 
         .insight-card-note {
@@ -268,6 +270,7 @@ st.markdown(
             color: var(--muted);
             font-size: 0.86rem;
             line-height: 1.38;
+            overflow-wrap: anywhere;
         }
 
         .empty-state {
@@ -318,6 +321,10 @@ st.markdown(
 
             .insight-grid {
                 grid-template-columns: 1fr;
+            }
+
+            .insight-card {
+                min-height: auto;
             }
         }
     </style>
@@ -773,12 +780,12 @@ def render_decision_notes(
         (
             "Weighted vs median",
             f"{abs(premium_or_discount):.1f} EUR {direction}",
-            "Shows whether larger listing pools sit above or below the median sector.",
+            "Shows whether larger listing pools are priced above or below the middle sector.",
         ),
     ]
     render_insight_cards(
         "Decision notes",
-        "Rule-based signals from the current filtered data.",
+        "Plain-language signals from the current filtered market.",
         cards,
     )
 
@@ -822,7 +829,7 @@ def build_break_even_table(
 def render_break_even_analysis(df_break_even: pd.DataFrame) -> None:
     render_section(
         "Daily vs monthly break-even",
-        "Approximate number of daily-rent days that equals one month of rent per m2.",
+        "Estimated number of daily-rent days that equals one month of rent per m2.",
     )
     if df_break_even.empty:
         render_empty_state("Not enough matching monthly and daily rent data.")
@@ -850,7 +857,7 @@ def render_break_even_analysis(df_break_even: pd.DataFrame) -> None:
     ]
     render_insight_cards(
         "Stay calculator",
-        "Useful for temporary housing and relocation scenarios.",
+        "Useful for short stays, temporary housing, and relocation scenarios.",
         cards,
     )
 
@@ -884,6 +891,16 @@ def render_break_even_analysis(df_break_even: pd.DataFrame) -> None:
     fig.update_yaxes(tickangle=0, automargin=True, title_text="")
     with st.container(border=True):
         st.plotly_chart(fig, width="stretch")
+
+    st.markdown(
+        """
+        <div class="insight-strip">
+            This is a price-only comparison from current listings. It does not
+            include utilities, cleaning, service fees, vacancy, or seasonality.
+        </div>
+        """,
+        unsafe_allow_html=True,
+    )
 
 
 def render_outside_chisinau_radar(df_sales: pd.DataFrame) -> None:
@@ -942,7 +959,7 @@ def render_outside_chisinau_radar(df_sales: pd.DataFrame) -> None:
     ]
     render_insight_cards(
         "Outside Chisinau radar",
-        "A first lightweight suburban view using current sale data.",
+        "Quick view of sale prices outside Chisinau.",
         cards,
     )
 
@@ -972,9 +989,9 @@ def render_yield_opportunity_notes(df_yield: pd.DataFrame) -> None:
             f"{place_label(best_daily)} at the dashboard occupancy assumption.",
         ),
         (
-            "Daily uplift",
+            "Daily rent advantage",
             f"+{strongest_uplift['daily_uplift']:.1f} pp",
-            f"Highest daily-vs-monthly spread: {place_label(strongest_uplift)}.",
+            f"Biggest daily-vs-monthly yield gap: {place_label(strongest_uplift)}.",
         ),
     ]
     render_insight_cards(
