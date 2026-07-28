@@ -352,7 +352,7 @@ def load_historical_data() -> pd.DataFrame:
 
     while True:
         resp = (
-            supabase.table("gold_estate_daily")
+            supabase.table("api_estate_daily")
             .select(HISTORY_SALE_COLUMNS)
             .gte("date", cutoff)
             .range(offset, offset + limit - 1)
@@ -374,11 +374,11 @@ def load_historical_data() -> pd.DataFrame:
 @st.cache_data(ttl=3600)
 def load_data() -> tuple[pd.DataFrame, pd.DataFrame, pd.DataFrame]:
     sales = pd.DataFrame(
-        supabase.table("gold_estate_current").select("*").execute().data
+        supabase.table("api_estate_current").select("*").execute().data
     )
-    rent = pd.DataFrame(supabase.table("gold_rent_current").select("*").execute().data)
+    rent = pd.DataFrame(supabase.table("api_rent_current").select("*").execute().data)
     yield_data = pd.DataFrame(
-        supabase.table("gold_rent_yield").select("*").execute().data
+        supabase.table("api_rent_yield").select("*").execute().data
     )
     return sales, rent, yield_data
 

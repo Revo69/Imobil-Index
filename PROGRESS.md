@@ -4,7 +4,7 @@ Simple project progress log for Imobil.Index.
 
 ## Last Updated
 
-2026-07-27
+2026-07-28
 
 ## Current State
 
@@ -42,6 +42,51 @@ python -m py_compile app.py
 - Ruff was not verified in the current local environment because `ruff` was not installed there.
 - Streamlit visual verification was not completed in the current local environment because `streamlit` was not available there.
 
+## Database Inspection Snapshot
+
+Read-only Supabase inspection on 2026-07-28 found:
+
+- Project: `estate-md`, Postgres 17, active and healthy.
+- Main public objects:
+  - `raw_links`: 33,551 rows.
+  - `bronze_estate`: 33,370 rows.
+  - `silver_estate`: 33,370 rows.
+  - `gold_estate_daily`: 3,080 rows, 2026-06-15 to 2026-07-28.
+  - `gold_rent_daily`: 2,276 rows, 2026-06-15 to 2026-07-28.
+  - `gold_estate_current`: materialized view, 91 rows for 2026-07-28.
+  - `gold_rent_current`: materialized view, 55 rows for 2026-07-28.
+  - `gold_rent_yield`: view, 74 rows.
+  - `pipeline_runs`: 9 rows; latest runs show `gold_refreshed=true`.
+- Silver already contains useful product fields: city, sector, street, rooms,
+  total area, floor, total floors, housing type, condition, amenities, developer,
+  layout, bathroom count, balcony/loggia, and parking.
+- Strongest ready-to-use Silver fields by coverage:
+  - city, sector, street, area, housing type, floor, total floors: about 99%.
+  - rooms: about 97%.
+  - apartment condition: about 77%.
+  - bathroom count: about 70%.
+  - balcony/loggia: about 58%.
+  - parking: about 48%.
+- Supabase advisors reported security items to review before making the app a
+  broader public platform:
+  - RLS enabled with no policies on several tables.
+  - `gold_rent_yield` was flagged as a security-definer view; fixed on
+    2026-07-28 by setting `security_invoker = true`.
+  - `gold_estate_current` and `gold_rent_current` materialized views are exposed
+    through the Data API.
+  - `refresh_gold_estate` and `refresh_gold_rent` were flagged for mutable
+    `search_path`; fixed on 2026-07-28 with `search_path=public, pg_temp`.
+- Public API layer planning started on 2026-07-28:
+  - SQL draft created at `sql/public_api_layer.sql`.
+  - The draft exposes only aggregated `api_*` tables.
+  - It keeps current dashboard safety by requiring app cutover before revoking
+    public SELECT from internal Gold objects.
+  - `api_*` tables were created and verified with expected row counts.
+  - `app.py` now reads `api_estate_current`, `api_rent_current`,
+    `api_rent_yield`, and `api_estate_daily`.
+  - Visual Streamlit verification is still needed before revoking internal
+    Gold access from `anon` and `authenticated`.
+
 ## Next Small Steps
 
 1. Run checks in the real project environment:
@@ -67,6 +112,10 @@ streamlit run app.py
 - improve error states;
 - add SQL-side filtering for history;
 - add new parser/database fields in the upstream project later.
+- design the first Silver-powered dashboard feature, such as room filters,
+  area bands, floor/condition filters, or amenity premiums.
+- visually verify the `api_*` app cutover, then run section 2 of
+  `sql/public_api_layer.sql` to revoke public SELECT from internal objects.
 
 ## Parking Lot
 
@@ -76,4 +125,3 @@ streamlit run app.py
 - Ideal apartment portrait.
 - Rule-based weekly market notes.
 - Future parser fields: rooms, area, floor, house/dacha/land, amenities, distance from Chisinau.
-
