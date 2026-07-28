@@ -86,8 +86,8 @@ Read-only Supabase inspection on 2026-07-28 found:
   - `api_*` tables were created and verified with expected row counts.
   - `app.py` now reads `api_estate_current`, `api_rent_current`,
     `api_rent_yield`, and `api_estate_daily`.
-  - Visual Streamlit verification is still needed before revoking internal
-    Gold access from `anon` and `authenticated`.
+  - Streamlit dashboard was reported working after the `api_*` cutover.
+  - Next manual SQL step is `sql/revoke_internal_public_access.sql`.
 
 ## Next Small Steps
 
@@ -116,8 +116,8 @@ streamlit run app.py
 - add new parser/database fields in the upstream project later.
 - design the first Silver-powered dashboard feature, such as room filters,
   area bands, floor/condition filters, or amenity premiums.
-- visually verify the `api_*` app cutover, then run section 2 of
-  `sql/public_api_layer.sql` to revoke public SELECT from internal objects.
+- run `sql/revoke_internal_public_access.sql`, then verify Security Advisor and
+  re-check the dashboard.
 
 ## Parking Lot
 
