@@ -970,30 +970,39 @@ def render_yield_opportunity_notes(df_yield: pd.DataFrame) -> None:
         return
 
     data = df_yield.copy()
+    data["yield_monthly_percent"] = pd.to_numeric(
+        data["yield_monthly_percent"], errors="coerce"
+    )
+    data["yield_daily_percent"] = pd.to_numeric(
+        data["yield_daily_percent"], errors="coerce"
+    )
     data["daily_uplift"] = (
         data["yield_daily_percent"] - data["yield_monthly_percent"]
     )
-    best_monthly = data.loc[data["yield_monthly_percent"].idxmax()]
-    best_daily = data.loc[data["yield_daily_percent"].idxmax()]
-    strongest_uplift = data.loc[data["daily_uplift"].idxmax()]
 
-    cards = [
-        (
+    cards = []
+    if data["yield_monthly_percent"].notna().any():
+        best_monthly = data.loc[data["yield_monthly_percent"].idxmax()]
+        cards.append((
             "Best monthly yield",
             f"{best_monthly['yield_monthly_percent']:.1f}%",
             place_label(best_monthly),
-        ),
-        (
+        ))
+    if data["yield_daily_percent"].notna().any():
+        best_daily = data.loc[data["yield_daily_percent"].idxmax()]
+        cards.append((
             "Best daily yield",
             f"{best_daily['yield_daily_percent']:.1f}%",
             f"{place_label(best_daily)} at the dashboard occupancy assumption.",
-        ),
-        (
+        ))
+    if data["daily_uplift"].notna().any():
+        strongest_uplift = data.loc[data["daily_uplift"].idxmax()]
+        cards.append((
             "Daily rent advantage",
             f"+{strongest_uplift['daily_uplift']:.1f} pp",
             f"Biggest daily-vs-monthly yield gap: {place_label(strongest_uplift)}.",
-        ),
-    ]
+        ))
+
     render_insight_cards(
         "Yield opportunities",
         "Indicative gross yield signals before operating costs and vacancy risk.",
@@ -1011,8 +1020,13 @@ def render_yield_chart(
     if df_yield.empty or metric not in df_yield.columns:
         render_empty_state("Yield data is not available for the current snapshot.")
         return
+    if pd.to_numeric(df_yield[metric], errors="coerce").dropna().empty:
+        render_empty_state("Yield data is not available for the current filters.")
+        return
 
-    top_y = df_yield.nlargest(10, metric).copy()
+    top_y = df_yield.copy()
+    top_y[metric] = pd.to_numeric(top_y[metric], errors="coerce")
+    top_y = top_y.dropna(subset=[metric]).nlargest(10, metric)
     top_y["Sector"] = sector_label(top_y)
     top_y["ChartLabel"] = top_y["Sector"].str.replace(" -> ", " - ", regex=False)
     top_y = top_y.sort_values(metric, ascending=True)

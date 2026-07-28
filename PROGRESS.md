@@ -24,6 +24,8 @@ Simple project progress log for Imobil.Index.
 - Improved insight-card text wrapping and mobile card sizing.
 - Improved some Insights wording for business users.
 - Added a short caveat under daily-vs-monthly break-even.
+- Fixed an Insights crash after the `api_*` cutover: yield cards now skip
+  all-null yield metrics instead of calling `idxmax()` on all-NA values.
 
 ## Important Verified Semantics
 
