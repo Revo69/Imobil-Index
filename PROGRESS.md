@@ -87,7 +87,13 @@ Read-only Supabase inspection on 2026-07-28 found:
   - `app.py` now reads `api_estate_current`, `api_rent_current`,
     `api_rent_yield`, and `api_estate_daily`.
   - Streamlit dashboard was reported working after the `api_*` cutover.
-  - Next manual SQL step is `sql/revoke_internal_public_access.sql`.
+  - `sql/revoke_internal_public_access.sql` was applied on 2026-07-29.
+  - Public roles can now read only `api_*`; internal raw/bronze/silver/Gold
+    objects are no longer selectable by `anon` or `authenticated`.
+  - Security Advisor has no remaining ERROR/WARN items; only INFO notices remain
+    for RLS-enabled internal tables with no policies.
+  - Deployed Streamlit dashboard was reported working after the internal access
+    revoke on 2026-07-29.
 
 ## Next Small Steps
 
@@ -116,8 +122,8 @@ streamlit run app.py
 - add new parser/database fields in the upstream project later.
 - design the first Silver-powered dashboard feature, such as room filters,
   area bands, floor/condition filters, or amenity premiums.
-- run `sql/revoke_internal_public_access.sql`, then verify Security Advisor and
-  re-check the dashboard.
+- choose the first product feature built on the public API or a new aggregated
+  Silver-powered API table.
 
 ## Parking Lot
 
