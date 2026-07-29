@@ -32,6 +32,27 @@ Project guide for AI-assisted work on Imobil.Index.
 - Avoid technical wording in visible UI when a business-friendly phrase works.
 - Keep yield wording indicative because it is gross yield before full operating costs.
 
+## Dashboard UX/UI Standards
+
+- The dashboard should feel modern, polished, calm, and analytics-focused.
+- New UI blocks must match the existing visual language before they are
+  considered done.
+- Avoid default-looking Streamlit or Plotly output when it clashes with the app
+  style.
+- Keep charts visually consistent: spacing, card borders, typography, muted
+  colors, and one clear accent.
+- Prefer horizontal bar charts for rankings and comparisons when labels are
+  long or categorical.
+- Use direct labels and visible values where possible; do not rely only on hover.
+- Keep layouts scannable on desktop and usable on mobile.
+- Do not add a new design style, color system, or chart style for one isolated
+  feature.
+- Do not simplify or change business logic just to make the UI easier to draw.
+- Before finishing a UI change, ask: can a real-estate user understand this in
+  about 5 seconds?
+- If Streamlit visual verification is unavailable, say so clearly and do not
+  claim the UI was visually checked.
+
 ## Data Semantics
 
 - `Data as of` must come from the latest Gold snapshot date, not the current clock time.
@@ -59,4 +80,3 @@ Do not claim visual verification unless the app was actually opened and checked.
 3. Patch only the files needed for that change.
 4. Run available checks.
 5. Update `PROGRESS.md` when the status meaningfully changes.
-

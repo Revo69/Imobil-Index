@@ -36,6 +36,8 @@ Simple project progress log for Imobil.Index.
 - Connected `api_estate_segments_current` to the For Sale dashboard tab.
 - Restyled the For Sale segment charts to match the quieter horizontal bar
   style used by the main sector charts.
+- Added dashboard UX/UI standards to `AGENTS.md` so future UI work keeps the
+  same modern, polished, analytics-focused design direction.
 
 ## Important Verified Semantics
 
@@ -142,6 +144,9 @@ Read-only Supabase inspection on 2026-07-28 found:
   - The segment charts were adjusted from default vertical blue bars to
     horizontal neutral bars with one sale-color accent, matching the existing
     dashboard chart style more closely.
+  - `AGENTS.md` now includes dashboard UX/UI standards covering modern visual
+    quality, consistency with existing charts/cards, muted colors, direct
+    labels, mobile usability, and honest visual verification.
 
 ## Next Small Steps
 
