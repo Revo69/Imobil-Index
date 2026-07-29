@@ -34,11 +34,11 @@ DAILY_RENT_DEAL = (
 CHISINAU_CITY = "\u041a\u0438\u0448\u0438\u043d\u0451\u0432"
 BALTI_CITY = "\u0411\u0435\u043b\u044c\u0446\u044b"
 
-SALE_COLOR_SCALE = ["#dbeafe", "#93c5fd", "#2563eb", "#1e3a8a"]
-RENT_COLOR_SCALE = ["#dcfce7", "#86efac", "#16a34a", "#14532d"]
-DAILY_COLOR_SCALE = ["#fef3c7", "#fbbf24", "#f97316", "#9a3412"]
-YIELD_COLOR_SCALE = ["#e0f2fe", "#67e8f9", "#0e7490", "#164e63"]
-CHART_NEUTRAL = "#cbd5e1"
+SALE_COLOR_SCALE = ["#e5edff", "#9db7f4", "#315fc9", "#1e3f8f"]
+RENT_COLOR_SCALE = ["#dff6ea", "#8bd7b2", "#12805c", "#0b5d43"]
+DAILY_COLOR_SCALE = ["#fff0df", "#f5b86f", "#c56b2c", "#8f451d"]
+YIELD_COLOR_SCALE = ["#d9f3f1", "#7bcac5", "#0f8b8d", "#0b5f63"]
+CHART_NEUTRAL = "#cbd8d2"
 ROOM_GROUP_ORDER = ["1", "2", "3", "4+"]
 AREA_BAND_ORDER = ["<40 m2", "40-59 m2", "60-79 m2", "80-119 m2", "120+ m2"]
 PLOTLY_CHART_CONFIG = {
@@ -55,17 +55,19 @@ st.markdown(
     """
     <style>
         :root {
-            --bg: #f8fafc;
+            --bg: #f5f7f4;
             --surface: #ffffff;
-            --surface-soft: #f1f5f9;
-            --ink: #0f172a;
-            --text: #111827;
-            --muted: #64748b;
-            --border: #e2e8f0;
-            --blue: #2563eb;
-            --green: #16a34a;
-            --amber: #d97706;
-            --cyan: #0891b2;
+            --surface-soft: #edf4f0;
+            --surface-muted: #f9fbf8;
+            --ink: #123026;
+            --text: #17201c;
+            --muted: #63746d;
+            --border: #d8e2dd;
+            --blue: #315fc9;
+            --green: #12805c;
+            --amber: #b76725;
+            --cyan: #0f8b8d;
+            --shadow: 0 10px 26px rgba(18, 48, 38, 0.08);
         }
 
         .stApp {
@@ -92,7 +94,7 @@ st.markdown(
         }
 
         [data-testid="stSidebar"] {
-            background: #ffffff;
+            background: var(--surface-muted);
             border-right: 1px solid var(--border);
         }
 
@@ -112,7 +114,7 @@ st.markdown(
             padding: 0.25rem;
             border: 1px solid var(--border);
             border-radius: 8px;
-            background: #ffffff;
+            background: var(--surface-muted);
         }
 
         div[data-testid="stTabs"] button {
@@ -120,22 +122,23 @@ st.markdown(
             padding: 0.45rem 0.9rem;
             border-radius: 6px;
             font-weight: 650;
-            color: #475569;
+            color: #4f625a;
         }
 
         div[data-testid="stTabs"] button[aria-selected="true"] {
-            background: #111827;
+            background: var(--ink);
             color: #ffffff;
             border-bottom-color: transparent;
         }
 
         .app-header {
             margin: 0 0 0.9rem;
-            padding: 1.1rem 1.2rem;
-            border: 1px solid rgba(15, 23, 42, 0.08);
+            padding: 1.05rem 1.15rem;
+            border: 1px solid var(--border);
+            border-left: 5px solid var(--green);
             border-radius: 8px;
-            background: var(--ink);
-            box-shadow: 0 14px 32px rgba(15, 23, 42, 0.12);
+            background: var(--surface);
+            box-shadow: var(--shadow);
         }
 
         .brand-row {
@@ -147,7 +150,7 @@ st.markdown(
 
         .brand-kicker {
             margin-bottom: 0.45rem;
-            color: #93c5fd;
+            color: var(--green);
             font-size: 0.72rem;
             font-weight: 760;
             letter-spacing: 0.08em;
@@ -158,17 +161,17 @@ st.markdown(
             font-size: clamp(2.15rem, 4vw, 2.85rem);
             line-height: 1;
             font-weight: 760;
-            color: #ffffff;
+            color: var(--ink);
         }
 
         .brand-dot {
-            color: var(--blue);
+            color: var(--cyan);
         }
 
         .brand-copy {
             max-width: 760px;
             margin-top: 0.65rem;
-            color: #cbd5e1;
+            color: var(--muted);
             font-size: 1rem;
             line-height: 1.6;
         }
@@ -178,10 +181,10 @@ st.markdown(
             align-items: center;
             gap: 0.5rem;
             padding: 0.55rem 0.8rem;
-            border: 1px solid rgba(255, 255, 255, 0.16);
+            border: 1px solid #c9d9d2;
             border-radius: 999px;
-            background: rgba(255, 255, 255, 0.08);
-            color: #f8fafc;
+            background: var(--surface-soft);
+            color: var(--ink);
             font-size: 0.86rem;
             white-space: nowrap;
         }
@@ -195,14 +198,15 @@ st.markdown(
             border: 1px solid var(--border);
             border-radius: 8px;
             background: var(--surface);
-            box-shadow: 0 1px 2px rgba(15, 23, 42, 0.035);
+            box-shadow: 0 1px 2px rgba(18, 48, 38, 0.04);
         }
 
         .workspace-item {
             min-width: 0;
             padding: 0.65rem 0.75rem;
             border-radius: 6px;
-            background: var(--surface-soft);
+            background: var(--surface-muted);
+            border: 1px solid #e3ece7;
         }
 
         .workspace-label {
@@ -261,8 +265,8 @@ st.markdown(
             padding: 0.9rem 0.95rem;
             border: 1px solid var(--border);
             border-radius: 8px;
-            background: linear-gradient(180deg, #ffffff 0%, #fbfdff 100%);
-            box-shadow: 0 1px 2px rgba(15, 23, 42, 0.035);
+            background: var(--surface);
+            box-shadow: 0 1px 2px rgba(18, 48, 38, 0.04);
         }
 
         .kpi-label {
@@ -292,12 +296,12 @@ st.markdown(
             border-color: var(--border);
             border-radius: 8px;
             background: var(--surface);
-            box-shadow: 0 1px 2px rgba(15, 23, 42, 0.035);
+            box-shadow: 0 1px 2px rgba(18, 48, 38, 0.04);
         }
 
         .chart-title {
             margin: 0.05rem 0 0.45rem;
-            color: #334155;
+            color: #31443b;
             font-size: 0.82rem;
             font-weight: 760;
             letter-spacing: 0;
@@ -308,8 +312,8 @@ st.markdown(
             padding: 1rem;
             border-left: 4px solid var(--cyan);
             border-radius: 8px;
-            background: #f0f9ff;
-            color: #164e63;
+            background: #eaf8f6;
+            color: #0b5f63;
             line-height: 1.55;
         }
 
@@ -320,8 +324,8 @@ st.markdown(
             padding: 0.95rem 1rem;
             border: 1px solid var(--border);
             border-radius: 8px;
-            background: #ffffff;
-            box-shadow: 0 1px 2px rgba(15, 23, 42, 0.035);
+            background: var(--surface);
+            box-shadow: 0 1px 2px rgba(18, 48, 38, 0.04);
         }
 
         .insight-card-label {
@@ -351,16 +355,16 @@ st.markdown(
 
         .empty-state {
             padding: 1.25rem;
-            border: 1px dashed #cbd5e1;
+            border: 1px dashed #bccbc4;
             border-radius: 8px;
-            background: #ffffff;
+            background: var(--surface);
             color: var(--muted);
         }
 
         div[data-baseweb="select"] > div,
         div[data-testid="stNumberInput"] input {
             border-radius: 8px;
-            background: #f8fafc;
+            background: var(--surface-muted);
             border-color: var(--border);
         }
 
@@ -368,7 +372,7 @@ st.markdown(
             padding: 0.75rem 0.8rem;
             border: 1px solid var(--border);
             border-radius: 8px;
-            background: #ffffff;
+            background: var(--surface);
         }
 
         div[data-testid="stMetricValue"] {
@@ -381,14 +385,14 @@ st.markdown(
             min-height: 2.25rem;
             border: 1px solid var(--border);
             border-radius: 8px;
-            background: #ffffff;
-            color: #334155;
+            background: var(--surface);
+            color: #31443b;
             font-weight: 650;
         }
 
         div[data-testid="stButton"] button:hover {
-            border-color: var(--blue);
-            color: var(--blue);
+            border-color: var(--green);
+            color: var(--green);
         }
 
         div[data-testid="stDataFrame"] {
@@ -664,8 +668,8 @@ def apply_common_chart_style(fig, height: int = 430, show_legend: bool = False):
         margin={"l": 12, "r": 12, "t": 28, "b": 12},
         paper_bgcolor="rgba(0,0,0,0)",
         plot_bgcolor="rgba(0,0,0,0)",
-        font={"family": "Inter, Segoe UI, sans-serif", "size": 13, "color": "#111827"},
-        hoverlabel={"bgcolor": "#111827", "font_size": 13, "font_color": "#ffffff"},
+        font={"family": "Inter, Segoe UI, sans-serif", "size": 13, "color": "#17201c"},
+        hoverlabel={"bgcolor": "#123026", "font_size": 13, "font_color": "#ffffff"},
         coloraxis_showscale=False,
         showlegend=show_legend,
         uniformtext_minsize=11,
@@ -683,13 +687,13 @@ def apply_common_chart_style(fig, height: int = 430, show_legend: bool = False):
         title_text="",
         showgrid=False,
         tickangle=-35,
-        tickfont={"color": "#475569"},
+        tickfont={"color": "#63746d"},
         fixedrange=True,
     )
     fig.update_yaxes(
-        title_font={"color": "#475569"},
-        tickfont={"color": "#475569"},
-        gridcolor="#e2e8f0",
+        title_font={"color": "#63746d"},
+        tickfont={"color": "#63746d"},
+        gridcolor="#d8e2dd",
         zeroline=False,
         fixedrange=True,
     )
@@ -1460,14 +1464,14 @@ def render_sales_trend(hist: pd.DataFrame, selected_cities: list[str]) -> None:
 
     plot["sector"] = plot["sector"].fillna("Center").astype(str)
     trend_colors = [
-        "#2563eb",
-        "#0f766e",
-        "#f97316",
-        "#dc2626",
-        "#7c3aed",
-        "#0891b2",
-        "#65a30d",
-        "#ca8a04",
+        "#315fc9",
+        "#12805c",
+        "#c56b2c",
+        "#b84d4a",
+        "#7557b5",
+        "#0f8b8d",
+        "#6f8f3b",
+        "#a36b1c",
     ]
     color_map = {
         sector: trend_colors[index % len(trend_colors)]
@@ -1500,10 +1504,10 @@ def render_sales_trend(hist: pd.DataFrame, selected_cities: list[str]) -> None:
             x=[row["date"]],
             y=[row["avg_per_m2_eur"]],
             mode="markers+text",
-            marker={"size": 6, "color": color_map.get(sector, "#64748b")},
+            marker={"size": 6, "color": color_map.get(sector, "#63746d")},
             text=[f"{sector} {row['avg_per_m2_eur']:.0f}"],
             textposition="middle right",
-            textfont={"size": 12, "color": "#334155"},
+            textfont={"size": 12, "color": "#31443b"},
             hoverinfo="skip",
             showlegend=False,
             cliponaxis=False,
@@ -1522,7 +1526,7 @@ def render_sales_trend(hist: pd.DataFrame, selected_cities: list[str]) -> None:
     )
     fig.update_yaxes(
         title_text="EUR per m2",
-        gridcolor="#e5e7eb",
+        gridcolor="#d8e2dd",
         zeroline=False,
     )
 
@@ -1918,13 +1922,13 @@ st.markdown(
         style="
             text-align: center;
             padding: 2.5rem 0 1rem;
-            color: #64748b;
+            color: #63746d;
             font-size: 0.9rem;
         "
     >
         <a
             href="mailto:sergey.revo@outlook.com"
-            style="color:#475569; text-decoration:none;"
+            style="color:#31443b; text-decoration:none;"
         >
             sergey.revo@outlook.com
         </a>

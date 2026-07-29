@@ -180,6 +180,14 @@ Read-only Supabase inspection on 2026-07-28 found:
   - insight cards now use a consistent minimum height across a row;
   - KPI cards use a stronger fixed rhythm;
   - the daily-vs-monthly context callout has a clear gap before the cards below.
+- Reworked the dashboard visual system and color palette for a calmer
+  real-estate intelligence feel:
+  - replaced the default blue/slate Streamlit feel with a sage, stone, and
+    deep green-ink interface palette;
+  - refreshed sale, rent, daily rent, yield, neutral, and trend chart colors
+    with clearer semantic roles;
+  - aligned Plotly fonts, hover labels, gridlines, tabs, controls, cards,
+    header, workspace bar, and footer with the new palette.
 
 ## Next Small Steps
 
