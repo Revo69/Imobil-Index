@@ -68,6 +68,7 @@ st.markdown(
             --amber: #b76725;
             --cyan: #0f8b8d;
             --shadow: 0 10px 26px rgba(18, 48, 38, 0.08);
+            --shadow-card: 0 6px 18px rgba(18, 48, 38, 0.055);
         }
 
         .stApp {
@@ -89,7 +90,7 @@ st.markdown(
 
         .block-container {
             max-width: 1400px;
-            padding-top: 1.25rem;
+            padding-top: 1.1rem;
             padding-bottom: 3rem;
         }
 
@@ -114,18 +115,18 @@ st.markdown(
             gap: 0.35rem;
             width: 100%;
             box-sizing: border-box;
-            margin: 0 0 1.15rem;
+            margin: 0 0 1.35rem;
             padding: 0.35rem;
             border: 1px solid var(--border);
             border-radius: 8px;
-            background: var(--surface);
-            box-shadow: 0 1px 2px rgba(18, 48, 38, 0.04);
+            background: var(--surface-muted);
+            box-shadow: var(--shadow-card);
         }
 
         div[data-testid="stTabs"] button {
             flex: 1 1 8rem;
             justify-content: center;
-            min-height: 2.25rem;
+            min-height: 2.35rem;
             padding: 0.45rem 0.9rem;
             border-radius: 6px;
             border-bottom: 0 !important;
@@ -147,7 +148,7 @@ st.markdown(
         }
 
         .app-header {
-            margin: 0 0 0.9rem;
+            margin: 0 0 1.15rem;
             padding: 1.05rem 1.15rem;
             border: 1px solid var(--border);
             border-left: 5px solid var(--green);
@@ -220,7 +221,7 @@ st.markdown(
         }
 
         .section {
-            padding: 0.85rem 0 0.2rem;
+            padding: 1rem 0 0.3rem;
         }
 
         .section-title {
@@ -240,12 +241,14 @@ st.markdown(
 
         .kpi-card {
             box-sizing: border-box;
+            display: flex;
+            flex-direction: column;
             min-height: 138px;
             padding: 0.9rem 0.95rem;
             border: 1px solid var(--border);
             border-radius: 8px;
             background: var(--surface);
-            box-shadow: 0 1px 2px rgba(18, 48, 38, 0.04);
+            box-shadow: var(--shadow-card);
         }
 
         .kpi-label {
@@ -275,7 +278,7 @@ st.markdown(
             border-color: var(--border);
             border-radius: 8px;
             background: var(--surface);
-            box-shadow: 0 1px 2px rgba(18, 48, 38, 0.04);
+            box-shadow: var(--shadow-card);
         }
 
         .chart-title {
@@ -298,13 +301,15 @@ st.markdown(
 
         .insight-card {
             box-sizing: border-box;
+            display: flex;
+            flex-direction: column;
             min-height: 160px;
             margin-bottom: 0.85rem;
             padding: 0.95rem 1rem;
             border: 1px solid var(--border);
             border-radius: 8px;
             background: var(--surface);
-            box-shadow: 0 1px 2px rgba(18, 48, 38, 0.04);
+            box-shadow: var(--shadow-card);
         }
 
         .insight-card-label {
@@ -1640,7 +1645,7 @@ latest_snapshot = (
 )
 render_app_header(latest_snapshot)
 
-filter_col, main_col = st.columns([1.35, 4.25], gap="medium")
+filter_col, main_col = st.columns([1.25, 4.45], gap="large")
 
 with filter_col, st.container(border=True):
     st.markdown(

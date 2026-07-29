@@ -4,7 +4,7 @@ Simple project progress log for Imobil.Index.
 
 ## Last Updated
 
-2026-07-29
+2026-07-30
 
 ## Current State
 
@@ -202,6 +202,10 @@ Read-only Supabase inspection on 2026-07-28 found:
 - Removed the redundant workspace summary bar (`Scope`, `Active lens`,
   `Liquidity`, `Snapshot`) because it duplicated the header, filters, and
   market summary while making the top layout feel crowded.
+- Ran a final top-layout/card QA pass:
+  - increased the gap between the Explore filter panel and the main dashboard;
+  - tightened section rhythm after the header and tab toolbar changes;
+  - unified dashboard card shadows and flex layout for KPI and insight cards.
 
 ## Next Small Steps
 
