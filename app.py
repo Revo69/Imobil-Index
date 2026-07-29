@@ -41,6 +41,7 @@ YIELD_COLOR_SCALE = ["#e0f2fe", "#67e8f9", "#0e7490", "#164e63"]
 CHART_NEUTRAL = "#cbd5e1"
 ROOM_GROUP_ORDER = ["1", "2", "3", "4+"]
 AREA_BAND_ORDER = ["<40 m2", "40-59 m2", "60-79 m2", "80-119 m2", "120+ m2"]
+PLOTLY_CHART_CONFIG = {"displayModeBar": False, "responsive": True}
 
 
 # =========================
@@ -227,6 +228,21 @@ st.markdown(
             box-shadow: 0 1px 2px rgba(15, 23, 42, 0.035);
         }
 
+        div[data-testid="stVerticalBlockBorderWrapper"] {
+            border-color: var(--border);
+            border-radius: 8px;
+            background: var(--surface);
+            box-shadow: 0 1px 2px rgba(15, 23, 42, 0.035);
+        }
+
+        .chart-title {
+            margin: 0.05rem 0 0.45rem;
+            color: #334155;
+            font-size: 0.82rem;
+            font-weight: 760;
+            letter-spacing: 0;
+        }
+
         .insight-strip {
             padding: 1rem;
             border-left: 4px solid var(--cyan);
@@ -292,6 +308,25 @@ st.markdown(
             line-height: 1.4;
         }
 
+        div[data-baseweb="select"] > div,
+        div[data-testid="stNumberInput"] input {
+            border-radius: 8px;
+            background: #f8fafc;
+            border-color: var(--border);
+        }
+
+        div[data-testid="stMetric"] {
+            padding: 0.75rem 0.8rem;
+            border: 1px solid var(--border);
+            border-radius: 8px;
+            background: #ffffff;
+        }
+
+        div[data-testid="stMetricValue"] {
+            color: var(--text);
+            font-size: 1.28rem;
+            font-weight: 760;
+        }
 
         div[data-testid="stButton"] button {
             min-height: 2.25rem;
@@ -512,6 +547,17 @@ def render_empty_state(message: str) -> None:
     st.markdown(f'<div class="empty-state">{message}</div>', unsafe_allow_html=True)
 
 
+def render_chart_title(title: str) -> None:
+    st.markdown(
+        f'<div class="chart-title">{escape(title)}</div>',
+        unsafe_allow_html=True,
+    )
+
+
+def render_plotly_chart(fig) -> None:
+    st.plotly_chart(fig, width="stretch", config=PLOTLY_CHART_CONFIG)
+
+
 def apply_common_chart_style(fig, height: int = 430, show_legend: bool = False):
     fig.update_layout(
         height=height,
@@ -522,6 +568,8 @@ def apply_common_chart_style(fig, height: int = 430, show_legend: bool = False):
         hoverlabel={"bgcolor": "#111827", "font_size": 13, "font_color": "#ffffff"},
         coloraxis_showscale=False,
         showlegend=show_legend,
+        uniformtext_minsize=11,
+        uniformtext_mode="hide",
         legend={
             "orientation": "h",
             "yanchor": "bottom",
@@ -536,12 +584,14 @@ def apply_common_chart_style(fig, height: int = 430, show_legend: bool = False):
         showgrid=False,
         tickangle=-35,
         tickfont={"color": "#475569"},
+        fixedrange=True,
     )
     fig.update_yaxes(
         title_font={"color": "#475569"},
         tickfont={"color": "#475569"},
         gridcolor="#e2e8f0",
         zeroline=False,
+        fixedrange=True,
     )
     return fig
 
@@ -614,7 +664,7 @@ def render_ranked_bars(
     )
 
     with st.container(border=True):
-        st.plotly_chart(fig, width="stretch")
+        render_plotly_chart(fig)
 
 
 def render_tab_header(
@@ -789,8 +839,8 @@ def render_segment_chart(
     )
 
     with st.container(border=True):
-        st.markdown(f"**{title}**")
-        st.plotly_chart(fig, width="stretch")
+        render_chart_title(title)
+        render_plotly_chart(fig)
 
 
 def render_sale_segments(df_segments: pd.DataFrame) -> None:
@@ -1039,7 +1089,7 @@ def render_break_even_analysis(df_break_even: pd.DataFrame) -> None:
     fig.update_xaxes(title_text="", showticklabels=False, ticks="")
     fig.update_yaxes(tickangle=0, automargin=True, title_text="")
     with st.container(border=True):
-        st.plotly_chart(fig, width="stretch")
+        render_plotly_chart(fig)
 
     st.markdown(
         """
@@ -1218,7 +1268,7 @@ def render_yield_chart(
     )
 
     with st.container(border=True):
-        st.plotly_chart(fig, width="stretch")
+        render_plotly_chart(fig)
 
 
 def render_sales_trend(hist: pd.DataFrame, selected_cities: list[str]) -> None:
@@ -1320,7 +1370,7 @@ def render_sales_trend(hist: pd.DataFrame, selected_cities: list[str]) -> None:
     )
 
     with st.container(border=True):
-        st.plotly_chart(fig, width="stretch")
+        render_plotly_chart(fig)
 
 
 def render_sector_table(

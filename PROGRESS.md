@@ -38,6 +38,8 @@ Simple project progress log for Imobil.Index.
   style used by the main sector charts.
 - Added dashboard UX/UI standards to `AGENTS.md` so future UI work keeps the
   same modern, polished, analytics-focused design direction.
+- Ran a focused UI polish pass for chart/container consistency across the
+  dashboard.
 
 ## Important Verified Semantics
 
@@ -147,6 +149,11 @@ Read-only Supabase inspection on 2026-07-28 found:
   - `AGENTS.md` now includes dashboard UX/UI standards covering modern visual
     quality, consistency with existing charts/cards, muted colors, direct
     labels, mobile usability, and honest visual verification.
+  - `app.py` now uses a shared Plotly chart renderer with modebar hidden and
+    responsive config.
+  - Streamlit border containers, sidebar filter controls, metric cards, and
+    small chart titles were lightly restyled for a more consistent dashboard
+    surface.
 
 ## Next Small Steps
 
