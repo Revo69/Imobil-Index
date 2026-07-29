@@ -109,17 +109,22 @@ st.markdown(
         }
 
         div[data-testid="stTabs"] [role="tablist"] {
-            display: inline-flex;
-            gap: 0.25rem;
-            margin: 0 0 1rem;
-            padding: 0.25rem;
+            display: flex;
+            flex-wrap: wrap;
+            gap: 0.35rem;
+            width: 100%;
+            box-sizing: border-box;
+            margin: 0 0 1.15rem;
+            padding: 0.35rem;
             border: 1px solid var(--border);
             border-radius: 8px;
-            background: var(--surface-muted);
+            background: var(--surface);
             box-shadow: 0 1px 2px rgba(18, 48, 38, 0.04);
         }
 
         div[data-testid="stTabs"] button {
+            flex: 1 1 8rem;
+            justify-content: center;
             min-height: 2.25rem;
             padding: 0.45rem 0.9rem;
             border-radius: 6px;
@@ -134,6 +139,10 @@ st.markdown(
         }
 
         div[data-testid="stTabs"] [data-baseweb="tab-highlight"] {
+            display: none;
+        }
+
+        div[data-testid="stTabs"] [data-baseweb="tab-border"] {
             display: none;
         }
 

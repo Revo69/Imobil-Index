@@ -197,6 +197,8 @@ Read-only Supabase inspection on 2026-07-28 found:
   - added breathing room below the tab toolbar;
   - removed the default Streamlit tab underline that made tabs feel stuck to
     the content divider.
+- Reworked the tab toolbar from a floating compact pill into a full-width
+  navigation row that belongs to the main dashboard workspace.
 
 ## Next Small Steps
 
