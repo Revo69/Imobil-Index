@@ -29,6 +29,8 @@ Simple project progress log for Imobil.Index.
 - Fixed public API layer refresh: `refresh_gold_estate()` and
   `refresh_gold_rent()` now also maintain the `api_*` tables after refreshing
   Gold.
+- Added public API v1 documentation and a SQL health-check for the public API
+  layer.
 
 ## Important Verified Semantics
 
@@ -112,6 +114,11 @@ Read-only Supabase inspection on 2026-07-28 found:
     the expected pipeline RPC role.
   - Supabase Security Advisor still has no ERROR/WARN items after the function
     update; only the same INFO notices remain for closed internal tables.
+  - `docs/public_api_v1.md` documents the public API contract, exposed tables,
+    field meanings, example REST requests, refresh contract, and access rules.
+  - `sql/check_public_api_layer.sql` was added and verified against Supabase.
+    It checks Gold/API freshness, row parity, public RLS/grants, closed
+    internal objects, and refresh-function wiring.
 
 ## Next Small Steps
 
@@ -136,6 +143,7 @@ streamlit run app.py
 - confirm `api_estate_current` and `api_rent_current` advance together with
   Gold;
 - confirm the Streamlit header shows the newest snapshot date.
+- run `sql/check_public_api_layer.sql` and confirm every status is `OK`.
 
 4. After that, choose only one next improvement:
 
