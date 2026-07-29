@@ -34,6 +34,8 @@ Simple project progress log for Imobil.Index.
 - Added the first Silver-powered public API table for sale segments by rooms
   and area band.
 - Connected `api_estate_segments_current` to the For Sale dashboard tab.
+- Restyled the For Sale segment charts to match the quieter horizontal bar
+  style used by the main sector charts.
 
 ## Important Verified Semantics
 
@@ -137,6 +139,9 @@ Read-only Supabase inspection on 2026-07-28 found:
   - `app.py` now loads `api_estate_segments_current` and shows a For Sale
     "Prices by home profile" block with listing-weighted EUR/m2 charts by
     rooms and area band.
+  - The segment charts were adjusted from default vertical blue bars to
+    horizontal neutral bars with one sale-color accent, matching the existing
+    dashboard chart style more closely.
 
 ## Next Small Steps
 

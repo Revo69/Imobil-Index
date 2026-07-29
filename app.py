@@ -738,36 +738,54 @@ def render_segment_chart(
     plot[group_col] = plot[group_col].astype(str)
     plot["Label"] = plot["avg_per_m2_eur"].map(lambda value: f"{value:.0f}")
     plot["ListingsLabel"] = plot["listings"].map(format_int)
+    plot["Profile"] = pd.Categorical(
+        plot[group_col],
+        categories=category_order,
+        ordered=True,
+    )
+    plot = plot.sort_values("Profile", ascending=True)
+
+    colors = [CHART_NEUTRAL] * len(plot)
+    if colors:
+        highlight_index = int(plot["avg_per_m2_eur"].idxmax())
+        colors[plot.index.get_loc(highlight_index)] = SALE_COLOR_SCALE[-1]
 
     fig = px.bar(
         plot,
-        x=group_col,
-        y="avg_per_m2_eur",
+        x="avg_per_m2_eur",
+        y=group_col,
+        orientation="h",
         text="Label",
         labels={group_col: "", "avg_per_m2_eur": y_label},
         custom_data=["ListingsLabel"],
         category_orders={group_col: category_order},
     )
     fig.update_traces(
-        marker_color=SALE_COLOR_SCALE[-2],
+        marker_color=colors,
         marker_line_width=0,
         textposition="outside",
         cliponaxis=False,
         hovertemplate=(
-            "<b>%{x}</b><br>"
-            "%{y:,.0f} EUR/m2<br>"
+            "<b>%{y}</b><br>"
+            "%{x:,.0f} EUR/m2<br>"
             "%{customdata[0]} listings<extra></extra>"
         ),
     )
-    fig = apply_common_chart_style(fig, height=330)
-    fig.update_layout(margin={"l": 8, "r": 28, "t": 8, "b": 8}, bargap=0.28)
-    fig.update_xaxes(title_text="", showgrid=False, tickangle=0)
-    fig.update_yaxes(
+    fig = apply_common_chart_style(fig, height=max(280, 120 + len(plot) * 42))
+    fig.update_layout(margin={"l": 4, "r": 58, "t": 8, "b": 4}, bargap=0.24)
+    fig.update_xaxes(
         title_text="",
         showgrid=True,
         showticklabels=False,
         ticks="",
         zeroline=False,
+    )
+    fig.update_yaxes(
+        categoryorder="array",
+        categoryarray=plot[group_col].tolist()[::-1],
+        tickangle=0,
+        automargin=True,
+        title_text="",
     )
 
     with st.container(border=True):
