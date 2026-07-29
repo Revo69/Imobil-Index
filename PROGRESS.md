@@ -166,6 +166,12 @@ Read-only Supabase inspection on 2026-07-28 found:
   - made yield chart hover text match the rest of the dashboard;
   - made the profile-chart accent highlight independent of DataFrame index
     labels.
+- Started a more memorable real-estate intelligence shell inspired by the
+  Parcelia reference without copying its map-first structure:
+  - upgraded the app header into a stronger product header;
+  - added a compact active market lens bar above the main tabs;
+  - restyled the Explore area as a control panel while preserving the existing
+    filters and presets.
 
 ## Next Small Steps
 
