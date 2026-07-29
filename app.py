@@ -41,7 +41,11 @@ YIELD_COLOR_SCALE = ["#e0f2fe", "#67e8f9", "#0e7490", "#164e63"]
 CHART_NEUTRAL = "#cbd5e1"
 ROOM_GROUP_ORDER = ["1", "2", "3", "4+"]
 AREA_BAND_ORDER = ["<40 m2", "40-59 m2", "60-79 m2", "80-119 m2", "120+ m2"]
-PLOTLY_CHART_CONFIG = {"displayModeBar": False, "responsive": True}
+PLOTLY_CHART_CONFIG = {
+    "displayModeBar": False,
+    "displaylogo": False,
+    "responsive": True,
+}
 
 
 # =========================
@@ -220,14 +224,6 @@ st.markdown(
             line-height: 1.35;
         }
 
-        .chart-shell {
-            padding: 0.85rem 0.9rem 0.25rem;
-            border: 1px solid var(--border);
-            border-radius: 8px;
-            background: var(--surface);
-            box-shadow: 0 1px 2px rgba(15, 23, 42, 0.035);
-        }
-
         div[data-testid="stVerticalBlockBorderWrapper"] {
             border-color: var(--border);
             border-radius: 8px;
@@ -250,13 +246,6 @@ st.markdown(
             background: #f0f9ff;
             color: #164e63;
             line-height: 1.55;
-        }
-
-        .insight-grid {
-            display: grid;
-            grid-template-columns: repeat(3, minmax(0, 1fr));
-            gap: 0.75rem;
-            margin: 0.2rem 0 1rem;
         }
 
         .insight-card {
@@ -300,12 +289,6 @@ st.markdown(
             border-radius: 8px;
             background: #ffffff;
             color: var(--muted);
-        }
-
-        .filter-note {
-            color: var(--muted);
-            font-size: 0.86rem;
-            line-height: 1.4;
         }
 
         div[data-baseweb="select"] > div,
@@ -357,10 +340,6 @@ st.markdown(
 
             .status-pill {
                 white-space: normal;
-            }
-
-            .insight-grid {
-                grid-template-columns: 1fr;
             }
 
             .insight-card {
@@ -811,8 +790,8 @@ def render_segment_chart(
 
     colors = [CHART_NEUTRAL] * len(plot)
     if colors:
-        highlight_index = int(plot["avg_per_m2_eur"].idxmax())
-        colors[plot.index.get_loc(highlight_index)] = SALE_COLOR_SCALE[-1]
+        highlight_position = int(plot["avg_per_m2_eur"].reset_index(drop=True).idxmax())
+        colors[highlight_position] = SALE_COLOR_SCALE[-1]
 
     fig = px.bar(
         plot,
@@ -1302,6 +1281,7 @@ def render_yield_chart(
         textposition="outside",
         marker_line_width=0,
         cliponaxis=False,
+        hovertemplate="<b>%{customdata[0]}</b><br>%{x:.1f}% gross yield<extra></extra>",
     )
     fig = apply_common_chart_style(fig, height=max(340, min(460, 125 + len(top_y) * 34)))
     fig.update_layout(margin={"l": 4, "r": 58, "t": 8, "b": 4}, bargap=0.24)

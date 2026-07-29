@@ -153,12 +153,18 @@ Read-only Supabase inspection on 2026-07-28 found:
     labels, mobile usability, and honest visual verification.
   - `app.py` now uses a shared Plotly chart renderer with modebar hidden and
     responsive config.
-  - Streamlit border containers, sidebar filter controls, metric cards, and
-    small chart titles were lightly restyled for a more consistent dashboard
-    surface.
-  - The For Sale profile block now has local `Rooms` and `Area` filters that
-    affect only the room/area profile charts, preserving the existing global
-    dashboard filters.
+- Streamlit border containers, sidebar filter controls, metric cards, and
+  small chart titles were lightly restyled for a more consistent dashboard
+  surface.
+- The For Sale profile block now has local `Rooms` and `Area` filters that
+  affect only the room/area profile charts, preserving the existing global
+  dashboard filters.
+- Ran a small Ponytail/Data Visualization UI revision pass:
+  - removed unused dashboard CSS;
+  - kept Plotly charts on a quieter shared config;
+  - made yield chart hover text match the rest of the dashboard;
+  - made the profile-chart accent highlight independent of DataFrame index
+    labels.
 
 ## Next Small Steps
 
