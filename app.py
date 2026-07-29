@@ -22,6 +22,9 @@ supabase = create_client(st.secrets["SUPABASE_URL"], st.secrets["SUPABASE_KEY"])
 
 HISTORY_WINDOW_DAYS = 90
 HISTORY_SALE_COLUMNS = "date,city,sector,avg_per_m2_eur"
+ESTATE_SEGMENT_COLUMNS = (
+    "date,city,sector,rooms_group,area_band,listings,avg_price_eur,avg_per_m2_eur"
+)
 MONTHLY_RENT_DEAL = (
     "\u0421\u0434\u0430\u044e \u043f\u043e\u043c\u0435\u0441\u044f\u0447\u043d\u043e"
 )
@@ -36,6 +39,8 @@ RENT_COLOR_SCALE = ["#dcfce7", "#86efac", "#16a34a", "#14532d"]
 DAILY_COLOR_SCALE = ["#fef3c7", "#fbbf24", "#f97316", "#9a3412"]
 YIELD_COLOR_SCALE = ["#e0f2fe", "#67e8f9", "#0e7490", "#164e63"]
 CHART_NEUTRAL = "#cbd5e1"
+ROOM_GROUP_ORDER = ["1", "2", "3", "4+"]
+AREA_BAND_ORDER = ["<40 m2", "40-59 m2", "60-79 m2", "80-119 m2", "120+ m2"]
 
 
 # =========================
@@ -372,15 +377,21 @@ def load_historical_data() -> pd.DataFrame:
 
 
 @st.cache_data(ttl=3600)
-def load_data() -> tuple[pd.DataFrame, pd.DataFrame, pd.DataFrame]:
+def load_data() -> tuple[pd.DataFrame, pd.DataFrame, pd.DataFrame, pd.DataFrame]:
     sales = pd.DataFrame(
         supabase.table("api_estate_current").select("*").execute().data
+    )
+    sale_segments = pd.DataFrame(
+        supabase.table("api_estate_segments_current")
+        .select(ESTATE_SEGMENT_COLUMNS)
+        .execute()
+        .data
     )
     rent = pd.DataFrame(supabase.table("api_rent_current").select("*").execute().data)
     yield_data = pd.DataFrame(
         supabase.table("api_rent_yield").select("*").execute().data
     )
-    return sales, rent, yield_data
+    return sales, sale_segments, rent, yield_data
 
 
 # =========================
@@ -674,6 +685,126 @@ def render_price_sections(
             high_scale,
             "highest",
             digits,
+        )
+
+
+def build_segment_summary(
+    df_segments: pd.DataFrame,
+    group_col: str,
+    category_order: list[str],
+) -> pd.DataFrame:
+    required = {group_col, "listings", "avg_per_m2_eur"}
+    if df_segments.empty or not required.issubset(df_segments.columns):
+        return pd.DataFrame()
+
+    work = df_segments.dropna(subset=[group_col, "listings", "avg_per_m2_eur"]).copy()
+    if work.empty:
+        return work
+
+    work["listings"] = pd.to_numeric(work["listings"], errors="coerce")
+    work["avg_per_m2_eur"] = pd.to_numeric(work["avg_per_m2_eur"], errors="coerce")
+    work = work.dropna(subset=["listings", "avg_per_m2_eur"])
+    work = work[work["listings"] > 0]
+    if work.empty:
+        return work
+
+    work["weighted_per_m2"] = work["avg_per_m2_eur"] * work["listings"]
+    grouped = (
+        work.groupby(group_col, as_index=False, observed=True)
+        .agg(listings=("listings", "sum"), weighted_per_m2=("weighted_per_m2", "sum"))
+        .copy()
+    )
+    grouped["avg_per_m2_eur"] = grouped["weighted_per_m2"] / grouped["listings"]
+    grouped[group_col] = pd.Categorical(
+        grouped[group_col].astype(str),
+        categories=category_order,
+        ordered=True,
+    )
+    return grouped.sort_values(group_col).drop(columns=["weighted_per_m2"])
+
+
+def render_segment_chart(
+    summary: pd.DataFrame,
+    group_col: str,
+    title: str,
+    y_label: str,
+    category_order: list[str],
+) -> None:
+    if summary.empty:
+        render_empty_state("Not enough segment data for the current filters.")
+        return
+
+    plot = summary.copy()
+    plot[group_col] = plot[group_col].astype(str)
+    plot["Label"] = plot["avg_per_m2_eur"].map(lambda value: f"{value:.0f}")
+    plot["ListingsLabel"] = plot["listings"].map(format_int)
+
+    fig = px.bar(
+        plot,
+        x=group_col,
+        y="avg_per_m2_eur",
+        text="Label",
+        labels={group_col: "", "avg_per_m2_eur": y_label},
+        custom_data=["ListingsLabel"],
+        category_orders={group_col: category_order},
+    )
+    fig.update_traces(
+        marker_color=SALE_COLOR_SCALE[-2],
+        marker_line_width=0,
+        textposition="outside",
+        cliponaxis=False,
+        hovertemplate=(
+            "<b>%{x}</b><br>"
+            "%{y:,.0f} EUR/m2<br>"
+            "%{customdata[0]} listings<extra></extra>"
+        ),
+    )
+    fig = apply_common_chart_style(fig, height=330)
+    fig.update_layout(margin={"l": 8, "r": 28, "t": 8, "b": 8}, bargap=0.28)
+    fig.update_xaxes(title_text="", showgrid=False, tickangle=0)
+    fig.update_yaxes(
+        title_text="",
+        showgrid=True,
+        showticklabels=False,
+        ticks="",
+        zeroline=False,
+    )
+
+    with st.container(border=True):
+        st.markdown(f"**{title}**")
+        st.plotly_chart(fig, width="stretch")
+
+
+def render_sale_segments(df_segments: pd.DataFrame) -> None:
+    render_section(
+        "Prices by home profile",
+        "Sale prices by room count and total area, weighted by listings.",
+    )
+    if df_segments.empty:
+        render_empty_state("No sale segment data matches the current filters.")
+        return
+
+    room_summary = build_segment_summary(
+        df_segments, "rooms_group", ROOM_GROUP_ORDER
+    )
+    area_summary = build_segment_summary(df_segments, "area_band", AREA_BAND_ORDER)
+
+    col_rooms, col_area = st.columns(2)
+    with col_rooms:
+        render_segment_chart(
+            room_summary,
+            "rooms_group",
+            "By rooms",
+            "EUR/m2",
+            ROOM_GROUP_ORDER,
+        )
+    with col_area:
+        render_segment_chart(
+            area_summary,
+            "area_band",
+            "By area",
+            "EUR/m2",
+            AREA_BAND_ORDER,
         )
 
 
@@ -1305,7 +1436,7 @@ def render_daily_rent_context(df_yield: pd.DataFrame) -> None:
 try:
     with st.spinner("Loading market data..."):
         df_hist_sales = load_historical_data()
-        df_sales, df_rent, df_yield = load_data()
+        df_sales, df_sale_segments, df_rent, df_yield = load_data()
 # Keep the dashboard readable if the upstream API or local cache fails.
 except Exception as exc:  # noqa: BLE001
     st.error("Could not load dashboard data from Supabase.")
@@ -1319,7 +1450,7 @@ except Exception as exc:  # noqa: BLE001
 all_cities = sorted(
     {
         city
-        for dataset in (df_sales, df_rent)
+        for dataset in (df_sales, df_sale_segments, df_rent)
         if not dataset.empty and "city" in dataset.columns
         for city in dataset["city"].dropna().unique()
     }
@@ -1395,6 +1526,9 @@ with main_col:
     with tab_sale:
         price_col = "avg_per_m2_eur"
         df = filter_by_city_and_listings(df_sales, selected_cities, min_listings)
+        sale_segments = filter_by_city_and_listings(
+            df_sale_segments, selected_cities, min_listings
+        )
 
         if render_tab_header(
             df,
@@ -1414,6 +1548,7 @@ with main_col:
                     ["#fee2e2", "#fca5a5", "#ef4444", "#991b1b"],
                     0,
                 )
+            render_sale_segments(sale_segments)
             render_sales_trend(df_hist_sales, selected_cities)
             render_sector_table(
                 df,

@@ -33,6 +33,7 @@ Simple project progress log for Imobil.Index.
   layer.
 - Added the first Silver-powered public API table for sale segments by rooms
   and area band.
+- Connected `api_estate_segments_current` to the For Sale dashboard tab.
 
 ## Important Verified Semantics
 
@@ -133,6 +134,9 @@ Read-only Supabase inspection on 2026-07-28 found:
   - Supabase Security Advisor still has no ERROR/WARN items after adding the
     segment API table; only the same INFO notices remain for closed internal
     tables.
+  - `app.py` now loads `api_estate_segments_current` and shows a For Sale
+    "Prices by home profile" block with listing-weighted EUR/m2 charts by
+    rooms and area band.
 
 ## Next Small Steps
 
@@ -148,6 +152,7 @@ streamlit run app.py
 
 - Insights cards render as cards, not literal HTML.
 - For Sale, Monthly Rent, Daily Rent, and Insights tabs still work.
+- For Sale shows the "Prices by home profile" segment block.
 - Left filters affect all tabs.
 - Sector details table has no horizontal overflow.
 - Header, tabs, and cards look clean on desktop.
