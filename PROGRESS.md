@@ -162,6 +162,7 @@ Read-only Supabase inspection on 2026-07-28 found:
 - Ran a small Ponytail/Data Visualization UI revision pass:
   - removed unused dashboard CSS;
   - kept Plotly charts on a quieter shared config;
+  - made ranked chart hover values show clear business units;
   - made yield chart hover text match the rest of the dashboard;
   - made the profile-chart accent highlight independent of DataFrame index
     labels.

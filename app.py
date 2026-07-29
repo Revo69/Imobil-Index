@@ -537,6 +537,19 @@ def render_plotly_chart(fig) -> None:
     st.plotly_chart(fig, width="stretch", config=PLOTLY_CHART_CONFIG)
 
 
+def format_chart_hover_value(value: float, y_label: str, digits: int) -> str:
+    formatted = f"{value:,.{digits}f}"
+    if y_label == "Listings":
+        return f"{formatted} listings"
+    if "month" in y_label:
+        return f"{formatted} EUR/m2/month"
+    if "day" in y_label:
+        return f"{formatted} EUR/m2/day"
+    if "EUR" in y_label:
+        return f"{formatted} EUR/m2"
+    return formatted
+
+
 def apply_common_chart_style(fig, height: int = 430, show_legend: bool = False):
     fig.update_layout(
         height=height,
@@ -603,6 +616,9 @@ def render_ranked_bars(
     top["ChartLabel"] = top["Sector"].str.replace(" -> ", " - ", regex=False)
     top = top.sort_values(price_col, ascending=True)
     top["Label"] = top[price_col].map(lambda value: f"{value:.{digits}f}")
+    top["HoverValue"] = top[price_col].map(
+        lambda value: format_chart_hover_value(value, y_label, digits)
+    )
 
     accent_color = color_scale[1] if mode == "lowest" else color_scale[-1]
     colors = [CHART_NEUTRAL] * len(top)
@@ -616,14 +632,14 @@ def render_ranked_bars(
         orientation="h",
         text="Label",
         labels={price_col: y_label, "ChartLabel": ""},
-        custom_data=["Sector"],
+        custom_data=["Sector", "HoverValue"],
     )
     fig.update_traces(
         marker_color=colors,
         marker_line_width=0,
         textposition="outside",
         cliponaxis=False,
-        hovertemplate="<b>%{customdata[0]}</b><br>%{x}<extra></extra>",
+        hovertemplate="<b>%{customdata[0]}</b><br>%{customdata[1]}<extra></extra>",
     )
     fig = apply_common_chart_style(fig, height=max(350, min(500, 120 + len(top) * 32)))
     fig.update_layout(margin={"l": 4, "r": 58, "t": 8, "b": 4}, bargap=0.24)
