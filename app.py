@@ -723,6 +723,7 @@ def render_tab_header(
     empty_message: str,
     price_fmt: str = "{:.0f}",
     price_suffix: str = "",
+    context_note: str | None = None,
 ) -> bool:
     if df.empty:
         render_empty_state(empty_message)
@@ -733,10 +734,10 @@ def render_tab_header(
     highest = df.loc[df[price_col].idxmax()]
     avg_price = price_fmt.format(weighted_average(df, price_col))
 
-    render_section(
-        "Current market view",
-        f"{data_freshness(df)} | {format_int(listings)} listings after filters",
-    )
+    caption = f"{data_freshness(df)} | {format_int(listings)} listings after filters"
+    if context_note:
+        caption = f"{caption} | {context_note}"
+    render_section("Current market view", caption)
 
     col1, col2, col3, col4 = st.columns(4)
     with col1:
@@ -837,6 +838,121 @@ def ordered_segment_options(
     return ordered + extra
 
 
+def has_sale_profile_filters(
+    selected_rooms: Iterable[str],
+    selected_area_bands: Iterable[str],
+) -> bool:
+    return bool(list(selected_rooms) or list(selected_area_bands))
+
+
+def sale_profile_context_note(
+    selected_rooms: Iterable[str],
+    selected_area_bands: Iterable[str],
+) -> str | None:
+    selected_rooms = list(selected_rooms)
+    selected_area_bands = list(selected_area_bands)
+    if selected_rooms and selected_area_bands:
+        return "Room and area profile applied"
+    if selected_rooms:
+        return "Room profile applied"
+    if selected_area_bands:
+        return "Area profile applied"
+    return None
+
+
+def filter_by_city(
+    df: pd.DataFrame,
+    selected_cities: Iterable[str],
+) -> pd.DataFrame:
+    if df.empty:
+        return df
+
+    filtered = df.copy()
+    selected_cities = list(selected_cities)
+    if selected_cities and "city" in filtered.columns:
+        filtered = filtered[filtered["city"].isin(selected_cities)]
+    return filtered
+
+
+def filter_sale_profile_segments(
+    df_segments: pd.DataFrame,
+    selected_rooms: Iterable[str],
+    selected_area_bands: Iterable[str],
+) -> pd.DataFrame:
+    if df_segments.empty:
+        return df_segments
+
+    filtered = df_segments.copy()
+    selected_rooms = [str(value) for value in selected_rooms]
+    selected_area_bands = [str(value) for value in selected_area_bands]
+
+    if selected_rooms and "rooms_group" in filtered.columns:
+        filtered = filtered[filtered["rooms_group"].astype(str).isin(selected_rooms)]
+    if selected_area_bands and "area_band" in filtered.columns:
+        filtered = filtered[
+            filtered["area_band"].astype(str).isin(selected_area_bands)
+        ]
+    return filtered
+
+
+def build_sale_market_from_segments(df_segments: pd.DataFrame) -> pd.DataFrame:
+    required = {
+        "date",
+        "city",
+        "sector",
+        "listings",
+        "avg_price_eur",
+        "avg_per_m2_eur",
+    }
+    if df_segments.empty or not required.issubset(df_segments.columns):
+        return pd.DataFrame()
+
+    work = df_segments.copy()
+    work["listings"] = pd.to_numeric(work["listings"], errors="coerce")
+    work["avg_price_eur"] = pd.to_numeric(work["avg_price_eur"], errors="coerce")
+    work["avg_per_m2_eur"] = pd.to_numeric(
+        work["avg_per_m2_eur"], errors="coerce"
+    )
+    work = work.dropna(
+        subset=["date", "city", "listings", "avg_price_eur", "avg_per_m2_eur"]
+    )
+    work = work[work["listings"] > 0]
+    if work.empty:
+        return work
+
+    work["weighted_price"] = work["avg_price_eur"] * work["listings"]
+    work["weighted_per_m2"] = work["avg_per_m2_eur"] * work["listings"]
+    grouped = (
+        work.groupby(["date", "city", "sector"], as_index=False, dropna=False)
+        .agg(
+            listings=("listings", "sum"),
+            weighted_price=("weighted_price", "sum"),
+            weighted_per_m2=("weighted_per_m2", "sum"),
+        )
+        .copy()
+    )
+    grouped["avg_price_eur"] = grouped["weighted_price"] / grouped["listings"]
+    grouped["avg_per_m2_eur"] = grouped["weighted_per_m2"] / grouped["listings"]
+    return grouped.drop(columns=["weighted_price", "weighted_per_m2"])
+
+
+def filter_segments_to_market(
+    df_segments: pd.DataFrame,
+    df_market: pd.DataFrame,
+) -> pd.DataFrame:
+    key_cols = ["date", "city", "sector"]
+    if (
+        df_segments.empty
+        or df_market.empty
+        or not set(key_cols).issubset(df_segments.columns)
+        or not set(key_cols).issubset(df_market.columns)
+    ):
+        return pd.DataFrame()
+
+    market_keys = df_market[key_cols].drop_duplicates()
+    return df_segments.merge(market_keys, on=key_cols, how="inner")
+
+
 def render_segment_chart(
     summary: pd.DataFrame,
     group_col: str,
@@ -907,57 +1023,29 @@ def render_segment_chart(
         render_plotly_chart(fig)
 
 
-def render_sale_segments(df_segments: pd.DataFrame) -> None:
+def render_sale_segments(
+    df_segments: pd.DataFrame,
+    selected_rooms: Iterable[str],
+    selected_area_bands: Iterable[str],
+) -> None:
+    profile_caption = (
+        "Sale prices inside the current room and area profile, weighted by listings."
+        if has_sale_profile_filters(selected_rooms, selected_area_bands)
+        else "Sale prices by room count and total area, weighted by listings."
+    )
     render_section(
         "Prices by home profile",
-        "Sale prices by room count and total area, weighted by listings.",
+        profile_caption,
     )
     if df_segments.empty:
         render_empty_state("No sale segment data matches the current filters.")
         return
 
-    room_options = ordered_segment_options(
+    room_summary = build_segment_summary(
         df_segments, "rooms_group", ROOM_GROUP_ORDER
     )
-    area_options = ordered_segment_options(df_segments, "area_band", AREA_BAND_ORDER)
-
-    filter_col_1, filter_col_2 = st.columns(2)
-    with filter_col_1:
-        selected_rooms = st.multiselect(
-            "Rooms",
-            options=room_options,
-            default=[],
-            placeholder="All room groups",
-            key="sale_segment_rooms",
-        )
-    with filter_col_2:
-        selected_area_bands = st.multiselect(
-            "Area",
-            options=area_options,
-            default=[],
-            placeholder="All area bands",
-            key="sale_segment_area_bands",
-        )
-
-    filtered_segments = df_segments.copy()
-    if selected_rooms:
-        filtered_segments = filtered_segments[
-            filtered_segments["rooms_group"].astype(str).isin(selected_rooms)
-        ]
-    if selected_area_bands:
-        filtered_segments = filtered_segments[
-            filtered_segments["area_band"].astype(str).isin(selected_area_bands)
-        ]
-
-    if filtered_segments.empty:
-        render_empty_state("No home profiles match the selected rooms and area.")
-        return
-
-    room_summary = build_segment_summary(
-        filtered_segments, "rooms_group", ROOM_GROUP_ORDER
-    )
     area_summary = build_segment_summary(
-        filtered_segments, "area_band", AREA_BAND_ORDER
+        df_segments, "area_band", AREA_BAND_ORDER
     )
 
     col_rooms, col_area = st.columns(2)
@@ -1552,10 +1640,7 @@ def filter_by_city_and_listings(
     if df.empty:
         return df
 
-    filtered = df.copy()
-    selected_cities = list(selected_cities)
-    if selected_cities and "city" in filtered.columns:
-        filtered = filtered[filtered["city"].isin(selected_cities)]
+    filtered = filter_by_city(df, selected_cities)
     if "listings" in filtered.columns:
         filtered = filtered[filtered["listings"] >= min_listings]
     return filtered
@@ -1662,14 +1747,22 @@ with filter_col, st.container(border=True):
         if st.button("All", width="stretch"):
             st.session_state["filter_cities"] = []
             st.session_state["filter_min_listings"] = 1
+            st.session_state["filter_sale_rooms"] = []
+            st.session_state["filter_sale_area_bands"] = []
         if CHISINAU_CITY in all_cities and st.button("Chișinău", width="stretch"):
             st.session_state["filter_cities"] = [CHISINAU_CITY]
+            st.session_state["filter_sale_rooms"] = []
+            st.session_state["filter_sale_area_bands"] = []
     with preset_col_2:
         if st.button("Liquid", width="stretch"):
             st.session_state["filter_cities"] = []
             st.session_state["filter_min_listings"] = 50
+            st.session_state["filter_sale_rooms"] = []
+            st.session_state["filter_sale_area_bands"] = []
         if BALTI_CITY in all_cities and st.button("Bălți", width="stretch"):
             st.session_state["filter_cities"] = [BALTI_CITY]
+            st.session_state["filter_sale_rooms"] = []
+            st.session_state["filter_sale_area_bands"] = []
 
     st.markdown("**Filters**")
     selected_cities = st.multiselect(
@@ -1679,6 +1772,41 @@ with filter_col, st.container(border=True):
         placeholder="All cities",
         key="filter_cities",
     )
+    profile_option_segments = filter_by_city(df_sale_segments, selected_cities)
+    room_options = ordered_segment_options(
+        profile_option_segments, "rooms_group", ROOM_GROUP_ORDER
+    )
+    area_options = ordered_segment_options(
+        profile_option_segments, "area_band", AREA_BAND_ORDER
+    )
+    if "filter_sale_rooms" in st.session_state:
+        st.session_state["filter_sale_rooms"] = [
+            value
+            for value in st.session_state["filter_sale_rooms"]
+            if value in room_options
+        ]
+    if "filter_sale_area_bands" in st.session_state:
+        st.session_state["filter_sale_area_bands"] = [
+            value
+            for value in st.session_state["filter_sale_area_bands"]
+            if value in area_options
+        ]
+    st.markdown("**Sale profile**")
+    selected_sale_rooms = st.multiselect(
+        "Rooms",
+        options=room_options,
+        default=[],
+        placeholder="All rooms",
+        key="filter_sale_rooms",
+    )
+    selected_sale_area_bands = st.multiselect(
+        "Area",
+        options=area_options,
+        default=[],
+        placeholder="All areas",
+        key="filter_sale_area_bands",
+    )
+    st.caption("Rooms and area apply to For Sale only.")
     min_listings = st.number_input(
         "Min. listings",
         min_value=1,
@@ -1705,16 +1833,28 @@ with main_col:
     # --------------------- 1. Sale ---------------------
     with tab_sale:
         price_col = "avg_per_m2_eur"
-        df = filter_by_city_and_listings(df_sales, selected_cities, min_listings)
-        sale_segments = filter_by_city_and_listings(
-            df_sale_segments, selected_cities, min_listings
+        sale_profile_active = has_sale_profile_filters(
+            selected_sale_rooms, selected_sale_area_bands
         )
+        city_sale_segments = filter_by_city(df_sale_segments, selected_cities)
+        profile_sale_segments = filter_sale_profile_segments(
+            city_sale_segments, selected_sale_rooms, selected_sale_area_bands
+        )
+        if sale_profile_active:
+            df = build_sale_market_from_segments(profile_sale_segments)
+            df = filter_by_city_and_listings(df, [], min_listings)
+        else:
+            df = filter_by_city_and_listings(df_sales, selected_cities, min_listings)
+        sale_segments = filter_segments_to_market(profile_sale_segments, df)
 
         if render_tab_header(
             df,
             price_col,
             "No sale listings match the current filters.",
             price_fmt="{:.0f}",
+            context_note=sale_profile_context_note(
+                selected_sale_rooms, selected_sale_area_bands
+            ),
         ):
             render_market_highlights(df, price_col, price_fmt="{:.0f}")
             if market_lens == "Listings":
@@ -1728,8 +1868,19 @@ with main_col:
                     ["#fee2e2", "#fca5a5", "#ef4444", "#991b1b"],
                     0,
                 )
-            render_sale_segments(sale_segments)
-            render_sales_trend(df_hist_sales, selected_cities)
+            render_sale_segments(
+                sale_segments, selected_sale_rooms, selected_sale_area_bands
+            )
+            if sale_profile_active:
+                render_section(
+                    "90-day price movement",
+                    "Historical profile trend is not available yet.",
+                )
+                render_empty_state(
+                    "Clear rooms and area filters to view the overall sale trend."
+                )
+            else:
+                render_sales_trend(df_hist_sales, selected_cities)
             render_sector_table(
                 df,
                 ["city", "sector", "listings", "avg_per_m2_eur", "avg_price_eur"],

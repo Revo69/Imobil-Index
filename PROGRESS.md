@@ -40,8 +40,14 @@ Simple project progress log for Imobil.Index.
   same modern, polished, analytics-focused design direction.
 - Ran a focused UI polish pass for chart/container consistency across the
   dashboard.
-- Added local room and area filters to the For Sale "Prices by home profile"
-  block.
+- Promoted room and area controls into the left filter panel as a For Sale
+  profile filter:
+  - For Sale KPI cards, rankings, segment charts, and the sector table now use
+    the selected room/area profile when it is active;
+  - profile-filtered sale metrics are rebuilt from `api_estate_segments_current`
+    with listing-weighted aggregation back to city-sector grain;
+  - the 90-day sale trend stays overall-only because profile-level history is
+    not available in the current public API layer.
 
 ## Important Verified Semantics
 
@@ -222,8 +228,12 @@ streamlit run app.py
 - Insights cards render as cards, not literal HTML.
 - For Sale, Monthly Rent, Daily Rent, and Insights tabs still work.
 - For Sale shows the "Prices by home profile" segment block.
-- Rooms and Area filters inside "Prices by home profile" affect only that
-  block.
+- Rooms and Area filters in the left panel affect For Sale only.
+- When Rooms or Area are selected, For Sale KPI cards, rankings, segment charts,
+  and the sector table reflect the selected profile.
+- When Rooms or Area are selected, the 90-day sale trend explains that
+  profile-level history is not available yet instead of showing an unfiltered
+  trend as if it matched the profile.
 - Left filters affect all tabs.
 - Sector details table has no horizontal overflow.
 - Header, tabs, and cards look clean on desktop.
