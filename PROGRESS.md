@@ -40,6 +40,8 @@ Simple project progress log for Imobil.Index.
   same modern, polished, analytics-focused design direction.
 - Ran a focused UI polish pass for chart/container consistency across the
   dashboard.
+- Added local room and area filters to the For Sale "Prices by home profile"
+  block.
 
 ## Important Verified Semantics
 
@@ -154,6 +156,9 @@ Read-only Supabase inspection on 2026-07-28 found:
   - Streamlit border containers, sidebar filter controls, metric cards, and
     small chart titles were lightly restyled for a more consistent dashboard
     surface.
+  - The For Sale profile block now has local `Rooms` and `Area` filters that
+    affect only the room/area profile charts, preserving the existing global
+    dashboard filters.
 
 ## Next Small Steps
 
@@ -170,6 +175,8 @@ streamlit run app.py
 - Insights cards render as cards, not literal HTML.
 - For Sale, Monthly Rent, Daily Rent, and Insights tabs still work.
 - For Sale shows the "Prices by home profile" segment block.
+- Rooms and Area filters inside "Prices by home profile" affect only that
+  block.
 - Left filters affect all tabs.
 - Sector details table has no horizontal overflow.
 - Header, tabs, and cards look clean on desktop.

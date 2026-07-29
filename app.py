@@ -773,6 +773,20 @@ def build_segment_summary(
     return grouped.sort_values(group_col).drop(columns=["weighted_per_m2"])
 
 
+def ordered_segment_options(
+    df_segments: pd.DataFrame,
+    column: str,
+    category_order: list[str],
+) -> list[str]:
+    if df_segments.empty or column not in df_segments.columns:
+        return []
+
+    available = set(df_segments[column].dropna().astype(str).unique())
+    ordered = [value for value in category_order if value in available]
+    extra = sorted(available - set(ordered))
+    return ordered + extra
+
+
 def render_segment_chart(
     summary: pd.DataFrame,
     group_col: str,
@@ -852,10 +866,49 @@ def render_sale_segments(df_segments: pd.DataFrame) -> None:
         render_empty_state("No sale segment data matches the current filters.")
         return
 
-    room_summary = build_segment_summary(
+    room_options = ordered_segment_options(
         df_segments, "rooms_group", ROOM_GROUP_ORDER
     )
-    area_summary = build_segment_summary(df_segments, "area_band", AREA_BAND_ORDER)
+    area_options = ordered_segment_options(df_segments, "area_band", AREA_BAND_ORDER)
+
+    filter_col_1, filter_col_2 = st.columns(2)
+    with filter_col_1:
+        selected_rooms = st.multiselect(
+            "Rooms",
+            options=room_options,
+            default=[],
+            placeholder="All room groups",
+            key="sale_segment_rooms",
+        )
+    with filter_col_2:
+        selected_area_bands = st.multiselect(
+            "Area",
+            options=area_options,
+            default=[],
+            placeholder="All area bands",
+            key="sale_segment_area_bands",
+        )
+
+    filtered_segments = df_segments.copy()
+    if selected_rooms:
+        filtered_segments = filtered_segments[
+            filtered_segments["rooms_group"].astype(str).isin(selected_rooms)
+        ]
+    if selected_area_bands:
+        filtered_segments = filtered_segments[
+            filtered_segments["area_band"].astype(str).isin(selected_area_bands)
+        ]
+
+    if filtered_segments.empty:
+        render_empty_state("No home profiles match the selected rooms and area.")
+        return
+
+    room_summary = build_segment_summary(
+        filtered_segments, "rooms_group", ROOM_GROUP_ORDER
+    )
+    area_summary = build_segment_summary(
+        filtered_segments, "area_band", AREA_BAND_ORDER
+    )
 
     col_rooms, col_area = st.columns(2)
     with col_rooms:
