@@ -36,6 +36,13 @@ with table_stats as (
     from public.api_estate_daily
     union all
     select
+        'api_estate_segments_current',
+        count(*)::bigint,
+        max(date)::date,
+        max(refreshed_at)
+    from public.api_estate_segments_current
+    union all
+    select
         'gold_rent_current',
         count(*)::bigint,
         max(date)::date,
@@ -102,6 +109,9 @@ with table_stats as (
     select 'api_estate_daily', count(*)::bigint, max(date)::date
     from public.api_estate_daily
     union all
+    select 'api_estate_segments_current', count(*)::bigint, max(date)::date
+    from public.api_estate_segments_current
+    union all
     select 'gold_rent_current', count(*)::bigint, max(date)::date
     from public.gold_rent_current
     union all
@@ -158,6 +168,19 @@ from (
 
     union all
     select
+        'estate segments are current',
+        api.max_date = current_date
+            and api.rows_count > 0,
+        format(
+            'api date=%s rows=%s',
+            api.max_date,
+            api.rows_count
+        )
+    from table_stats api
+    where api.object_name = 'api_estate_segments_current'
+
+    union all
+    select
         'rent current matches Gold',
         api.max_date = gold.max_date
             and api.rows_count = gold.rows_count,
@@ -208,6 +231,7 @@ with api_tables(table_name) as (
     values
         ('api_estate_current'),
         ('api_estate_daily'),
+        ('api_estate_segments_current'),
         ('api_rent_current'),
         ('api_rent_daily'),
         ('api_rent_yield')
@@ -329,14 +353,21 @@ select
         when proconfig @> array['search_path=public, pg_temp']
              and position(expected_api_marker in function_definition) > 0
              and position('api_rent_yield' in function_definition) > 0
+             and (
+                 function_name <> 'refresh_gold_estate'
+                 or position(
+                     'api_estate_segments_current' in function_definition
+                 ) > 0
+             )
              and position('truncate table' in function_definition) = 0
         then 'OK'
         else 'CHECK'
     end as status,
     proconfig,
     position(expected_api_marker in function_definition) > 0 as updates_main_api,
+    position('api_estate_segments_current' in function_definition) > 0
+        as updates_estate_segments_api,
     position('api_rent_yield' in function_definition) > 0 as updates_yield_api,
     position('truncate table' in function_definition) > 0 as uses_truncate
 from function_checks
 order by function_name;
-

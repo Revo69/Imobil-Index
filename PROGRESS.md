@@ -31,6 +31,8 @@ Simple project progress log for Imobil.Index.
   Gold.
 - Added public API v1 documentation and a SQL health-check for the public API
   layer.
+- Added the first Silver-powered public API table for sale segments by rooms
+  and area band.
 
 ## Important Verified Semantics
 
@@ -119,6 +121,18 @@ Read-only Supabase inspection on 2026-07-28 found:
   - `sql/check_public_api_layer.sql` was added and verified against Supabase.
     It checks Gold/API freshness, row parity, public RLS/grants, closed
     internal objects, and refresh-function wiring.
+  - `sql/add_estate_segments_api_layer.sql` was added and applied on
+    2026-07-29.
+  - `api_estate_segments_current` exposes aggregated sale metrics by
+    `rooms_group` and `area_band`; it publishes only groups with at least 5
+    listings.
+  - The segment table was verified with 279 rows for snapshot date 2026-07-29,
+    representing 21,918 sale listings.
+  - `refresh_gold_estate()` was verified under `service_role` after adding the
+    segment refresh block.
+  - Supabase Security Advisor still has no ERROR/WARN items after adding the
+    segment API table; only the same INFO notices remain for closed internal
+    tables.
 
 ## Next Small Steps
 
@@ -142,6 +156,7 @@ streamlit run app.py
 
 - confirm `api_estate_current` and `api_rent_current` advance together with
   Gold;
+- confirm `api_estate_segments_current` advances with the sale refresh;
 - confirm the Streamlit header shows the newest snapshot date.
 - run `sql/check_public_api_layer.sql` and confirm every status is `OK`.
 
