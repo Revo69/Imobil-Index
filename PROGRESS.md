@@ -48,6 +48,20 @@ Simple project progress log for Imobil.Index.
     with listing-weighted aggregation back to city-sector grain;
   - the 90-day sale trend stays overall-only because profile-level history is
     not available in the current public API layer.
+- Added the next public API layer step for profile-level sale history:
+  - new SQL script `sql/add_estate_segments_daily_api_layer.sql` creates
+    `api_estate_segments_daily`;
+  - `refresh_gold_estate()` now maintains profile daily snapshots through the
+    new script;
+  - `sql/check_public_api_layer.sql` verifies the new table, access model, and
+    refresh-function marker;
+  - `docs/public_api_v1.md` documents the new public API table and example
+    request.
+- Connected optional `api_estate_segments_daily` loading in the dashboard:
+  - when room/area filters are active, For Sale can render a profile-level
+    90-day trend once enough daily snapshots exist;
+  - before the SQL table exists or before enough snapshots accumulate, the app
+    stays up and shows a clear empty state.
 
 ## Important Verified Semantics
 
@@ -232,8 +246,8 @@ streamlit run app.py
 - When Rooms or Area are selected, For Sale KPI cards, rankings, segment charts,
   and the sector table reflect the selected profile.
 - When Rooms or Area are selected, the 90-day sale trend explains that
-  profile-level history is not available yet instead of showing an unfiltered
-  trend as if it matched the profile.
+  profile-level history is not available yet, or renders profile-level history
+  from `api_estate_segments_daily` when enough snapshots exist.
 - Left filters affect all tabs.
 - Sector details table has no horizontal overflow.
 - Header, tabs, and cards look clean on desktop.
@@ -243,6 +257,8 @@ streamlit run app.py
 - confirm `api_estate_current` and `api_rent_current` advance together with
   Gold;
 - confirm `api_estate_segments_current` advances with the sale refresh;
+- confirm `api_estate_segments_daily` receives the latest sale-profile snapshot
+  after `sql/add_estate_segments_daily_api_layer.sql` is applied;
 - confirm the Streamlit header shows the newest snapshot date.
 - run `sql/check_public_api_layer.sql` and confirm every status is `OK`.
 

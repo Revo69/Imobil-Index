@@ -31,6 +31,7 @@ Authorization: Bearer <SUPABASE_ANON_KEY>
 | `api_estate_current` | Current sale market metrics | date + municipality + city + sector |
 | `api_estate_daily` | Historical sale market metrics | date + municipality + city + sector |
 | `api_estate_segments_current` | Current sale metrics by rooms and area band | date + municipality + city + sector + rooms_group + area_band |
+| `api_estate_segments_daily` | Historical sale metrics by rooms and area band | date + municipality + city + sector + rooms_group + area_band |
 | `api_rent_current` | Current monthly/daily rent metrics | date + municipality + city + sector + deal_type |
 | `api_rent_daily` | Historical monthly/daily rent metrics | date + municipality + city + sector + deal_type |
 | `api_rent_yield` | Indicative gross rent-yield metrics | city + sector |
@@ -91,6 +92,31 @@ Historical sale-market aggregate with the same business meaning as
 Current sale-market aggregate by rooms and area band. It uses the same sale
 market filters as `gold_estate_current`, plus `number_of_rooms is not null`.
 Only groups with at least 5 listings are published.
+
+| Column | Type | Nullable | Meaning |
+|---|---|---|---|
+| `date` | date | no | Snapshot date. |
+| `municipality` | text | no | Municipality. |
+| `city` | text | no | City. |
+| `sector` | text | no | Sector or district. |
+| `rooms_group` | text | no | Room-count group. |
+| `area_band` | text | no | Total-area group. |
+| `listings` | bigint | no | Sale listings in this segment. |
+| `avg_price_eur` | numeric | yes | Average sale listing price in EUR. |
+| `median_price_eur` | numeric | yes | Median sale listing price in EUR. |
+| `avg_per_m2_eur` | numeric | yes | Average sale price per square meter in EUR. |
+| `refreshed_at` | timestamptz | no | API refresh timestamp. |
+
+## `api_estate_segments_daily`
+
+Historical sale-market snapshots by rooms and area band. It uses the same
+business meaning as `api_estate_segments_current`, but stores one row per
+snapshot date so profile-level trends can be queried over time.
+
+This history starts when `sql/add_estate_segments_daily_api_layer.sql` is
+applied. Older profile snapshots are not backfilled from `publication_date`
+because that would change the meaning from market snapshot history to listing
+publication history.
 
 | Column | Type | Nullable | Meaning |
 |---|---|---|---|
@@ -199,6 +225,14 @@ curl "https://tfwfvdbatsdncyoibzxp.supabase.co/rest/v1/api_estate_daily?city=eq.
   -H "Authorization: Bearer <SUPABASE_ANON_KEY>"
 ```
 
+90-day sale price history for one room/area profile:
+
+```bash
+curl "https://tfwfvdbatsdncyoibzxp.supabase.co/rest/v1/api_estate_segments_daily?city=eq.%D0%9A%D0%B8%D1%88%D0%B8%D0%BD%D1%91%D0%B2&rooms_group=eq.2&area_band=eq.60-79%20m2&select=date,sector,rooms_group,area_band,listings,avg_per_m2_eur&order=date.asc" \
+  -H "apikey: <SUPABASE_ANON_KEY>" \
+  -H "Authorization: Bearer <SUPABASE_ANON_KEY>"
+```
+
 ## Refresh Contract
 
 Gold remains the source of truth. The public API layer is refreshed by the same
@@ -206,12 +240,12 @@ database functions used by the upstream pipeline:
 
 | Function | Public tables maintained |
 |---|---|
-| `refresh_gold_estate()` | `api_estate_current`, `api_estate_daily`, `api_estate_segments_current`, `api_rent_yield` |
+| `refresh_gold_estate()` | `api_estate_current`, `api_estate_daily`, `api_estate_segments_current`, `api_estate_segments_daily`, `api_rent_yield` |
 | `refresh_gold_rent()` | `api_rent_current`, `api_rent_daily`, `api_rent_yield` |
 
 After a normal pipeline run, `api_estate_current`, `api_estate_daily`,
-`api_estate_segments_current`, `api_rent_current`, and `api_rent_daily` should
-have the current snapshot date.
+`api_estate_segments_current`, `api_estate_segments_daily`, `api_rent_current`,
+and `api_rent_daily` should have the latest snapshot date.
 
 ## Access Rules
 

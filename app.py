@@ -22,6 +22,9 @@ supabase = create_client(st.secrets["SUPABASE_URL"], st.secrets["SUPABASE_KEY"])
 
 HISTORY_WINDOW_DAYS = 90
 HISTORY_SALE_COLUMNS = "date,city,sector,avg_per_m2_eur"
+HISTORY_SALE_SEGMENT_COLUMNS = (
+    "date,city,sector,rooms_group,area_band,listings,avg_price_eur,avg_per_m2_eur"
+)
 ESTATE_SEGMENT_COLUMNS = (
     "date,city,sector,rooms_group,area_band,listings,avg_price_eur,avg_per_m2_eur"
 )
@@ -442,6 +445,44 @@ def load_historical_data() -> pd.DataFrame:
         offset += limit
 
     return pd.DataFrame(all_sales)
+
+
+@st.cache_data(ttl=3600)
+def load_historical_segment_data() -> pd.DataFrame:
+    """
+    Loads profile-level sale history when the optional public API table exists.
+    The dashboard keeps working while the table is being rolled out.
+    """
+    cutoff = (datetime.now(UTC) - timedelta(days=HISTORY_WINDOW_DAYS)).strftime(
+        "%Y-%m-%d"
+    )
+
+    all_segments = []
+    offset = 0
+    limit = 1000
+
+    while True:
+        try:
+            resp = (
+                supabase.table("api_estate_segments_daily")
+                .select(HISTORY_SALE_SEGMENT_COLUMNS)
+                .gte("date", cutoff)
+                .range(offset, offset + limit - 1)
+                .order("date", desc=False)
+                .execute()
+            )
+        except Exception:  # noqa: BLE001
+            return pd.DataFrame()
+
+        batch = resp.data
+        if not batch:
+            break
+        all_segments.extend(batch)
+        if len(batch) < limit:
+            break
+        offset += limit
+
+    return pd.DataFrame(all_segments)
 
 
 @st.cache_data(ttl=3600)
@@ -1568,6 +1609,145 @@ def render_sales_trend(hist: pd.DataFrame, selected_cities: list[str]) -> None:
         render_plotly_chart(fig)
 
 
+def selected_trend_city(selected_cities: Iterable[str]) -> str:
+    selected_cities = list(selected_cities)
+    if len(selected_cities) == 1:
+        return selected_cities[0]
+    if not selected_cities or CHISINAU_CITY in selected_cities:
+        return CHISINAU_CITY
+    return selected_cities[0]
+
+
+def render_profile_sales_trend(
+    hist_segments: pd.DataFrame,
+    selected_cities: Iterable[str],
+    selected_rooms: Iterable[str],
+    selected_area_bands: Iterable[str],
+    min_listings: int,
+) -> None:
+    trend_city = selected_trend_city(selected_cities)
+    render_section(
+        "90-day profile movement",
+        f"Price paths for the selected room and area profile in {trend_city}.",
+    )
+    if hist_segments.empty:
+        render_empty_state(
+            "Profile-level history will appear after the new daily segment API is applied and refreshed."
+        )
+        return
+
+    h = filter_by_city(hist_segments, [trend_city])
+    h = filter_sale_profile_segments(h, selected_rooms, selected_area_bands)
+    if h.empty:
+        render_empty_state("No profile-level history matches the current filters yet.")
+        return
+
+    h["date"] = pd.to_datetime(h["date"], errors="coerce")
+    h["listings"] = pd.to_numeric(h["listings"], errors="coerce")
+    h["avg_price_eur"] = pd.to_numeric(h["avg_price_eur"], errors="coerce")
+    h["avg_per_m2_eur"] = pd.to_numeric(h["avg_per_m2_eur"], errors="coerce")
+    h = h.dropna(
+        subset=["date", "listings", "avg_price_eur", "avg_per_m2_eur"]
+    )
+    h = h[h["date"] >= pd.Timestamp.now() - pd.Timedelta(days=HISTORY_WINDOW_DAYS)]
+    if h.empty:
+        render_empty_state("No profile-level history is available for the last 90 days.")
+        return
+
+    plot = build_sale_market_from_segments(h)
+    plot = plot[plot["listings"] >= min_listings]
+    if plot.empty:
+        render_empty_state("No profile-level history has enough listings yet.")
+        return
+    if plot["date"].nunique() < 2:
+        render_empty_state(
+            "Profile history has only one snapshot so far. It will become a trend after more refreshes."
+        )
+        return
+
+    top_sectors = (
+        plot.groupby("sector", dropna=False)["listings"]
+        .sum()
+        .nlargest(8)
+        .index
+    )
+    plot = plot[plot["sector"].isin(top_sectors)].copy().sort_values("date")
+    if plot.empty:
+        render_empty_state("No sectors have enough profile history to plot.")
+        return
+
+    plot["sector"] = plot["sector"].fillna("Center").astype(str)
+    trend_colors = [
+        "#315fc9",
+        "#12805c",
+        "#c56b2c",
+        "#b84d4a",
+        "#7557b5",
+        "#0f8b8d",
+        "#6f8f3b",
+        "#a36b1c",
+    ]
+    color_map = {
+        sector: trend_colors[index % len(trend_colors)]
+        for index, sector in enumerate(plot["sector"].drop_duplicates())
+    }
+
+    fig = px.line(
+        plot,
+        x="date",
+        y="avg_per_m2_eur",
+        color="sector",
+        markers=False,
+        color_discrete_map=color_map,
+        labels={"avg_per_m2_eur": "EUR per m2", "date": "Date", "sector": "Sector"},
+    )
+    fig.update_traces(
+        line_width=2.2,
+        hovertemplate=(
+            "<b>%{fullData.name}</b><br>"
+            "%{x|%d %b %Y}<br>"
+            "%{y:,.0f} EUR per m2<extra></extra>"
+        ),
+    )
+
+    last_points = plot.sort_values("date").groupby("sector", as_index=False).tail(1)
+    last_points = last_points.sort_values("avg_per_m2_eur")
+    for _, row in last_points.iterrows():
+        sector = row["sector"]
+        fig.add_scatter(
+            x=[row["date"]],
+            y=[row["avg_per_m2_eur"]],
+            mode="markers+text",
+            marker={"size": 6, "color": color_map.get(sector, "#63746d")},
+            text=[f"{sector} {row['avg_per_m2_eur']:.0f}"],
+            textposition="middle right",
+            textfont={"size": 12, "color": "#31443b"},
+            hoverinfo="skip",
+            showlegend=False,
+            cliponaxis=False,
+        )
+
+    fig = apply_common_chart_style(fig, height=500, show_legend=False)
+    fig.update_layout(
+        hovermode="x unified",
+        margin={"l": 16, "r": 150, "t": 10, "b": 18},
+    )
+    fig.update_xaxes(
+        title_text="",
+        tickangle=0,
+        showgrid=False,
+        tickformat="%d %b",
+    )
+    fig.update_yaxes(
+        title_text="EUR per m2",
+        gridcolor="#d8e2dd",
+        zeroline=False,
+    )
+
+    with st.container(border=True):
+        render_plotly_chart(fig)
+
+
 def render_sector_table(
     df: pd.DataFrame, columns: list[str], labels: list[str], sort_col: str
 ) -> None:
@@ -1696,6 +1876,7 @@ def render_daily_rent_context(df_yield: pd.DataFrame) -> None:
 try:
     with st.spinner("Loading market data..."):
         df_hist_sales = load_historical_data()
+        df_hist_sale_segments = load_historical_segment_data()
         df_sales, df_sale_segments, df_rent, df_yield = load_data()
 # Keep the dashboard readable if the upstream API or local cache fails.
 except Exception as exc:  # noqa: BLE001
@@ -1872,12 +2053,12 @@ with main_col:
                 sale_segments, selected_sale_rooms, selected_sale_area_bands
             )
             if sale_profile_active:
-                render_section(
-                    "90-day price movement",
-                    "Historical profile trend is not available yet.",
-                )
-                render_empty_state(
-                    "Clear rooms and area filters to view the overall sale trend."
+                render_profile_sales_trend(
+                    df_hist_sale_segments,
+                    selected_cities,
+                    selected_sale_rooms,
+                    selected_sale_area_bands,
+                    min_listings,
                 )
             else:
                 render_sales_trend(df_hist_sales, selected_cities)
