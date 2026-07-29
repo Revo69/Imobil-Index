@@ -188,6 +188,11 @@ Read-only Supabase inspection on 2026-07-28 found:
     with clearer semantic roles;
   - aligned Plotly fonts, hover labels, gridlines, tabs, controls, cards,
     header, workspace bar, and footer with the new palette.
+- Cleaned up empty Insights sections:
+  - removed the decorative "Insight center" group heading;
+  - `Daily vs monthly break-even` now renders only when matching monthly and
+    daily rent city-sector pairs exist;
+  - yield opportunity notes now stay hidden when no yield card can be built.
 
 ## Next Small Steps
 

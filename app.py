@@ -1186,13 +1186,13 @@ def build_break_even_table(
 
 
 def render_break_even_analysis(df_break_even: pd.DataFrame) -> None:
+    if df_break_even.empty:
+        return
+
     render_section(
         "Daily vs monthly break-even",
         "Estimated number of daily-rent days that equals one month of rent per m2.",
     )
-    if df_break_even.empty:
-        render_empty_state("Not enough matching monthly and daily rent data.")
-        return
 
     fastest = df_break_even.iloc[0]
     slowest = df_break_even.iloc[-1]
@@ -1361,6 +1361,9 @@ def render_yield_opportunity_notes(df_yield: pd.DataFrame) -> None:
             f"+{strongest_uplift['daily_uplift']:.1f} pp",
             f"Biggest daily-vs-monthly yield gap: {place_label(strongest_uplift)}.",
         ))
+
+    if not cards:
+        return
 
     render_insight_cards(
         "Yield opportunities",
@@ -1885,31 +1888,21 @@ with main_col:
         sale_df = filter_by_city_and_listings(
             df_sales, selected_cities, min_listings
         )
-        monthly_df = df_rent[df_rent["deal_type"] == MONTHLY_RENT_DEAL].copy()
-        monthly_df = filter_by_city_and_listings(
-            monthly_df, selected_cities, min_listings
-        )
-        daily_df = df_rent[df_rent["deal_type"] == DAILY_RENT_DEAL].copy()
-        daily_df = filter_by_city_and_listings(
-            daily_df, selected_cities, min_listings
-        )
         yield_df = filter_by_city_and_listings(
             df_yield, selected_cities, min_listings
         )
-
-        render_section(
-            "Insight center",
-            "Practical signals inspired by common real-estate decisions.",
+        break_even_df = build_break_even_table(
+            df_rent, selected_cities, min_listings
         )
 
-        if sale_df.empty and monthly_df.empty and daily_df.empty and yield_df.empty:
-            render_empty_state("No market data matches the current filters.")
+        if sale_df.empty and break_even_df.empty and yield_df.empty:
+            render_empty_state(
+                "No insight-ready market signals match the current filters."
+            )
         else:
             render_decision_notes(sale_df, "avg_per_m2_eur", price_fmt="{:.0f}")
             render_outside_chisinau_radar(sale_df)
-            render_break_even_analysis(
-                build_break_even_table(df_rent, selected_cities, min_listings)
-            )
+            render_break_even_analysis(break_even_df)
             render_yield_opportunity_notes(yield_df)
 
 
