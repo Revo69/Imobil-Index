@@ -4,7 +4,7 @@ Simple project progress log for Imobil.Index.
 
 ## Last Updated
 
-2026-07-28
+2026-07-29
 
 ## Current State
 
@@ -26,6 +26,9 @@ Simple project progress log for Imobil.Index.
 - Added a short caveat under daily-vs-monthly break-even.
 - Fixed an Insights crash after the `api_*` cutover: yield cards now skip
   all-null yield metrics instead of calling `idxmax()` on all-NA values.
+- Fixed public API layer refresh: `refresh_gold_estate()` and
+  `refresh_gold_rent()` now also maintain the `api_*` tables after refreshing
+  Gold.
 
 ## Important Verified Semantics
 
@@ -94,6 +97,21 @@ Read-only Supabase inspection on 2026-07-28 found:
     for RLS-enabled internal tables with no policies.
   - Deployed Streamlit dashboard was reported working after the internal access
     revoke on 2026-07-29.
+  - `sql/refresh_gold_updates_api_layer.sql` was added and applied on
+    2026-07-29.
+  - `refresh_gold_estate()` now refreshes `gold_estate_current`, upserts
+    `gold_estate_daily`, refreshes `api_estate_current`, upserts
+    `api_estate_daily`, and refreshes `api_rent_yield`.
+  - `refresh_gold_rent()` now refreshes `gold_rent_current`, upserts
+    `gold_rent_daily`, refreshes `api_rent_current`, upserts `api_rent_daily`,
+    and refreshes `api_rent_yield`.
+  - After running both refresh functions, `api_estate_current`,
+    `api_estate_daily`, `api_rent_current`, and `api_rent_daily` were verified
+    at snapshot date 2026-07-29.
+  - Both refresh functions were also verified under `service_role`, matching
+    the expected pipeline RPC role.
+  - Supabase Security Advisor still has no ERROR/WARN items after the function
+    update; only the same INFO notices remain for closed internal tables.
 
 ## Next Small Steps
 
@@ -113,7 +131,13 @@ streamlit run app.py
 - Sector details table has no horizontal overflow.
 - Header, tabs, and cards look clean on desktop.
 
-3. After that, choose only one next improvement:
+3. Watch the next scheduled pipeline run once:
+
+- confirm `api_estate_current` and `api_rent_current` advance together with
+  Gold;
+- confirm the Streamlit header shows the newest snapshot date.
+
+4. After that, choose only one next improvement:
 
 - polish Insights wording;
 - improve mobile layout;
