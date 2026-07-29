@@ -204,42 +204,6 @@ st.markdown(
             white-space: nowrap;
         }
 
-        .workspace-bar {
-            display: grid;
-            grid-template-columns: repeat(4, minmax(0, 1fr));
-            gap: 0.55rem;
-            margin: 0 0 1rem;
-            padding: 0.65rem;
-            border: 1px solid var(--border);
-            border-radius: 8px;
-            background: var(--surface);
-            box-shadow: 0 1px 2px rgba(18, 48, 38, 0.04);
-        }
-
-        .workspace-item {
-            min-width: 0;
-            padding: 0.65rem 0.75rem;
-            border-radius: 6px;
-            background: var(--surface-muted);
-            border: 1px solid #e3ece7;
-        }
-
-        .workspace-label {
-            color: var(--muted);
-            font-size: 0.68rem;
-            font-weight: 760;
-            letter-spacing: 0.06em;
-            text-transform: uppercase;
-        }
-
-        .workspace-value {
-            margin-top: 0.2rem;
-            color: var(--text);
-            font-size: 0.95rem;
-            font-weight: 720;
-            overflow-wrap: anywhere;
-        }
-
         .panel-title {
             margin: 0;
             color: var(--text);
@@ -427,10 +391,6 @@ st.markdown(
                 white-space: normal;
             }
 
-            .workspace-bar {
-                grid-template-columns: 1fr;
-            }
-
             .insight-card {
                 min-height: auto;
             }
@@ -556,43 +516,6 @@ def render_app_header(latest_snapshot: str) -> None:
             </div>
         </div>
         """,
-        unsafe_allow_html=True,
-    )
-
-
-def market_scope_label(selected_cities: Iterable[str], all_cities: list[str]) -> str:
-    cities = list(selected_cities)
-    if not cities:
-        return f"All cities ({len(all_cities)})"
-    if len(cities) == 1:
-        return cities[0]
-    return f"{len(cities)} selected cities"
-
-
-def render_workspace_bar(
-    selected_cities: Iterable[str],
-    all_cities: list[str],
-    min_listings: int,
-    market_lens: str,
-    latest_snapshot: str,
-) -> None:
-    items = [
-        ("Scope", market_scope_label(selected_cities, all_cities)),
-        ("Active lens", market_lens),
-        ("Liquidity", f"{min_listings}+ listings"),
-        ("Snapshot", latest_snapshot.replace("Data as of ", "")),
-    ]
-    items_html = "".join(
-        (
-            '<div class="workspace-item">'
-            f'<div class="workspace-label">{escape(label)}</div>'
-            f'<div class="workspace-value">{escape(value)}</div>'
-            "</div>"
-        )
-        for label, value in items
-    )
-    st.markdown(
-        f'<div class="workspace-bar">{items_html}</div>',
         unsafe_allow_html=True,
     )
 
@@ -1770,14 +1693,6 @@ with filter_col, st.container(border=True):
     st.caption("Use presets for fast exploration or filters for a specific view.")
 
 with main_col:
-    render_workspace_bar(
-        selected_cities,
-        all_cities,
-        min_listings,
-        market_lens,
-        latest_snapshot,
-    )
-
     tab_sale, tab_rent_monthly, tab_rent_daily, tab_insights = st.tabs(
         ["For Sale", "Monthly Rent", "Daily Rent", "Insights"]
     )

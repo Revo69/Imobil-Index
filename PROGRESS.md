@@ -199,6 +199,9 @@ Read-only Supabase inspection on 2026-07-28 found:
     the content divider.
 - Reworked the tab toolbar from a floating compact pill into a full-width
   navigation row that belongs to the main dashboard workspace.
+- Removed the redundant workspace summary bar (`Scope`, `Active lens`,
+  `Liquidity`, `Snapshot`) because it duplicated the header, filters, and
+  market summary while making the top layout feel crowded.
 
 ## Next Small Steps
 
