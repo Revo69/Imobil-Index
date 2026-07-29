@@ -221,15 +221,6 @@ st.markdown(
             overflow-wrap: anywhere;
         }
 
-        .panel-eyebrow {
-            margin-bottom: 0.35rem;
-            color: var(--blue);
-            font-size: 0.7rem;
-            font-weight: 760;
-            letter-spacing: 0.08em;
-            text-transform: uppercase;
-        }
-
         .panel-title {
             margin: 0;
             color: var(--text);
@@ -323,6 +314,7 @@ st.markdown(
         .insight-card {
             height: 100%;
             min-height: 118px;
+            margin-bottom: 0.85rem;
             padding: 0.95rem 1rem;
             border: 1px solid var(--border);
             border-radius: 8px;
@@ -620,7 +612,7 @@ def render_insight_cards(
 
     for start in range(0, len(cards), 3):
         row_cards = cards[start : start + 3]
-        columns = st.columns(len(row_cards))
+        columns = st.columns(len(row_cards), gap="medium")
         for column, (label, value, note) in zip(columns, row_cards, strict=True):
             with column:
                 card_html = (
@@ -1706,8 +1698,7 @@ filter_col, main_col = st.columns([1.35, 4.25], gap="medium")
 with filter_col, st.container(border=True):
     st.markdown(
         """
-        <div class="panel-eyebrow">Control panel</div>
-        <h3 class="panel-title">Explore</h3>
+        <h3 class="panel-title">Explore market</h3>
         <p class="panel-copy">Use presets first, then refine the visible market.</p>
         """,
         unsafe_allow_html=True,

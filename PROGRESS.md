@@ -172,6 +172,10 @@ Read-only Supabase inspection on 2026-07-28 found:
   - added a compact active market lens bar above the main tabs;
   - restyled the Explore area as a control panel while preserving the existing
     filters and presets.
+- Fixed the first visual feedback from that shell pass:
+  - removed the heavy "Control panel" eyebrow from the Explore block;
+  - added stable spacing between multi-row insight cards so cards do not touch
+    or overlap.
 
 ## Next Small Steps
 
