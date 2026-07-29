@@ -176,6 +176,10 @@ Read-only Supabase inspection on 2026-07-28 found:
   - removed the heavy "Control panel" eyebrow from the Explore block;
   - added stable spacing between multi-row insight cards so cards do not touch
     or overlap.
+- Normalized shared dashboard cards after visual review:
+  - insight cards now use a consistent minimum height across a row;
+  - KPI cards use a stronger fixed rhythm;
+  - the daily-vs-monthly context callout has a clear gap before the cards below.
 
 ## Next Small Steps
 

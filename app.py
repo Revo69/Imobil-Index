@@ -256,7 +256,8 @@ st.markdown(
         }
 
         .kpi-card {
-            min-height: 112px;
+            box-sizing: border-box;
+            min-height: 138px;
             padding: 0.9rem 0.95rem;
             border: 1px solid var(--border);
             border-radius: 8px;
@@ -303,6 +304,7 @@ st.markdown(
         }
 
         .insight-strip {
+            margin-bottom: 0.85rem;
             padding: 1rem;
             border-left: 4px solid var(--cyan);
             border-radius: 8px;
@@ -312,8 +314,8 @@ st.markdown(
         }
 
         .insight-card {
-            height: 100%;
-            min-height: 118px;
+            box-sizing: border-box;
+            min-height: 160px;
             margin-bottom: 0.85rem;
             padding: 0.95rem 1rem;
             border: 1px solid var(--border);
