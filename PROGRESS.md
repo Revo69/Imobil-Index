@@ -62,6 +62,12 @@ Simple project progress log for Imobil.Index.
     90-day trend once enough daily snapshots exist;
   - before the SQL table exists or before enough snapshots accumulate, the app
     stays up and shows a clear empty state.
+- Applied `sql/add_estate_segments_daily_api_layer.sql` to Supabase production
+  on 2026-07-30 and ran `select public.refresh_gold_estate();`:
+  - `api_estate_segments_daily` exists with RLS enabled;
+  - latest profile-history snapshot is 2026-07-29 with 279 aggregated rows;
+  - `anon` and `authenticated` can read the table and cannot write to it;
+  - public API parity/access/function checks returned `OK`.
 
 ## Important Verified Semantics
 
@@ -79,6 +85,15 @@ python -m py_compile app.py
 
 - Ruff was not verified in the current local environment because `ruff` was not installed there.
 - Streamlit visual verification was not completed in the current local environment because `streamlit` was not available there.
+- Supabase production verification on 2026-07-30:
+  - `api_estate_segments_daily`: 279 rows, max date 2026-07-29.
+  - `api_estate_segments_current`: 279 rows, max date 2026-07-29.
+  - Public API table access model: all `api_*` tables returned `OK`.
+  - Internal raw/bronze/silver/Gold objects returned `OK` for public access
+    being closed.
+  - `refresh_gold_estate()` now updates `api_estate_segments_current`,
+    `api_estate_segments_daily`, and `api_rent_yield` with fixed
+    `search_path=public, pg_temp`.
 
 ## Database Inspection Snapshot
 
