@@ -111,16 +111,19 @@ st.markdown(
         div[data-testid="stTabs"] [role="tablist"] {
             display: inline-flex;
             gap: 0.25rem;
+            margin: 0 0 1rem;
             padding: 0.25rem;
             border: 1px solid var(--border);
             border-radius: 8px;
             background: var(--surface-muted);
+            box-shadow: 0 1px 2px rgba(18, 48, 38, 0.04);
         }
 
         div[data-testid="stTabs"] button {
             min-height: 2.25rem;
             padding: 0.45rem 0.9rem;
             border-radius: 6px;
+            border-bottom: 0 !important;
             font-weight: 650;
             color: #4f625a;
         }
@@ -128,7 +131,10 @@ st.markdown(
         div[data-testid="stTabs"] button[aria-selected="true"] {
             background: var(--ink);
             color: #ffffff;
-            border-bottom-color: transparent;
+        }
+
+        div[data-testid="stTabs"] [data-baseweb="tab-highlight"] {
+            display: none;
         }
 
         .app-header {

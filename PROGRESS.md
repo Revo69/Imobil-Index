@@ -193,6 +193,10 @@ Read-only Supabase inspection on 2026-07-28 found:
   - `Daily vs monthly break-even` now renders only when matching monthly and
     daily rent city-sector pairs exist;
   - yield opportunity notes now stay hidden when no yield card can be built.
+- Polished the main tab control:
+  - added breathing room below the tab toolbar;
+  - removed the default Streamlit tab underline that made tabs feel stuck to
+    the content divider.
 
 ## Next Small Steps
 
