@@ -73,6 +73,8 @@ Simple project progress log for Imobil.Index.
 - Replaced the one-off For Sale high-price red palette with a named
   `HIGH_PRICE_COLOR_SCALE`.
 - Added `pandas>=2.2,<3` explicitly to `requirements.txt`.
+- Added a shared `fetch_paginated_rows()` helper so the historical sale and
+  profile-history loaders use one Supabase pagination path.
 
 ## Important Verified Semantics
 
@@ -82,14 +84,19 @@ Simple project progress log for Imobil.Index.
 
 ## Current Verification
 
-- `app.py` and `theme.py` syntax passed with bundled Codex Python using:
+- `app.py` and `theme.py` syntax passed in the project `.venv` using:
 
 ```powershell
-C:\Users\123\.cache\codex-runtimes\codex-primary-runtime\dependencies\python\python.exe -m py_compile app.py theme.py
+C:\Users\123\Documents\Projects\Python\Imobil-Index\.venv\Scripts\python.exe -m py_compile app.py theme.py
 ```
 
-- Ruff was not verified in the current local environment because `ruff` was not installed there.
-- Streamlit visual verification was not completed in the current local environment because `streamlit` was not available there.
+- Ruff passed in the project `.venv` using:
+
+```powershell
+C:\Users\123\Documents\Projects\Python\Imobil-Index\.venv\Scripts\python.exe -m ruff check app.py theme.py
+```
+
+- Streamlit visual verification was not completed in the current local environment.
 - Supabase production verification on 2026-07-30:
   - `api_estate_segments_daily`: 279 rows, max date 2026-07-29.
   - `api_estate_segments_current`: 279 rows, max date 2026-07-29.

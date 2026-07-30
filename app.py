@@ -406,6 +406,36 @@ __THEME_CSS_VARS__
 # =========================
 # Data (cache 1 hour)
 # =========================
+def fetch_paginated_rows(
+    table_name: str,
+    columns: str,
+    cutoff: str,
+    page_size: int = 1000,
+) -> list[dict]:
+    rows = []
+    offset = 0
+
+    while True:
+        resp = (
+            supabase.table(table_name)
+            .select(columns)
+            .gte("date", cutoff)
+            .range(offset, offset + page_size - 1)
+            .order("date", desc=False)
+            .execute()
+        )
+
+        batch = resp.data
+        if not batch:
+            break
+        rows.extend(batch)
+        if len(batch) < page_size:
+            break
+        offset += page_size
+
+    return rows
+
+
 @st.cache_data(ttl=3600)
 def load_historical_data() -> pd.DataFrame:
     """
@@ -415,30 +445,9 @@ def load_historical_data() -> pd.DataFrame:
     cutoff = (datetime.now(UTC) - timedelta(days=HISTORY_WINDOW_DAYS)).strftime(
         "%Y-%m-%d"
     )
-
-    all_sales = []
-    offset = 0
-    limit = 1000
-
-    while True:
-        resp = (
-            supabase.table("api_estate_daily")
-            .select(HISTORY_SALE_COLUMNS)
-            .gte("date", cutoff)
-            .range(offset, offset + limit - 1)
-            .order("date", desc=False)
-            .execute()
-        )
-
-        batch = resp.data
-        if not batch:
-            break
-        all_sales.extend(batch)
-        if len(batch) < limit:
-            break
-        offset += limit
-
-    return pd.DataFrame(all_sales)
+    return pd.DataFrame(
+        fetch_paginated_rows("api_estate_daily", HISTORY_SALE_COLUMNS, cutoff)
+    )
 
 
 @st.cache_data(ttl=3600)
@@ -450,33 +459,13 @@ def load_historical_segment_data() -> pd.DataFrame:
     cutoff = (datetime.now(UTC) - timedelta(days=HISTORY_WINDOW_DAYS)).strftime(
         "%Y-%m-%d"
     )
-
-    all_segments = []
-    offset = 0
-    limit = 1000
-
-    while True:
-        try:
-            resp = (
-                supabase.table("api_estate_segments_daily")
-                .select(HISTORY_SALE_SEGMENT_COLUMNS)
-                .gte("date", cutoff)
-                .range(offset, offset + limit - 1)
-                .order("date", desc=False)
-                .execute()
-            )
-        except Exception:  # noqa: BLE001
-            return pd.DataFrame()
-
-        batch = resp.data
-        if not batch:
-            break
-        all_segments.extend(batch)
-        if len(batch) < limit:
-            break
-        offset += limit
-
-    return pd.DataFrame(all_segments)
+    try:
+        rows = fetch_paginated_rows(
+            "api_estate_segments_daily", HISTORY_SALE_SEGMENT_COLUMNS, cutoff
+        )
+    except Exception:  # noqa: BLE001
+        return pd.DataFrame()
+    return pd.DataFrame(rows)
 
 
 @st.cache_data(ttl=3600)
