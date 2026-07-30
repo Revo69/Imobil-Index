@@ -68,6 +68,11 @@ Simple project progress log for Imobil.Index.
   - latest profile-history snapshot is 2026-07-29 with 279 aggregated rows;
   - `anon` and `authenticated` can read the table and cannot write to it;
   - public API parity/access/function checks returned `OK`.
+- Added `theme.py` as the first shared UI theme source for CSS variables,
+  Plotly chart styling, and named chart color scales.
+- Replaced the one-off For Sale high-price red palette with a named
+  `HIGH_PRICE_COLOR_SCALE`.
+- Added `pandas>=2.2,<3` explicitly to `requirements.txt`.
 
 ## Important Verified Semantics
 
@@ -77,10 +82,10 @@ Simple project progress log for Imobil.Index.
 
 ## Current Verification
 
-- `app.py` syntax passed with bundled Codex Python using:
+- `app.py` and `theme.py` syntax passed with bundled Codex Python using:
 
 ```powershell
-python -m py_compile app.py
+C:\Users\123\.cache\codex-runtimes\codex-primary-runtime\dependencies\python\python.exe -m py_compile app.py theme.py
 ```
 
 - Ruff was not verified in the current local environment because `ruff` was not installed there.

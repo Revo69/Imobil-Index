@@ -8,6 +8,18 @@ import plotly.express as px
 import streamlit as st
 from supabase import create_client
 
+from theme import (
+    CHART_NEUTRAL,
+    DAILY_COLOR_SCALE,
+    HIGH_PRICE_COLOR_SCALE,
+    PLOTLY_FONT_FAMILY,
+    RENT_COLOR_SCALE,
+    SALE_COLOR_SCALE,
+    THEME,
+    YIELD_COLOR_SCALE,
+    theme_css_vars,
+)
+
 # =========================
 # Config
 # =========================
@@ -37,11 +49,6 @@ DAILY_RENT_DEAL = (
 CHISINAU_CITY = "\u041a\u0438\u0448\u0438\u043d\u0451\u0432"
 BALTI_CITY = "\u0411\u0435\u043b\u044c\u0446\u044b"
 
-SALE_COLOR_SCALE = ["#e5edff", "#9db7f4", "#315fc9", "#1e3f8f"]
-RENT_COLOR_SCALE = ["#dff6ea", "#8bd7b2", "#12805c", "#0b5d43"]
-DAILY_COLOR_SCALE = ["#fff0df", "#f5b86f", "#c56b2c", "#8f451d"]
-YIELD_COLOR_SCALE = ["#d9f3f1", "#7bcac5", "#0f8b8d", "#0b5f63"]
-CHART_NEUTRAL = "#cbd8d2"
 ROOM_GROUP_ORDER = ["1", "2", "3", "4+"]
 AREA_BAND_ORDER = ["<40 m2", "40-59 m2", "60-79 m2", "80-119 m2", "120+ m2"]
 PLOTLY_CHART_CONFIG = {
@@ -58,20 +65,7 @@ st.markdown(
     """
     <style>
         :root {
-            --bg: #f5f7f4;
-            --surface: #ffffff;
-            --surface-soft: #edf4f0;
-            --surface-muted: #f9fbf8;
-            --ink: #123026;
-            --text: #17201c;
-            --muted: #63746d;
-            --border: #d8e2dd;
-            --blue: #315fc9;
-            --green: #12805c;
-            --amber: #b76725;
-            --cyan: #0f8b8d;
-            --shadow: 0 10px 26px rgba(18, 48, 38, 0.08);
-            --shadow-card: 0 6px 18px rgba(18, 48, 38, 0.055);
+__THEME_CSS_VARS__
         }
 
         .stApp {
@@ -404,7 +398,7 @@ st.markdown(
             }
         }
     </style>
-    """,
+    """.replace("__THEME_CSS_VARS__", theme_css_vars()),
     unsafe_allow_html=True,
 )
 
@@ -652,8 +646,12 @@ def apply_common_chart_style(fig, height: int = 430, show_legend: bool = False):
         margin={"l": 12, "r": 12, "t": 28, "b": 12},
         paper_bgcolor="rgba(0,0,0,0)",
         plot_bgcolor="rgba(0,0,0,0)",
-        font={"family": "Inter, Segoe UI, sans-serif", "size": 13, "color": "#17201c"},
-        hoverlabel={"bgcolor": "#123026", "font_size": 13, "font_color": "#ffffff"},
+        font={"family": PLOTLY_FONT_FAMILY, "size": 13, "color": THEME["text"]},
+        hoverlabel={
+            "bgcolor": THEME["ink"],
+            "font_size": 13,
+            "font_color": THEME["white"],
+        },
         coloraxis_showscale=False,
         showlegend=show_legend,
         uniformtext_minsize=11,
@@ -671,13 +669,13 @@ def apply_common_chart_style(fig, height: int = 430, show_legend: bool = False):
         title_text="",
         showgrid=False,
         tickangle=-35,
-        tickfont={"color": "#63746d"},
+        tickfont={"color": THEME["muted"]},
         fixedrange=True,
     )
     fig.update_yaxes(
-        title_font={"color": "#63746d"},
-        tickfont={"color": "#63746d"},
-        gridcolor="#d8e2dd",
+        title_font={"color": THEME["muted"]},
+        tickfont={"color": THEME["muted"]},
+        gridcolor=THEME["border"],
         zeroline=False,
         fixedrange=True,
     )
@@ -1579,10 +1577,10 @@ def render_sales_trend(hist: pd.DataFrame, selected_cities: list[str]) -> None:
             x=[row["date"]],
             y=[row["avg_per_m2_eur"]],
             mode="markers+text",
-            marker={"size": 6, "color": color_map.get(sector, "#63746d")},
+            marker={"size": 6, "color": color_map.get(sector, THEME["muted"])},
             text=[f"{sector} {row['avg_per_m2_eur']:.0f}"],
             textposition="middle right",
-            textfont={"size": 12, "color": "#31443b"},
+            textfont={"size": 12, "color": THEME["chart_label"]},
             hoverinfo="skip",
             showlegend=False,
             cliponaxis=False,
@@ -1601,7 +1599,7 @@ def render_sales_trend(hist: pd.DataFrame, selected_cities: list[str]) -> None:
     )
     fig.update_yaxes(
         title_text="EUR per m2",
-        gridcolor="#d8e2dd",
+        gridcolor=THEME["border"],
         zeroline=False,
     )
 
@@ -1718,10 +1716,10 @@ def render_profile_sales_trend(
             x=[row["date"]],
             y=[row["avg_per_m2_eur"]],
             mode="markers+text",
-            marker={"size": 6, "color": color_map.get(sector, "#63746d")},
+            marker={"size": 6, "color": color_map.get(sector, THEME["muted"])},
             text=[f"{sector} {row['avg_per_m2_eur']:.0f}"],
             textposition="middle right",
-            textfont={"size": 12, "color": "#31443b"},
+            textfont={"size": 12, "color": THEME["chart_label"]},
             hoverinfo="skip",
             showlegend=False,
             cliponaxis=False,
@@ -1740,7 +1738,7 @@ def render_profile_sales_trend(
     )
     fig.update_yaxes(
         title_text="EUR per m2",
-        gridcolor="#d8e2dd",
+        gridcolor=THEME["border"],
         zeroline=False,
     )
 
@@ -2046,7 +2044,7 @@ with main_col:
                     price_col,
                     "Price per m2 (EUR)",
                     SALE_COLOR_SCALE,
-                    ["#fee2e2", "#fca5a5", "#ef4444", "#991b1b"],
+                    HIGH_PRICE_COLOR_SCALE,
                     0,
                 )
             render_sale_segments(
@@ -2182,20 +2180,22 @@ st.markdown(
         style="
             text-align: center;
             padding: 2.5rem 0 1rem;
-            color: #63746d;
+            color: __FOOTER_COLOR__;
             font-size: 0.9rem;
         "
     >
         <a
             href="mailto:sergey.revo@outlook.com"
-            style="color:#31443b; text-decoration:none;"
+            style="color:__FOOTER_LINK_COLOR__; text-decoration:none;"
         >
             sergey.revo@outlook.com
         </a>
         <br><br>
         <small>Copyright 2026 - Imobil.Index</small>
     </div>
-    """,
+    """.replace("__FOOTER_COLOR__", THEME["muted"]).replace(
+        "__FOOTER_LINK_COLOR__", THEME["chart_label"]
+    ),
     unsafe_allow_html=True,
 )
 
