@@ -12,6 +12,7 @@ from charts import (
     render_plotly_chart,
     render_price_sections,
 )
+from components import render_chart_title, render_empty_state, render_section
 from data import (
     HISTORY_WINDOW_DAYS,
     load_data,
@@ -443,19 +444,6 @@ def render_app_header(latest_snapshot: str) -> None:
     )
 
 
-def render_section(title: str, caption: str | None = None) -> None:
-    caption_html = f'<p class="section-caption">{caption}</p>' if caption else ""
-    st.markdown(
-        f"""
-        <div class="section">
-            <h3 class="section-title">{title}</h3>
-            {caption_html}
-        </div>
-        """,
-        unsafe_allow_html=True,
-    )
-
-
 def render_kpi_card(label: str, value: str, note: str = "") -> None:
     st.markdown(
         f"""
@@ -493,17 +481,6 @@ def render_insight_cards(
                     card_html,
                     unsafe_allow_html=True,
                 )
-
-
-def render_empty_state(message: str) -> None:
-    st.markdown(f'<div class="empty-state">{message}</div>', unsafe_allow_html=True)
-
-
-def render_chart_title(title: str) -> None:
-    st.markdown(
-        f'<div class="chart-title">{escape(title)}</div>',
-        unsafe_allow_html=True,
-    )
 
 
 def render_tab_header(
@@ -1575,9 +1552,7 @@ with main_col:
         ):
             render_market_highlights(df, price_col, price_fmt="{:.0f}")
             if market_lens == "Listings":
-                render_listing_sections(
-                    df, SALE_COLOR_SCALE, render_section, render_empty_state
-                )
+                render_listing_sections(df, SALE_COLOR_SCALE)
             else:
                 render_price_sections(
                     df,
@@ -1586,8 +1561,6 @@ with main_col:
                     SALE_COLOR_SCALE,
                     HIGH_PRICE_COLOR_SCALE,
                     0,
-                    render_section,
-                    render_empty_state,
                 )
             render_sale_segments(
                 sale_segments, selected_sale_rooms, selected_sale_area_bands
@@ -1635,9 +1608,7 @@ with main_col:
                 df, price_col, price_fmt="{:.1f}", price_suffix="/month"
             )
             if market_lens == "Listings":
-                render_listing_sections(
-                    df, RENT_COLOR_SCALE, render_section, render_empty_state
-                )
+                render_listing_sections(df, RENT_COLOR_SCALE)
             else:
                 render_price_sections(
                     df,
@@ -1646,8 +1617,6 @@ with main_col:
                     RENT_COLOR_SCALE,
                     DAILY_COLOR_SCALE,
                     1,
-                    render_section,
-                    render_empty_state,
                 )
             render_yield_chart(
                 filtered_yield,
@@ -1676,9 +1645,7 @@ with main_col:
                 df, price_col, price_fmt="{:.1f}", price_suffix="/day"
             )
             if market_lens == "Listings":
-                render_listing_sections(
-                    df, DAILY_COLOR_SCALE, render_section, render_empty_state
-                )
+                render_listing_sections(df, DAILY_COLOR_SCALE)
             else:
                 render_price_sections(
                     df,
@@ -1687,8 +1654,6 @@ with main_col:
                     DAILY_COLOR_SCALE,
                     HIGH_DAILY_RENT_COLOR_SCALE,
                     1,
-                    render_section,
-                    render_empty_state,
                 )
             render_yield_chart(
                 filtered_yield,

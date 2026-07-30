@@ -1,9 +1,8 @@
-from collections.abc import Callable
-
 import pandas as pd
 import plotly.express as px
 import streamlit as st
 
+from components import render_empty_state, render_section
 from theme import CHART_NEUTRAL, PLOTLY_FONT_FAMILY, THEME
 from transforms import sector_label
 
@@ -81,8 +80,6 @@ def render_ranked_bars(
     color_scale: list[str],
     mode: str,
     digits: int,
-    render_section: Callable[[str, str | None], None],
-    render_empty_state: Callable[[str], None],
 ) -> None:
     caption = (
         "Lowest visible sectors, sorted from lower to higher value."
@@ -156,8 +153,6 @@ def render_price_sections(
     low_scale: list[str],
     high_scale: list[str],
     digits: int,
-    render_section: Callable[[str, str | None], None],
-    render_empty_state: Callable[[str], None],
 ) -> None:
     col_l, col_r = st.columns(2)
     with col_l:
@@ -169,8 +164,6 @@ def render_price_sections(
             low_scale,
             "lowest",
             digits,
-            render_section,
-            render_empty_state,
         )
     with col_r:
         render_ranked_bars(
@@ -181,16 +174,12 @@ def render_price_sections(
             high_scale,
             "highest",
             digits,
-            render_section,
-            render_empty_state,
         )
 
 
 def render_listing_sections(
     df: pd.DataFrame,
     color_scale: list[str],
-    render_section: Callable[[str, str | None], None],
-    render_empty_state: Callable[[str], None],
 ) -> None:
     col_l, col_r = st.columns(2)
     with col_l:
@@ -202,8 +191,6 @@ def render_listing_sections(
             color_scale,
             "lowest",
             0,
-            render_section,
-            render_empty_state,
         )
     with col_r:
         render_ranked_bars(
@@ -214,6 +201,4 @@ def render_listing_sections(
             color_scale,
             "highest",
             0,
-            render_section,
-            render_empty_state,
         )
