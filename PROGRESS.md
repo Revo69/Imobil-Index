@@ -85,6 +85,10 @@ Simple project progress log for Imobil.Index.
 - Moved shared Plotly chart helpers from `app.py` into `charts.py`:
   `PLOTLY_CHART_CONFIG`, `render_plotly_chart()`, and
   `apply_common_chart_style()`.
+- Moved ranked/listing/price chart sections from `app.py` into `charts.py`
+  while keeping UI section and empty-state rendering passed in as callbacks.
+- Replaced the inline Daily Rent high-price purple palette with named
+  `HIGH_DAILY_RENT_COLOR_SCALE`.
 
 ## Important Verified Semantics
 

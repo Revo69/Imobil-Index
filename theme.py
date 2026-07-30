@@ -39,6 +39,7 @@ RENT_COLOR_SCALE = ["#dff6ea", "#8bd7b2", "#12805c", "#0b5d43"]
 DAILY_COLOR_SCALE = ["#fff0df", "#f5b86f", "#c56b2c", "#8f451d"]
 YIELD_COLOR_SCALE = ["#d9f3f1", "#7bcac5", "#0f8b8d", "#0b5f63"]
 HIGH_PRICE_COLOR_SCALE = ["#fee2e2", "#fca5a5", "#ef4444", "#991b1b"]
+HIGH_DAILY_RENT_COLOR_SCALE = ["#f3e8ff", "#c084fc", "#9333ea", "#581c87"]
 CHART_NEUTRAL = "#cbd8d2"
 PLOTLY_FONT_FAMILY = "Inter, Segoe UI, sans-serif"
 
