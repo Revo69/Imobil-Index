@@ -5,7 +5,13 @@ import pandas as pd
 import plotly.express as px
 import streamlit as st
 
-from components import (
+from dashboard_charts import (
+    apply_common_chart_style,
+    render_listing_sections,
+    render_plotly_chart,
+    render_price_sections,
+)
+from dashboard_components import (
     format_int,
     render_app_header,
     render_chart_title,
@@ -14,19 +20,13 @@ from components import (
     render_kpi_card,
     render_section,
 )
-from dashboard_charts import (
-    apply_common_chart_style,
-    render_listing_sections,
-    render_plotly_chart,
-    render_price_sections,
-)
-from data import (
+from dashboard_data import (
     HISTORY_WINDOW_DAYS,
     load_data,
     load_historical_data,
     load_historical_segment_data,
 )
-from theme import (
+from dashboard_theme import (
     CHART_NEUTRAL,
     DAILY_COLOR_SCALE,
     HIGH_DAILY_RENT_COLOR_SCALE,
@@ -37,7 +37,7 @@ from theme import (
     YIELD_COLOR_SCALE,
     theme_css_vars,
 )
-from transforms import (
+from dashboard_transforms import (
     build_sale_market_from_segments,
     build_segment_summary,
     data_freshness,

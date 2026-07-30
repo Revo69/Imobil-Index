@@ -17,10 +17,10 @@ It is intentionally a plan only. No application code is changed here.
 Imobil-Index/
   app.py
   dashboard_charts.py
-  components.py
-  data.py
-  transforms.py
-  theme.py
+  dashboard_components.py
+  dashboard_data.py
+  dashboard_transforms.py
+  dashboard_theme.py
   requirements.txt
   README.md
   AGENTS.md
@@ -50,10 +50,10 @@ Imobil-Index/
 |---|---|
 | `app.py` | Main Streamlit dashboard: page setup, CSS injection, UI constants, remaining chart-specific render helpers, tab logic, and main execution flow. |
 | `dashboard_charts.py` | Shared Plotly config, `st.plotly_chart` wrapper, common Plotly layout styling, and ranked/listing/price chart sections. |
-| `components.py` | Shared UI primitives: product header, section heading, KPI card, insight cards, empty state, chart title, and integer formatting. |
-| `data.py` | Supabase client creation, public API column contracts, cached data loaders, and paginated fetch helper. |
-| `transforms.py` | Pure pandas helpers for freshness, weighted averages, labels, city/profile filtering, segment summaries, and profile-to-market aggregation. |
-| `theme.py` | Shared dashboard theme tokens, CSS-variable generation, and named chart color scales. |
+| `dashboard_components.py` | Shared UI primitives: product header, section heading, KPI card, insight cards, empty state, chart title, and integer formatting. |
+| `dashboard_data.py` | Supabase client creation, public API column contracts, cached data loaders, and paginated fetch helper. |
+| `dashboard_transforms.py` | Pure pandas helpers for freshness, weighted averages, labels, city/profile filtering, segment summaries, and profile-to-market aggregation. |
+| `dashboard_theme.py` | Shared dashboard theme tokens, CSS-variable generation, and named chart color scales. |
 | `requirements.txt` | Runtime dependencies for Streamlit Cloud / local setup. |
 | `README.md` | Public project overview, setup, data-flow explanation, and live dashboard link. |
 | `AGENTS.md` | AI-agent working rules, dashboard UX standards, data semantics, and preferred checks. |
@@ -77,10 +77,10 @@ Main sections observed:
 | Area | Current contents |
 |---|---|
 | Config/constants | `st.set_page_config`, deal-type constants, city constants, and category orders. |
-| Style | Large inline CSS block injected through `st.markdown(..., unsafe_allow_html=True)`, with CSS variables generated from `theme.py`. |
-| Data loading | Delegated to `data.py` through `load_historical_data`, `load_historical_segment_data`, and `load_data` imports. |
-| Data helpers | Delegated to `transforms.py` for freshness, labels, weighted averages, segment filtering, segment aggregation, and market rebuilding. |
-| UI primitives | Product header, section heading, KPI card, insight cards, empty state, chart title, and integer formatting delegated to `components.py`. |
+| Style | Large inline CSS block injected through `st.markdown(..., unsafe_allow_html=True)`, with CSS variables generated from `dashboard_theme.py`. |
+| Data loading | Delegated to `dashboard_data.py` through `load_historical_data`, `load_historical_segment_data`, and `load_data` imports. |
+| Data helpers | Delegated to `dashboard_transforms.py` for freshness, labels, weighted averages, segment filtering, segment aggregation, and market rebuilding. |
+| UI primitives | Product header, section heading, KPI card, insight cards, empty state, chart title, and integer formatting delegated to `dashboard_components.py`. |
 | Chart helpers | Shared Plotly wrapper/style and ranked/listing/price chart sections delegated to `dashboard_charts.py`; segment charts, yield charts, and trend lines remain in `app.py`. |
 | Insight logic | Decision notes, break-even analysis, outside-Chisinau radar, yield opportunity notes. |
 | Main flow | Load data, derive filter options, render header, left filter panel, four tabs, footer. |
@@ -92,10 +92,10 @@ AI-assisted work because every change requires reading a very large `app.py`.
 
 | Mixed concern | Example | Why it matters |
 |---|---|---|
-| Data access + UI | Supabase table calls now live in `data.py`, but `app.py` still directly consumes the loaded DataFrames in the main flow. | This is a good first split, but data contracts and UI assumptions are still only loosely documented. |
-| Data transformation + rendering | Core pandas helpers now live in `transforms.py`, but some insight preparation still lives near render functions. | Keep moving only pure helpers when the boundary is obvious. |
-| Data transformation + data loading | `data.py` loads public API data, while `transforms.py` handles profile-filtered market aggregates. | This boundary is now clearer; later tests can protect it. |
-| Data loaders + error policy | `data.py` has a shared paginated fetch helper, while the wrappers keep required-vs-optional behavior. | The behavior is now easier to see, but it still needs tests or typed contracts later. |
+| Data access + UI | Supabase table calls now live in `dashboard_data.py`, but `app.py` still directly consumes the loaded DataFrames in the main flow. | This is a good first split, but data contracts and UI assumptions are still only loosely documented. |
+| Data transformation + rendering | Core pandas helpers now live in `dashboard_transforms.py`, but some insight preparation still lives near render functions. | Keep moving only pure helpers when the boundary is obvious. |
+| Data transformation + data loading | `dashboard_data.py` loads public API data, while `dashboard_transforms.py` handles profile-filtered market aggregates. | This boundary is now clearer; later tests can protect it. |
+| Data loaders + error policy | `dashboard_data.py` has a shared paginated fetch helper, while the wrappers keep required-vs-optional behavior. | The behavior is now easier to see, but it still needs tests or typed contracts later. |
 | Streamlit internals + app theme | CSS targets internal `data-testid` selectors. | This works today, but it is fragile across Streamlit upgrades. |
 | SQL contract + app assumptions | Public API tables and app queries are coordinated through docs and scripts, not typed contracts. | Column drift can appear only at runtime. |
 
@@ -104,10 +104,10 @@ AI-assisted work because every change requires reading a very large `app.py`.
 ### P1: `app.py` Is Too Large For Safe Growth
 
 Current state: `app.py` still owns remaining chart-specific logic, tabs, and app
-flow. Shared UI primitives live in `components.py`, shared chart
+flow. Shared UI primitives live in `dashboard_components.py`, shared chart
 helpers and ranked/listing/price chart sections live in `dashboard_charts.py`, data
-loading lives in `data.py`, core pandas helpers live in `transforms.py`, and
-theme tokens live in `theme.py`.
+loading lives in `dashboard_data.py`, core pandas helpers live in
+`dashboard_transforms.py`, and theme tokens live in `dashboard_theme.py`.
 
 Risk: AI-assisted edits need too much context and can create accidental changes
 outside the intended area.
@@ -124,7 +124,7 @@ range-based dependency entries with a lockfile or exact pins.
 
 ### Resolved: Theme Tokens Have A Shared Source
 
-Current state: `theme.py` owns shared dashboard theme tokens, CSS variable
+Current state: `dashboard_theme.py` owns shared dashboard theme tokens, CSS variable
 generation, Plotly text/grid/hover colors, and named chart scales.
 
 Remaining note: some older inline CSS details and specialist chart palettes can
@@ -133,7 +133,7 @@ still be normalized later, but the main source of truth now exists.
 ### Resolved: One-Off Red Chart Palette Is Named
 
 Current state: the `For Sale` highest-price chart now uses
-`HIGH_PRICE_COLOR_SCALE` from `theme.py`.
+`HIGH_PRICE_COLOR_SCALE` from `dashboard_theme.py`.
 
 Remaining note: the palette values were intentionally preserved to avoid a
 visual behavior change during structural cleanup.
@@ -142,7 +142,7 @@ visual behavior change during structural cleanup.
 
 Current state:
 
-- `data.py` has one shared `fetch_paginated_rows()` helper.
+- `dashboard_data.py` has one shared `fetch_paginated_rows()` helper.
 - `load_historical_data` remains a required dataset.
 - `load_historical_segment_data` remains optional and returns an empty
   DataFrame on failure.

@@ -2,9 +2,9 @@ import pandas as pd
 import plotly.express as px
 import streamlit as st
 
-from components import render_empty_state, render_section
-from theme import CHART_NEUTRAL, PLOTLY_FONT_FAMILY, THEME
-from transforms import sector_label
+from dashboard_components import render_empty_state, render_section
+from dashboard_theme import CHART_NEUTRAL, PLOTLY_FONT_FAMILY, THEME
+from dashboard_transforms import sector_label
 
 PLOTLY_CHART_CONFIG = {
     "displayModeBar": False,
