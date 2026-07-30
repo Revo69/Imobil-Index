@@ -485,7 +485,7 @@ def load_historical_segment_data() -> pd.DataFrame:
     return pd.DataFrame(all_segments)
 
 
-@st.cache_data(ttl=3600)
+#@st.cache_data(ttl=3600)
 def load_data() -> tuple[pd.DataFrame, pd.DataFrame, pd.DataFrame, pd.DataFrame]:
     sales = pd.DataFrame(
         supabase.table("api_estate_current").select("*").execute().data
