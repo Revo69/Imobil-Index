@@ -23,6 +23,21 @@ from theme import (
     YIELD_COLOR_SCALE,
     theme_css_vars,
 )
+from transforms import (
+    build_sale_market_from_segments,
+    build_segment_summary,
+    data_freshness,
+    filter_by_city,
+    filter_by_city_and_listings,
+    filter_sale_profile_segments,
+    filter_segments_to_market,
+    has_sale_profile_filters,
+    latest_data_date,
+    ordered_segment_options,
+    place_label,
+    sector_label,
+    weighted_average,
+)
 
 # =========================
 # Config
@@ -402,39 +417,6 @@ __THEME_CSS_VARS__
 # =========================
 def format_int(value: float) -> str:
     return f"{value:,.0f}"
-
-
-def sector_label(df: pd.DataFrame) -> pd.Series:
-    return df["city"].astype(str) + " -> " + df["sector"].fillna("Center").astype(str)
-
-
-def place_label(row: pd.Series) -> str:
-    sector = row.get("sector")
-    sector = sector if pd.notna(sector) and str(sector).strip() else "Center"
-    return f"{row['city']} -> {sector}"
-
-
-def weighted_average(df: pd.DataFrame, price_col: str) -> float:
-    total_listings = df["listings"].sum()
-    if total_listings <= 0:
-        return 0.0
-    return float((df[price_col] * df["listings"]).sum() / total_listings)
-
-
-def latest_data_date(df: pd.DataFrame) -> pd.Timestamp | None:
-    if df.empty or "date" not in df.columns:
-        return None
-    data_date = pd.to_datetime(df["date"], errors="coerce").max()
-    if pd.isna(data_date):
-        return None
-    return data_date
-
-
-def data_freshness(df: pd.DataFrame) -> str:
-    data_date = latest_data_date(df)
-    if data_date is None:
-        return "No snapshot"
-    return f"Data as of {data_date:%d %B %Y}"
 
 
 def render_app_header(latest_snapshot: str) -> None:
