@@ -17,6 +17,7 @@ It is intentionally a plan only. No application code is changed here.
 Imobil-Index/
   app.py
   data.py
+  transforms.py
   theme.py
   requirements.txt
   README.md
@@ -45,8 +46,9 @@ Imobil-Index/
 
 | File or folder | Current responsibility |
 |---|---|
-| `app.py` | Main Streamlit dashboard: page setup, CSS injection, UI constants, data transformation, chart styling, render helpers, tab logic, and main execution flow. |
+| `app.py` | Main Streamlit dashboard: page setup, CSS injection, UI constants, chart styling, render helpers, tab logic, and main execution flow. |
 | `data.py` | Supabase client creation, public API column contracts, cached data loaders, and paginated fetch helper. |
+| `transforms.py` | Pure pandas helpers for freshness, weighted averages, labels, city/profile filtering, segment summaries, and profile-to-market aggregation. |
 | `theme.py` | Shared dashboard theme tokens, CSS-variable generation, and named chart color scales. |
 | `requirements.txt` | Runtime dependencies for Streamlit Cloud / local setup. |
 | `README.md` | Public project overview, setup, data-flow explanation, and live dashboard link. |
@@ -73,7 +75,7 @@ Main sections observed:
 | Config/constants | `st.set_page_config`, deal-type constants, city constants, and category orders. |
 | Style | Large inline CSS block injected through `st.markdown(..., unsafe_allow_html=True)`, with CSS variables generated from `theme.py`. |
 | Data loading | Delegated to `data.py` through `load_historical_data`, `load_historical_segment_data`, and `load_data` imports. |
-| Data helpers | Formatting, labels, freshness, weighted averages, segment filtering, segment aggregation, market rebuilding. |
+| Data helpers | Delegated to `transforms.py` for freshness, labels, weighted averages, segment filtering, segment aggregation, and market rebuilding. |
 | UI primitives | Header, section title, KPI card, insight cards, empty state, chart title, Plotly chart wrapper. |
 | Chart helpers | Common Plotly style, ranked bars, segment charts, yield charts, trend lines. |
 | Insight logic | Decision notes, break-even analysis, outside-Chisinau radar, yield opportunity notes. |
@@ -87,8 +89,8 @@ AI-assisted work because every change requires reading a very large `app.py`.
 | Mixed concern | Example | Why it matters |
 |---|---|---|
 | Data access + UI | Supabase table calls now live in `data.py`, but `app.py` still directly consumes the loaded DataFrames in the main flow. | This is a good first split, but data contracts and UI assumptions are still only loosely documented. |
-| Data transformation + rendering | `build_sale_market_from_segments` and render functions live side by side. | Business-grain logic is harder to test independently. |
-| Data transformation + data loading | `data.py` loads public API data, while `app.py` still rebuilds profile-filtered market aggregates. | The next safe extraction is business/dataframe transformation, not UI rendering. |
+| Data transformation + rendering | Core pandas helpers now live in `transforms.py`, but some insight preparation still lives near render functions. | Keep moving only pure helpers when the boundary is obvious. |
+| Data transformation + data loading | `data.py` loads public API data, while `transforms.py` handles profile-filtered market aggregates. | This boundary is now clearer; later tests can protect it. |
 | Data loaders + error policy | `data.py` has a shared paginated fetch helper, while the wrappers keep required-vs-optional behavior. | The behavior is now easier to see, but it still needs tests or typed contracts later. |
 | Streamlit internals + app theme | CSS targets internal `data-testid` selectors. | This works today, but it is fragile across Streamlit upgrades. |
 | SQL contract + app assumptions | Public API tables and app queries are coordinated through docs and scripts, not typed contracts. | Column drift can appear only at runtime. |
@@ -97,15 +99,15 @@ AI-assisted work because every change requires reading a very large `app.py`.
 
 ### P1: `app.py` Is Too Large For Safe Growth
 
-Current state: `app.py` still owns UI, transformation helpers, chart logic,
-tabs, and app flow. Data loading has started moving out into `data.py`, and
-theme tokens have moved into `theme.py`.
+Current state: `app.py` still owns UI, chart logic, tabs, and app flow. Data
+loading lives in `data.py`, core pandas helpers live in `transforms.py`, and
+theme tokens live in `theme.py`.
 
 Risk: AI-assisted edits need too much context and can create accidental changes
 outside the intended area.
 
-Target: continue splitting gradually. The next low-risk candidates are pure
-pandas transformation helpers and shared chart helpers.
+Target: continue splitting gradually. The next low-risk candidates are shared
+chart helpers or insight-specific service helpers.
 
 ### Resolved: `pandas` Is Explicit In `requirements.txt`
 

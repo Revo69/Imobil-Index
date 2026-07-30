@@ -8,7 +8,8 @@ Simple project progress log for Imobil.Index.
 
 ## Current State
 
-- The dashboard is a single-file Streamlit app in `app.py`.
+- The dashboard is still centered on `app.py`, with data loading in `data.py`,
+  theme tokens in `theme.py`, and pure pandas helpers in `transforms.py`.
 - It reads Supabase Gold tables for sale, monthly rent, daily rent, yield, and 90-day history.
 - The UI has a left Explore filter panel and four tabs:
   - For Sale
@@ -77,6 +78,9 @@ Simple project progress log for Imobil.Index.
   profile-history loaders use one Supabase pagination path.
 - Moved Supabase client creation, cached data loaders, API column contracts, and
   pagination helper from `app.py` into `data.py`.
+- Moved pure pandas transformation helpers from `app.py` into `transforms.py`:
+  freshness, weighted averages, city/profile filters, segment summaries, and
+  profile-to-market aggregation.
 
 ## Important Verified Semantics
 
@@ -86,16 +90,17 @@ Simple project progress log for Imobil.Index.
 
 ## Current Verification
 
-- `app.py`, `data.py`, and `theme.py` syntax passed in the project `.venv` using:
+- `app.py`, `data.py`, `theme.py`, and `transforms.py` syntax passed in the
+  project `.venv` using:
 
 ```powershell
-C:\Users\123\Documents\Projects\Python\Imobil-Index\.venv\Scripts\python.exe -m py_compile app.py data.py theme.py
+C:\Users\123\Documents\Projects\Python\Imobil-Index\.venv\Scripts\python.exe -m py_compile app.py data.py theme.py transforms.py
 ```
 
 - Ruff passed in the project `.venv` using:
 
 ```powershell
-C:\Users\123\Documents\Projects\Python\Imobil-Index\.venv\Scripts\python.exe -m ruff check app.py data.py theme.py
+C:\Users\123\Documents\Projects\Python\Imobil-Index\.venv\Scripts\python.exe -m ruff check app.py data.py theme.py transforms.py
 ```
 
 - Streamlit visual verification was not completed in the current local environment.
