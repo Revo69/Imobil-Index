@@ -6,13 +6,13 @@ import pandas as pd
 import plotly.express as px
 import streamlit as st
 
-from charts import (
+from components import render_chart_title, render_empty_state, render_section
+from dashboard_charts import (
     apply_common_chart_style,
     render_listing_sections,
     render_plotly_chart,
     render_price_sections,
 )
-from components import render_chart_title, render_empty_state, render_section
 from data import (
     HISTORY_WINDOW_DAYS,
     load_data,
@@ -1046,7 +1046,8 @@ def render_sales_trend(hist: pd.DataFrame, selected_cities: list[str]) -> None:
     h = hist.copy()
     h["date"] = pd.to_datetime(h["date"], errors="coerce")
     h = h.dropna(subset=["date"])
-    h = h[h["date"] >= pd.Timestamp.now() - pd.Timedelta(days=HISTORY_WINDOW_DAYS)]
+    history_cutoff = pd.Timestamp.now() - pd.Timedelta(HISTORY_WINDOW_DAYS, unit="D")
+    h = h[h["date"] >= history_cutoff]
     h = h[h["city"] == CHISINAU_CITY]
 
     if selected_cities and CHISINAU_CITY not in selected_cities:
@@ -1176,7 +1177,8 @@ def render_profile_sales_trend(
     h = h.dropna(
         subset=["date", "listings", "avg_price_eur", "avg_per_m2_eur"]
     )
-    h = h[h["date"] >= pd.Timestamp.now() - pd.Timedelta(days=HISTORY_WINDOW_DAYS)]
+    history_cutoff = pd.Timestamp.now() - pd.Timedelta(HISTORY_WINDOW_DAYS, unit="D")
+    h = h[h["date"] >= history_cutoff]
     if h.empty:
         render_empty_state("No profile-level history is available for the last 90 days.")
         return

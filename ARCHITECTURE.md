@@ -16,7 +16,7 @@ It is intentionally a plan only. No application code is changed here.
 ```text
 Imobil-Index/
   app.py
-  charts.py
+  dashboard_charts.py
   components.py
   data.py
   transforms.py
@@ -49,7 +49,7 @@ Imobil-Index/
 | File or folder | Current responsibility |
 |---|---|
 | `app.py` | Main Streamlit dashboard: page setup, CSS injection, UI constants, remaining chart-specific render helpers, tab logic, and main execution flow. |
-| `charts.py` | Shared Plotly config, `st.plotly_chart` wrapper, common Plotly layout styling, and ranked/listing/price chart sections. |
+| `dashboard_charts.py` | Shared Plotly config, `st.plotly_chart` wrapper, common Plotly layout styling, and ranked/listing/price chart sections. |
 | `components.py` | Shared UI primitives: section heading, empty state, and chart title. |
 | `data.py` | Supabase client creation, public API column contracts, cached data loaders, and paginated fetch helper. |
 | `transforms.py` | Pure pandas helpers for freshness, weighted averages, labels, city/profile filtering, segment summaries, and profile-to-market aggregation. |
@@ -81,7 +81,7 @@ Main sections observed:
 | Data loading | Delegated to `data.py` through `load_historical_data`, `load_historical_segment_data`, and `load_data` imports. |
 | Data helpers | Delegated to `transforms.py` for freshness, labels, weighted averages, segment filtering, segment aggregation, and market rebuilding. |
 | UI primitives | Section heading, empty state, and chart title delegated to `components.py`; header, KPI card, and insight cards remain in `app.py`. |
-| Chart helpers | Shared Plotly wrapper/style and ranked/listing/price chart sections delegated to `charts.py`; segment charts, yield charts, and trend lines remain in `app.py`. |
+| Chart helpers | Shared Plotly wrapper/style and ranked/listing/price chart sections delegated to `dashboard_charts.py`; segment charts, yield charts, and trend lines remain in `app.py`. |
 | Insight logic | Decision notes, break-even analysis, outside-Chisinau radar, yield opportunity notes. |
 | Main flow | Load data, derive filter options, render header, left filter panel, four tabs, footer. |
 
@@ -105,7 +105,7 @@ AI-assisted work because every change requires reading a very large `app.py`.
 
 Current state: `app.py` still owns header/cards, remaining chart-specific logic,
 tabs, and app flow. Shared UI primitives live in `components.py`, shared chart
-helpers and ranked/listing/price chart sections live in `charts.py`, data
+helpers and ranked/listing/price chart sections live in `dashboard_charts.py`, data
 loading lives in `data.py`, core pandas helpers live in `transforms.py`, and
 theme tokens live in `theme.py`.
 

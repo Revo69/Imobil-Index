@@ -9,8 +9,9 @@ Simple project progress log for Imobil.Index.
 ## Current State
 
 - The dashboard is still centered on `app.py`, with data loading in `data.py`,
-  shared chart helpers in `charts.py`, shared UI primitives in `components.py`,
-  theme tokens in `theme.py`, and pure pandas helpers in `transforms.py`.
+  shared chart helpers in `dashboard_charts.py`, shared UI primitives in
+  `components.py`, theme tokens in `theme.py`, and pure pandas helpers in
+  `transforms.py`.
 - It reads Supabase Gold tables for sale, monthly rent, daily rent, yield, and 90-day history.
 - The UI has a left Explore filter panel and four tabs:
   - For Sale
@@ -82,15 +83,19 @@ Simple project progress log for Imobil.Index.
 - Moved pure pandas transformation helpers from `app.py` into `transforms.py`:
   freshness, weighted averages, city/profile filters, segment summaries, and
   profile-to-market aggregation.
-- Moved shared Plotly chart helpers from `app.py` into `charts.py`:
+- Moved shared Plotly chart helpers from `app.py` into `dashboard_charts.py`:
   `PLOTLY_CHART_CONFIG`, `render_plotly_chart()`, and
   `apply_common_chart_style()`.
-- Moved ranked/listing/price chart sections from `app.py` into `charts.py`
+- Moved ranked/listing/price chart sections from `app.py` into `dashboard_charts.py`
   and removed the temporary callback plumbing by introducing `components.py`.
 - Replaced the inline Daily Rent high-price purple palette with named
   `HIGH_DAILY_RENT_COLOR_SCALE`.
 - Moved shared UI primitives `render_section()`, `render_empty_state()`, and
   `render_chart_title()` from `app.py` into `components.py`.
+- Renamed `charts.py` to `dashboard_charts.py` to avoid a Streamlit Cloud
+  import crash with `KeyError: 'charts'`.
+- Replaced `pd.Timedelta(days=HISTORY_WINDOW_DAYS)` with explicit
+  `pd.Timedelta(HISTORY_WINDOW_DAYS, unit="D")` in trend filters.
 
 ## Important Verified Semantics
 
@@ -100,17 +105,17 @@ Simple project progress log for Imobil.Index.
 
 ## Current Verification
 
-- `app.py`, `charts.py`, `components.py`, `data.py`, `theme.py`, and
+- `app.py`, `dashboard_charts.py`, `components.py`, `data.py`, `theme.py`, and
   `transforms.py` syntax passed in the project `.venv` using:
 
 ```powershell
-C:\Users\123\Documents\Projects\Python\Imobil-Index\.venv\Scripts\python.exe -m py_compile app.py charts.py components.py data.py theme.py transforms.py
+C:\Users\123\Documents\Projects\Python\Imobil-Index\.venv\Scripts\python.exe -m py_compile app.py dashboard_charts.py components.py data.py theme.py transforms.py
 ```
 
 - Ruff passed in the project `.venv` using:
 
 ```powershell
-C:\Users\123\Documents\Projects\Python\Imobil-Index\.venv\Scripts\python.exe -m ruff check app.py charts.py components.py data.py theme.py transforms.py
+C:\Users\123\Documents\Projects\Python\Imobil-Index\.venv\Scripts\python.exe -m ruff check app.py dashboard_charts.py components.py data.py theme.py transforms.py
 ```
 
 - Streamlit visual verification was not completed in the current local environment.
