@@ -16,11 +16,14 @@ It is intentionally a plan only. No application code is changed here.
 ```text
 Imobil-Index/
   app.py
+  data.py
+  theme.py
   requirements.txt
   README.md
   AGENTS.md
   PROGRESS.md
   ARCHITECTURE.md
+  .gitignore
   wake_streamlit.py
   docs/
     public_api_v1.md
@@ -42,11 +45,14 @@ Imobil-Index/
 
 | File or folder | Current responsibility |
 |---|---|
-| `app.py` | Entire dashboard: Streamlit setup, Supabase client, constants, CSS, data loading, data transformation, chart styling, render helpers, tab logic, and main execution flow. |
-| `requirements.txt` | Runtime dependencies for Streamlit Cloud / local setup. Currently lists Streamlit, Plotly, and Supabase. |
+| `app.py` | Main Streamlit dashboard: page setup, CSS injection, UI constants, data transformation, chart styling, render helpers, tab logic, and main execution flow. |
+| `data.py` | Supabase client creation, public API column contracts, cached data loaders, and paginated fetch helper. |
+| `theme.py` | Shared dashboard theme tokens, CSS-variable generation, and named chart color scales. |
+| `requirements.txt` | Runtime dependencies for Streamlit Cloud / local setup. |
 | `README.md` | Public project overview, setup, data-flow explanation, and live dashboard link. |
 | `AGENTS.md` | AI-agent working rules, dashboard UX standards, data semantics, and preferred checks. |
 | `PROGRESS.md` | Lightweight project log, recent changes, verification status, and next steps. |
+| `.gitignore` | Local Python, Streamlit secrets, cache, editor, and temp-file exclusions. |
 | `docs/public_api_v1.md` | Public API contract and examples for safe aggregated API tables. |
 | `sql/*.sql` | Manual Supabase SQL scripts for API layer creation, refresh-function updates, access cleanup, and health checks. |
 | `wake_streamlit.py` | Playwright-based keep-awake script for Streamlit Community Cloud. |
@@ -64,9 +70,9 @@ Main sections observed:
 
 | Area | Current contents |
 |---|---|
-| Config/constants | `st.set_page_config`, Supabase client, API column strings, deal-type constants, city constants, chart color scales, category orders. |
-| Style | Large inline CSS block injected through `st.markdown(..., unsafe_allow_html=True)`. |
-| Data loading | `load_historical_data`, `load_historical_segment_data`, `load_data`, direct Supabase table calls, pagination logic, cache decorators. |
+| Config/constants | `st.set_page_config`, deal-type constants, city constants, and category orders. |
+| Style | Large inline CSS block injected through `st.markdown(..., unsafe_allow_html=True)`, with CSS variables generated from `theme.py`. |
+| Data loading | Delegated to `data.py` through `load_historical_data`, `load_historical_segment_data`, and `load_data` imports. |
 | Data helpers | Formatting, labels, freshness, weighted averages, segment filtering, segment aggregation, market rebuilding. |
 | UI primitives | Header, section title, KPI card, insight cards, empty state, chart title, Plotly chart wrapper. |
 | Chart helpers | Common Plotly style, ranked bars, segment charts, yield charts, trend lines. |
@@ -80,11 +86,10 @@ AI-assisted work because every change requires reading a very large `app.py`.
 
 | Mixed concern | Example | Why it matters |
 |---|---|---|
-| Data access + UI | Supabase table calls live in the same file as Streamlit rendering. | A UI change can accidentally affect data loading or cache behavior. |
+| Data access + UI | Supabase table calls now live in `data.py`, but `app.py` still directly consumes the loaded DataFrames in the main flow. | This is a good first split, but data contracts and UI assumptions are still only loosely documented. |
 | Data transformation + rendering | `build_sale_market_from_segments` and render functions live side by side. | Business-grain logic is harder to test independently. |
-| CSS tokens + Plotly tokens | CSS defines `--ink`, `--text`, `--muted`, `--border`, while Plotly repeats equivalent hex colors directly. | Theme changes can silently leave charts on the old colors. |
-| Shared chart system + one-off palette | `For Sale` highest-price chart uses a local red scale rather than a named design token. | Violates the project rule against isolated chart styles. |
-| Data loaders + error policy | `load_historical_data` can fail the app, while `load_historical_segment_data` silently returns an empty DataFrame. | Similar loaders should not have different failure behavior by accident. |
+| Data transformation + data loading | `data.py` loads public API data, while `app.py` still rebuilds profile-filtered market aggregates. | The next safe extraction is business/dataframe transformation, not UI rendering. |
+| Data loaders + error policy | `data.py` has a shared paginated fetch helper, while the wrappers keep required-vs-optional behavior. | The behavior is now easier to see, but it still needs tests or typed contracts later. |
 | Streamlit internals + app theme | CSS targets internal `data-testid` selectors. | This works today, but it is fragile across Streamlit upgrades. |
 | SQL contract + app assumptions | Public API tables and app queries are coordinated through docs and scripts, not typed contracts. | Column drift can appear only at runtime. |
 
@@ -92,66 +97,53 @@ AI-assisted work because every change requires reading a very large `app.py`.
 
 ### P1: `app.py` Is Too Large For Safe Growth
 
-Current state: one file owns data, service logic, rendering, CSS, charts, tabs,
-and app flow.
+Current state: `app.py` still owns UI, transformation helpers, chart logic,
+tabs, and app flow. Data loading has started moving out into `data.py`, and
+theme tokens have moved into `theme.py`.
 
 Risk: AI-assisted edits need too much context and can create accidental changes
 outside the intended area.
 
-Target: split gradually into modules, starting with low-risk extraction of
-constants, theme tokens, and data loading.
+Target: continue splitting gradually. The next low-risk candidates are pure
+pandas transformation helpers and shared chart helpers.
 
-### P1: `pandas` Is Missing From `requirements.txt`
+### Resolved: `pandas` Is Explicit In `requirements.txt`
 
-Current state: `app.py` imports `pandas as pd`, but `requirements.txt` lists
-only:
+Current state: `requirements.txt` now declares `pandas>=2.2,<3` explicitly.
 
-```text
-streamlit==1.58.0
-plotly==6.8.0
-supabase==2.31.0
-```
+Remaining note: if the project later needs fully reproducible builds, replace
+range-based dependency entries with a lockfile or exact pins.
 
-Risk: deployment relies on transitive dependencies. A future dependency update
-could remove or change that transitive install path.
+### Resolved: Theme Tokens Have A Shared Source
 
-Target: add `pandas` explicitly in a small dependency-only change.
+Current state: `theme.py` owns shared dashboard theme tokens, CSS variable
+generation, Plotly text/grid/hover colors, and named chart scales.
 
-### P2: Theme Tokens Are Duplicated
+Remaining note: some older inline CSS details and specialist chart palettes can
+still be normalized later, but the main source of truth now exists.
 
-Current state: CSS defines color tokens, while Plotly styling hardcodes matching
-hex values separately.
+### Resolved: One-Off Red Chart Palette Is Named
 
-Risk: changing the dashboard palette in CSS will not update chart text, grid,
-hover, and annotation colors.
+Current state: the `For Sale` highest-price chart now uses
+`HIGH_PRICE_COLOR_SCALE` from `theme.py`.
 
-Target: define one Python-side theme token dictionary and generate both CSS and
-Plotly style values from it.
+Remaining note: the palette values were intentionally preserved to avoid a
+visual behavior change during structural cleanup.
 
-### P2: One-Off Red Chart Palette Breaks The Design System
-
-Current state: the `For Sale` highest-price chart passes an inline red scale.
-
-Risk: this creates a new chart style that is not named, documented, or connected
-to the existing chart color system.
-
-Target: either introduce a named `HIGH_PRICE_COLOR_SCALE` / `ALERT_COLOR_SCALE`
-or use an existing approved scale. The choice should be documented as a
-semantic color role.
-
-### P2: Similar Supabase Loaders Have Different Error Policies
+### Partially Resolved: Similar Supabase Loaders Share Pagination
 
 Current state:
 
-- `load_historical_data` paginates `api_estate_daily` without local fallback.
-- `load_historical_segment_data` paginates `api_estate_segments_daily` and
-  returns an empty DataFrame on failure.
+- `data.py` has one shared `fetch_paginated_rows()` helper.
+- `load_historical_data` remains a required dataset.
+- `load_historical_segment_data` remains optional and returns an empty
+  DataFrame on failure.
 
-Risk: one historical query can stop the whole app while the other only hides a
-single block. That may be intentional later, but today it looks accidental.
+Risk: the required-vs-optional behavior is clearer now, but not covered by
+tests yet.
 
-Target: create one shared paginated fetch service with an explicit error policy:
-required dataset, optional dataset, or empty-on-error dataset.
+Target: add a tiny testable data-service layer later if failure behavior becomes
+more complex.
 
 ### P2: CSS Uses Internal Streamlit Selectors
 
@@ -166,15 +158,14 @@ centralize the CSS and add a Streamlit upgrade checklist.
 
 ### P3: Local Environment Discovery Is Fragile
 
-Current state: the Streamlit skill discovery found a parent `.venv`, but that
-venv failed to import Streamlit because it points to a missing Python 3.11
-executable.
+Current state: the project now has a local `.venv` using Python 3.14.6. Ruff is
+available there and passes for the active Python files.
 
-Risk: local checks may be inconsistent. `py_compile` can pass through bundled
-Python, while `streamlit run` and Ruff remain unverified.
+Risk: Python 3.14 is newer than many common production defaults, so dependency
+compatibility should be watched during deploys and CI setup.
 
-Target: either repair the local project environment or document that the main
-runtime is Streamlit Cloud/devcontainer.
+Target: keep using the project-local `.venv` for local checks and consider
+pinning the deployment Python version if Streamlit Cloud behavior differs.
 
 ## Target Architecture
 

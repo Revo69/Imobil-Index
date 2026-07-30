@@ -75,6 +75,8 @@ Simple project progress log for Imobil.Index.
 - Added `pandas>=2.2,<3` explicitly to `requirements.txt`.
 - Added a shared `fetch_paginated_rows()` helper so the historical sale and
   profile-history loaders use one Supabase pagination path.
+- Moved Supabase client creation, cached data loaders, API column contracts, and
+  pagination helper from `app.py` into `data.py`.
 
 ## Important Verified Semantics
 
@@ -84,16 +86,16 @@ Simple project progress log for Imobil.Index.
 
 ## Current Verification
 
-- `app.py` and `theme.py` syntax passed in the project `.venv` using:
+- `app.py`, `data.py`, and `theme.py` syntax passed in the project `.venv` using:
 
 ```powershell
-C:\Users\123\Documents\Projects\Python\Imobil-Index\.venv\Scripts\python.exe -m py_compile app.py theme.py
+C:\Users\123\Documents\Projects\Python\Imobil-Index\.venv\Scripts\python.exe -m py_compile app.py data.py theme.py
 ```
 
 - Ruff passed in the project `.venv` using:
 
 ```powershell
-C:\Users\123\Documents\Projects\Python\Imobil-Index\.venv\Scripts\python.exe -m ruff check app.py theme.py
+C:\Users\123\Documents\Projects\Python\Imobil-Index\.venv\Scripts\python.exe -m ruff check app.py data.py theme.py
 ```
 
 - Streamlit visual verification was not completed in the current local environment.
