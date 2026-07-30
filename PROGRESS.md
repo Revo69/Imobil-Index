@@ -9,9 +9,9 @@ Simple project progress log for Imobil.Index.
 ## Current State
 
 - The dashboard is still centered on `app.py`, with data loading in `data.py`,
-  shared chart helpers in `dashboard_charts.py`, shared UI primitives in
-  `components.py`, theme tokens in `theme.py`, and pure pandas helpers in
-  `transforms.py`.
+  shared chart helpers in `dashboard_charts.py`, shared UI primitives and card
+  renderers in `components.py`, theme tokens in `theme.py`, and pure pandas
+  helpers in `transforms.py`.
 - It reads Supabase Gold tables for sale, monthly rent, daily rent, yield, and 90-day history.
 - The UI has a left Explore filter panel and four tabs:
   - For Sale
@@ -92,6 +92,9 @@ Simple project progress log for Imobil.Index.
   `HIGH_DAILY_RENT_COLOR_SCALE`.
 - Moved shared UI primitives `render_section()`, `render_empty_state()`, and
   `render_chart_title()` from `app.py` into `components.py`.
+- Moved shared card/header UI helpers `format_int()`, `render_app_header()`,
+  `render_kpi_card()`, and `render_insight_cards()` from `app.py` into
+  `components.py`.
 - Renamed `charts.py` to `dashboard_charts.py` to avoid a Streamlit Cloud
   import crash with `KeyError: 'charts'`.
 - Replaced `pd.Timedelta(days=HISTORY_WINDOW_DAYS)` with explicit

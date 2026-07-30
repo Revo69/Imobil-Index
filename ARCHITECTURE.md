@@ -50,7 +50,7 @@ Imobil-Index/
 |---|---|
 | `app.py` | Main Streamlit dashboard: page setup, CSS injection, UI constants, remaining chart-specific render helpers, tab logic, and main execution flow. |
 | `dashboard_charts.py` | Shared Plotly config, `st.plotly_chart` wrapper, common Plotly layout styling, and ranked/listing/price chart sections. |
-| `components.py` | Shared UI primitives: section heading, empty state, and chart title. |
+| `components.py` | Shared UI primitives: product header, section heading, KPI card, insight cards, empty state, chart title, and integer formatting. |
 | `data.py` | Supabase client creation, public API column contracts, cached data loaders, and paginated fetch helper. |
 | `transforms.py` | Pure pandas helpers for freshness, weighted averages, labels, city/profile filtering, segment summaries, and profile-to-market aggregation. |
 | `theme.py` | Shared dashboard theme tokens, CSS-variable generation, and named chart color scales. |
@@ -80,7 +80,7 @@ Main sections observed:
 | Style | Large inline CSS block injected through `st.markdown(..., unsafe_allow_html=True)`, with CSS variables generated from `theme.py`. |
 | Data loading | Delegated to `data.py` through `load_historical_data`, `load_historical_segment_data`, and `load_data` imports. |
 | Data helpers | Delegated to `transforms.py` for freshness, labels, weighted averages, segment filtering, segment aggregation, and market rebuilding. |
-| UI primitives | Section heading, empty state, and chart title delegated to `components.py`; header, KPI card, and insight cards remain in `app.py`. |
+| UI primitives | Product header, section heading, KPI card, insight cards, empty state, chart title, and integer formatting delegated to `components.py`. |
 | Chart helpers | Shared Plotly wrapper/style and ranked/listing/price chart sections delegated to `dashboard_charts.py`; segment charts, yield charts, and trend lines remain in `app.py`. |
 | Insight logic | Decision notes, break-even analysis, outside-Chisinau radar, yield opportunity notes. |
 | Main flow | Load data, derive filter options, render header, left filter panel, four tabs, footer. |
@@ -103,8 +103,8 @@ AI-assisted work because every change requires reading a very large `app.py`.
 
 ### P1: `app.py` Is Too Large For Safe Growth
 
-Current state: `app.py` still owns header/cards, remaining chart-specific logic,
-tabs, and app flow. Shared UI primitives live in `components.py`, shared chart
+Current state: `app.py` still owns remaining chart-specific logic, tabs, and app
+flow. Shared UI primitives live in `components.py`, shared chart
 helpers and ranked/listing/price chart sections live in `dashboard_charts.py`, data
 loading lives in `data.py`, core pandas helpers live in `transforms.py`, and
 theme tokens live in `theme.py`.

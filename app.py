@@ -1,12 +1,19 @@
 ﻿# app.py - Imobil.Index 2026 - For Sale + Monthly Rent + Daily Rent
 from collections.abc import Iterable
-from html import escape
 
 import pandas as pd
 import plotly.express as px
 import streamlit as st
 
-from components import render_chart_title, render_empty_state, render_section
+from components import (
+    format_int,
+    render_app_header,
+    render_chart_title,
+    render_empty_state,
+    render_insight_cards,
+    render_kpi_card,
+    render_section,
+)
 from dashboard_charts import (
     apply_common_chart_style,
     render_listing_sections,
@@ -412,75 +419,6 @@ __THEME_CSS_VARS__
     """.replace("__THEME_CSS_VARS__", theme_css_vars()),
     unsafe_allow_html=True,
 )
-
-
-# =========================
-# UI helpers
-# =========================
-def format_int(value: float) -> str:
-    return f"{value:,.0f}"
-
-
-def render_app_header(latest_snapshot: str) -> None:
-    st.markdown(
-        f"""
-        <div class="app-header">
-            <div class="brand-row">
-                <div>
-                    <div class="brand-kicker">Moldova market intelligence</div>
-                    <div class="brand-title">
-                        Imobil<span class="brand-dot">.</span>Index
-                    </div>
-                    <div class="brand-copy">
-                        Residential real estate analytics for sale prices, rent,
-                        short-term rent, and gross yield across Moldova.
-                    </div>
-                </div>
-                <div class="status-pill">{latest_snapshot}</div>
-            </div>
-        </div>
-        """,
-        unsafe_allow_html=True,
-    )
-
-
-def render_kpi_card(label: str, value: str, note: str = "") -> None:
-    st.markdown(
-        f"""
-        <div class="kpi-card">
-            <div class="kpi-label">{label}</div>
-            <div class="kpi-value">{value}</div>
-            <div class="kpi-note">{note}</div>
-        </div>
-        """,
-        unsafe_allow_html=True,
-    )
-
-
-def render_insight_cards(
-    title: str, caption: str, cards: list[tuple[str, str, str]]
-) -> None:
-    render_section(title, caption)
-    if not cards:
-        render_empty_state("Not enough data for this insight yet.")
-        return
-
-    for start in range(0, len(cards), 3):
-        row_cards = cards[start : start + 3]
-        columns = st.columns(len(row_cards), gap="medium")
-        for column, (label, value, note) in zip(columns, row_cards, strict=True):
-            with column:
-                card_html = (
-                    '<div class="insight-card">'
-                    f'<div class="insight-card-label">{escape(label)}</div>'
-                    f'<div class="insight-card-value">{escape(value)}</div>'
-                    f'<div class="insight-card-note">{escape(note)}</div>'
-                    "</div>"
-                )
-                st.markdown(
-                    card_html,
-                    unsafe_allow_html=True,
-                )
 
 
 def render_tab_header(
