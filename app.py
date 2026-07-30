@@ -412,7 +412,7 @@ st.markdown(
 # =========================
 # Data (cache 1 hour)
 # =========================
-@st.cache_data(ttl=3600)
+#@st.cache_data(ttl=3600)
 def load_historical_data() -> pd.DataFrame:
     """
     Loads only the last HISTORY_WINDOW_DAYS of sale history, filtered at the
