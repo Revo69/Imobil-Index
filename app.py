@@ -6,6 +6,7 @@ import pandas as pd
 import plotly.express as px
 import streamlit as st
 
+from charts import apply_common_chart_style, render_plotly_chart
 from data import (
     HISTORY_WINDOW_DAYS,
     load_data,
@@ -16,7 +17,6 @@ from theme import (
     CHART_NEUTRAL,
     DAILY_COLOR_SCALE,
     HIGH_PRICE_COLOR_SCALE,
-    PLOTLY_FONT_FAMILY,
     RENT_COLOR_SCALE,
     SALE_COLOR_SCALE,
     THEME,
@@ -60,11 +60,6 @@ BALTI_CITY = "\u0411\u0435\u043b\u044c\u0446\u044b"
 
 ROOM_GROUP_ORDER = ["1", "2", "3", "4+"]
 AREA_BAND_ORDER = ["<40 m2", "40-59 m2", "60-79 m2", "80-119 m2", "120+ m2"]
-PLOTLY_CHART_CONFIG = {
-    "displayModeBar": False,
-    "displaylogo": False,
-    "responsive": True,
-}
 
 
 # =========================
@@ -505,10 +500,6 @@ def render_chart_title(title: str) -> None:
     )
 
 
-def render_plotly_chart(fig) -> None:
-    st.plotly_chart(fig, width="stretch", config=PLOTLY_CHART_CONFIG)
-
-
 def format_chart_hover_value(value: float, y_label: str, digits: int) -> str:
     formatted = f"{value:,.{digits}f}"
     if y_label == "Listings":
@@ -520,48 +511,6 @@ def format_chart_hover_value(value: float, y_label: str, digits: int) -> str:
     if "EUR" in y_label:
         return f"{formatted} EUR/m2"
     return formatted
-
-
-def apply_common_chart_style(fig, height: int = 430, show_legend: bool = False):
-    fig.update_layout(
-        height=height,
-        margin={"l": 12, "r": 12, "t": 28, "b": 12},
-        paper_bgcolor="rgba(0,0,0,0)",
-        plot_bgcolor="rgba(0,0,0,0)",
-        font={"family": PLOTLY_FONT_FAMILY, "size": 13, "color": THEME["text"]},
-        hoverlabel={
-            "bgcolor": THEME["ink"],
-            "font_size": 13,
-            "font_color": THEME["white"],
-        },
-        coloraxis_showscale=False,
-        showlegend=show_legend,
-        uniformtext_minsize=11,
-        uniformtext_mode="hide",
-        legend={
-            "orientation": "h",
-            "yanchor": "bottom",
-            "y": 1.02,
-            "xanchor": "right",
-            "x": 1,
-            "title_text": "",
-        },
-    )
-    fig.update_xaxes(
-        title_text="",
-        showgrid=False,
-        tickangle=-35,
-        tickfont={"color": THEME["muted"]},
-        fixedrange=True,
-    )
-    fig.update_yaxes(
-        title_font={"color": THEME["muted"]},
-        tickfont={"color": THEME["muted"]},
-        gridcolor=THEME["border"],
-        zeroline=False,
-        fixedrange=True,
-    )
-    return fig
 
 
 def render_ranked_bars(

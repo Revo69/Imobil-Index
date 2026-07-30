@@ -4,12 +4,13 @@ Simple project progress log for Imobil.Index.
 
 ## Last Updated
 
-2026-07-30
+2026-07-31
 
 ## Current State
 
 - The dashboard is still centered on `app.py`, with data loading in `data.py`,
-  theme tokens in `theme.py`, and pure pandas helpers in `transforms.py`.
+  shared chart helpers in `charts.py`, theme tokens in `theme.py`, and pure
+  pandas helpers in `transforms.py`.
 - It reads Supabase Gold tables for sale, monthly rent, daily rent, yield, and 90-day history.
 - The UI has a left Explore filter panel and four tabs:
   - For Sale
@@ -81,6 +82,9 @@ Simple project progress log for Imobil.Index.
 - Moved pure pandas transformation helpers from `app.py` into `transforms.py`:
   freshness, weighted averages, city/profile filters, segment summaries, and
   profile-to-market aggregation.
+- Moved shared Plotly chart helpers from `app.py` into `charts.py`:
+  `PLOTLY_CHART_CONFIG`, `render_plotly_chart()`, and
+  `apply_common_chart_style()`.
 
 ## Important Verified Semantics
 
@@ -90,17 +94,17 @@ Simple project progress log for Imobil.Index.
 
 ## Current Verification
 
-- `app.py`, `data.py`, `theme.py`, and `transforms.py` syntax passed in the
-  project `.venv` using:
+- `app.py`, `charts.py`, `data.py`, `theme.py`, and `transforms.py` syntax
+  passed in the project `.venv` using:
 
 ```powershell
-C:\Users\123\Documents\Projects\Python\Imobil-Index\.venv\Scripts\python.exe -m py_compile app.py data.py theme.py transforms.py
+C:\Users\123\Documents\Projects\Python\Imobil-Index\.venv\Scripts\python.exe -m py_compile app.py charts.py data.py theme.py transforms.py
 ```
 
 - Ruff passed in the project `.venv` using:
 
 ```powershell
-C:\Users\123\Documents\Projects\Python\Imobil-Index\.venv\Scripts\python.exe -m ruff check app.py data.py theme.py transforms.py
+C:\Users\123\Documents\Projects\Python\Imobil-Index\.venv\Scripts\python.exe -m ruff check app.py charts.py data.py theme.py transforms.py
 ```
 
 - Streamlit visual verification was not completed in the current local environment.
