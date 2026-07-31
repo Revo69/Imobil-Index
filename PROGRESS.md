@@ -188,6 +188,14 @@ C:\Users\123\Documents\Projects\Python\Imobil-Index\.venv\Scripts\python.exe -m 
   - extended the public API documentation, SQL health-check, and local API
     smoke-check;
   - connected a compact `New build vs resale` comparison to the For Sale tab.
+- Designed the next Silver-powered public feature: `Finish & condition`.
+  - `apartment_condition` needs canonical mapping before publication because
+    its raw values mix finish/condition with construction-stage statuses and
+    contain a few Latin/Cyrillic lookalike typos.
+  - The first release will publish five normalized groups in a current,
+    aggregated-only `api_estate_condition_current` table.
+  - The planned For Sale UI is one horizontal comparison chart; it will share
+    city and minimum-listings filters but stay independent of Rooms/Area.
 - Supabase production verification on 2026-07-30:
   - `api_estate_segments_daily`: 279 rows, max date 2026-07-29.
   - `api_estate_segments_current`: 279 rows, max date 2026-07-29.
@@ -409,8 +417,14 @@ streamlit run app.py
   `api_estate_current`;
 - run `sql/check_public_api_layer.sql` and confirm every status is `OK`.
 
-6. Choose one next product improvement only after that, such as a condition
-comparison or a floor-position segment.
+6. Implement the designed `Finish & condition` feature:
+
+- create `api_estate_condition_current` with RLS and read-only public API
+  access;
+- add canonical condition mapping to `refresh_gold_estate()`;
+- extend API checks and documentation;
+- add the For Sale horizontal comparison chart;
+- verify the public API and the dashboard in a normal browser.
 
 ## Parking Lot
 
