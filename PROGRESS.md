@@ -179,6 +179,15 @@ C:\Users\123\Documents\Projects\Python\Imobil-Index\.venv\Scripts\python.exe -m 
     sector, and housing type, with a minimum of five listings per group.
   - The first dashboard release will be a For Sale comparison block, not a
     new global filter or history series.
+- Implemented the current `New build vs resale` feature on 2026-07-31:
+  - added `api_estate_housing_type_current`, an aggregated public table by
+    snapshot date, municipality, city, sector, and `housing_type`;
+  - added RLS, read-only public SELECT access, no public writes, and the
+    `api_estate_housing_type_city_type_idx` lookup index;
+  - updated `refresh_gold_estate()` and ran it successfully after deployment;
+  - extended the public API documentation, SQL health-check, and local API
+    smoke-check;
+  - connected a compact `New build vs resale` comparison to the For Sale tab.
 - Supabase production verification on 2026-07-30:
   - `api_estate_segments_daily`: 279 rows, max date 2026-07-29.
   - `api_estate_segments_current`: 279 rows, max date 2026-07-29.
@@ -188,6 +197,20 @@ C:\Users\123\Documents\Projects\Python\Imobil-Index\.venv\Scripts\python.exe -m 
   - `refresh_gold_estate()` now updates `api_estate_segments_current`,
     `api_estate_segments_daily`, and `api_rent_yield` with fixed
     `search_path=public, pg_temp`.
+- Supabase production verification on 2026-07-31 for the new housing-type API:
+  - `api_estate_housing_type_current`: 125 rows, snapshot date 2026-07-31;
+  - public rows contain only `Новострой` and `Вторичный` aggregates;
+  - `anon` and `authenticated` can read but cannot write;
+  - `refresh_gold_estate()` has the new refresh block and fixed search path;
+  - `sql/check_public_api_layer.sql` returned `OK` for refresh-function
+    wiring; the local smoke-check returned `OK` for all 8 public API tables;
+  - Security Advisor has no ERROR/WARN items. Existing performance warnings
+    about duplicate indexes predate this feature; the new index is only an
+    expected `unused_index` INFO notice immediately after creation.
+- Codex could not visually load the new dashboard block because its isolated
+  Streamlit process has no outbound Supabase socket access. The public API
+  smoke-check passed; final visual confirmation belongs in the normal local
+  terminal/browser environment where Supabase was previously user-verified.
 
 ## Database Inspection Snapshot
 
@@ -373,15 +396,21 @@ streamlit run app.py
 - confirm the Streamlit header shows the newest snapshot date.
 - run `sql/check_public_api_layer.sql` and confirm every status is `OK`.
 
-4. Implement the designed `New build vs resale` feature:
+4. Visually verify the new For Sale block in a normal browser:
 
-- create `api_estate_housing_type_current` with RLS and read-only public API
-  access;
-- add its refresh step to `refresh_gold_estate()`;
-- extend API checks and documentation;
-- add the compact For Sale comparison block;
-- verify the dashboard in a normal local browser and the public API through
-  Supabase.
+- it shows `New build` and `Resale` as two balanced cards;
+- city and minimum-listings filters affect the comparison;
+- Rooms and Area filters leave the comparison unchanged;
+- mobile layout stacks the two cards cleanly.
+
+5. Watch one scheduled pipeline run:
+
+- confirm `api_estate_housing_type_current` advances with
+  `api_estate_current`;
+- run `sql/check_public_api_layer.sql` and confirm every status is `OK`.
+
+6. Choose one next product improvement only after that, such as a condition
+comparison or a floor-position segment.
 
 ## Parking Lot
 

@@ -14,6 +14,7 @@ API_TABLES = [
     ("api_estate_daily", "date"),
     ("api_estate_segments_current", "date"),
     ("api_estate_segments_daily", "date"),
+    ("api_estate_housing_type_current", "date"),
     ("api_rent_current", "date"),
     ("api_rent_daily", "date"),
     ("api_rent_yield", "refreshed_at"),

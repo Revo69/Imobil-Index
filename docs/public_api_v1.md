@@ -32,6 +32,7 @@ Authorization: Bearer <SUPABASE_ANON_KEY>
 | `api_estate_daily` | Historical sale market metrics | date + municipality + city + sector |
 | `api_estate_segments_current` | Current sale metrics by rooms and area band | date + municipality + city + sector + rooms_group + area_band |
 | `api_estate_segments_daily` | Historical sale metrics by rooms and area band | date + municipality + city + sector + rooms_group + area_band |
+| `api_estate_housing_type_current` | Current sale metrics by new-build versus resale segment | date + municipality + city + sector + housing_type |
 | `api_rent_current` | Current monthly/daily rent metrics | date + municipality + city + sector + deal_type |
 | `api_rent_daily` | Historical monthly/daily rent metrics | date + municipality + city + sector + deal_type |
 | `api_rent_yield` | Indicative gross rent-yield metrics | city + sector |
@@ -53,6 +54,7 @@ Authorization: Bearer <SUPABASE_ANON_KEY>
 |---|---|
 | `rooms_group` | Room-count group. Current values are `1`, `2`, `3`, and `4+`. |
 | `area_band` | Total-area group. Current values are `<40 m2`, `40-59 m2`, `60-79 m2`, `80-119 m2`, and `120+ m2`. |
+| `housing_type` | Sale-market segment. Current values are `Новострой` and `Вторичный`. |
 
 ## `api_estate_current`
 
@@ -126,6 +128,25 @@ publication history.
 | `sector` | text | no | Sector or district. |
 | `rooms_group` | text | no | Room-count group. |
 | `area_band` | text | no | Total-area group. |
+| `listings` | bigint | no | Sale listings in this segment. |
+| `avg_price_eur` | numeric | yes | Average sale listing price in EUR. |
+| `median_price_eur` | numeric | yes | Median sale listing price in EUR. |
+| `avg_per_m2_eur` | numeric | yes | Average sale price per square meter in EUR. |
+| `refreshed_at` | timestamptz | no | API refresh timestamp. |
+
+## `api_estate_housing_type_current`
+
+Current sale-market aggregate by new-build versus resale segment. It uses the
+same sale-market quality filters as the existing public sale-profile API.
+Only groups with at least 5 listings are published.
+
+| Column | Type | Nullable | Meaning |
+|---|---|---|---|
+| `date` | date | no | Snapshot date. |
+| `municipality` | text | no | Municipality. |
+| `city` | text | no | City. |
+| `sector` | text | no | Sector or district. |
+| `housing_type` | text | no | `Новострой` or `Вторичный`. |
 | `listings` | bigint | no | Sale listings in this segment. |
 | `avg_price_eur` | numeric | yes | Average sale listing price in EUR. |
 | `median_price_eur` | numeric | yes | Median sale listing price in EUR. |
@@ -217,6 +238,14 @@ curl "https://tfwfvdbatsdncyoibzxp.supabase.co/rest/v1/api_estate_segments_curre
   -H "Authorization: Bearer <SUPABASE_ANON_KEY>"
 ```
 
+Current new-build versus resale sale metrics:
+
+```bash
+curl "https://tfwfvdbatsdncyoibzxp.supabase.co/rest/v1/api_estate_housing_type_current?city=eq.%D0%9A%D0%B8%D1%88%D0%B8%D0%BD%D1%91%D0%B2&select=date,city,sector,housing_type,listings,avg_per_m2_eur&order=listings.desc" \
+  -H "apikey: <SUPABASE_ANON_KEY>" \
+  -H "Authorization: Bearer <SUPABASE_ANON_KEY>"
+```
+
 90-day sale price history for one city:
 
 ```bash
@@ -240,12 +269,13 @@ database functions used by the upstream pipeline:
 
 | Function | Public tables maintained |
 |---|---|
-| `refresh_gold_estate()` | `api_estate_current`, `api_estate_daily`, `api_estate_segments_current`, `api_estate_segments_daily`, `api_rent_yield` |
+| `refresh_gold_estate()` | `api_estate_current`, `api_estate_daily`, `api_estate_segments_current`, `api_estate_segments_daily`, `api_estate_housing_type_current`, `api_rent_yield` |
 | `refresh_gold_rent()` | `api_rent_current`, `api_rent_daily`, `api_rent_yield` |
 
 After a normal pipeline run, `api_estate_current`, `api_estate_daily`,
-`api_estate_segments_current`, `api_estate_segments_daily`, `api_rent_current`,
-and `api_rent_daily` should have the latest snapshot date.
+`api_estate_segments_current`, `api_estate_segments_daily`,
+`api_estate_housing_type_current`, `api_rent_current`, and `api_rent_daily`
+should have the latest snapshot date.
 
 ## Access Rules
 

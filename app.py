@@ -75,6 +75,11 @@ BALTI_CITY = "\u0411\u0435\u043b\u044c\u0446\u044b"
 
 ROOM_GROUP_ORDER = ["1", "2", "3", "4+"]
 AREA_BAND_ORDER = ["<40 m2", "40-59 m2", "60-79 m2", "80-119 m2", "120+ m2"]
+HOUSING_TYPE_ORDER = ["Новострой", "Вторичный"]
+HOUSING_TYPE_LABELS = {
+    "Новострой": "New build",
+    "Вторичный": "Resale",
+}
 
 
 # =========================
@@ -716,6 +721,35 @@ def render_sale_segments(
             "EUR/m2",
             AREA_BAND_ORDER,
         )
+
+
+def render_housing_type_comparison(df_housing_types: pd.DataFrame) -> None:
+    render_section(
+        "New build vs resale",
+        "Price per m2 and available supply in the current city selection.",
+    )
+
+    columns = st.columns(2)
+    for column, housing_type in zip(columns, HOUSING_TYPE_ORDER, strict=True):
+        subset = df_housing_types[
+            df_housing_types["housing_type"] == housing_type
+        ].copy()
+        with column:
+            if subset.empty:
+                render_kpi_card(
+                    HOUSING_TYPE_LABELS[housing_type],
+                    "No reliable data",
+                    "No city-sector group meets the listing threshold.",
+                )
+                continue
+
+            listings = int(subset["listings"].sum())
+            avg_per_m2 = weighted_average(subset, "avg_per_m2_eur")
+            render_kpi_card(
+                HOUSING_TYPE_LABELS[housing_type],
+                f"{avg_per_m2:.0f} EUR/m2",
+                f"{format_int(listings)} listings across visible sectors",
+            )
 
 
 def render_market_highlights(
@@ -1451,7 +1485,13 @@ try:
     with st.spinner("Loading market data..."):
         df_hist_sales = load_historical_data()
         df_hist_sale_segments = load_historical_segment_data()
-        df_sales, df_sale_segments, df_rent, df_yield = load_data()
+        (
+            df_sales,
+            df_sale_segments,
+            df_sale_housing_types,
+            df_rent,
+            df_yield,
+        ) = load_data()
 # Keep the dashboard readable if the upstream API or local cache fails.
 except Exception as exc:  # noqa: BLE001
     render_data_load_error(
@@ -1614,6 +1654,10 @@ with main_col:
             ),
         ):
             render_market_highlights(df, price_col, price_fmt="{:.0f}")
+            housing_type_data = filter_by_city_and_listings(
+                df_sale_housing_types, selected_cities, min_listings
+            )
+            render_housing_type_comparison(housing_type_data)
             if market_lens == "Listings":
                 render_listing_sections(df, SALE_COLOR_SCALE)
             else:

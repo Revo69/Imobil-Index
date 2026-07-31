@@ -9,16 +9,17 @@ exposing individual listings.
 
 ## Data Readiness
 
-Read-only inspection of `silver_estate` on 2026-07-31 used the same basic sale
+Read-only inspection of `silver_estate` on 2026-07-31 used the same sale
 quality rules as the existing segment API: successful sale listings, price at
-least EUR 1,000, and total area at least 20 m2.
+least EUR 1,000, area from 20 to 400 m2, a recent publication date, and a
+plausible EUR/m2 range.
 
-| Segment | Eligible listings | Average EUR/m2 | Median EUR/m2 |
-|---|---:|---:|---:|
-| `Новострой` | 15,495 | 2,030 | 1,976 |
-| `Вторичный` | 8,122 | 1,639 | 1,664 |
+| Segment | Eligible listings | Average EUR/m2 |
+|---|---:|---:|
+| `Новострой` | 15,460 | 2,031 |
+| `Вторичный` | 8,091 | 1,643 |
 
-`housing_type` is populated for 23,617 of 23,659 eligible listings (99.8%).
+`housing_type` is populated for 23,551 of 23,579 eligible listings (99.9%).
 There are only these two meaningful values, so no normalization layer is
 needed for this release.
 
@@ -41,8 +42,8 @@ Columns:
 | `refreshed_at` | API refresh timestamp. |
 
 Only groups with at least five listings are published. At the inspected
-snapshot this keeps 129 stable city-sector groups and 23,332 of 23,617 typed
-listings (98.8%).
+snapshot this keeps 125 stable city-sector groups and 23,253 of 23,551 typed
+listings (98.7%).
 
 The table is aggregated-only. It receives RLS, read-only `anon` and
 `authenticated` SELECT policies, and no public write permissions, matching the

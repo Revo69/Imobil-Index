@@ -50,6 +50,13 @@ with table_stats as (
     from public.api_estate_segments_daily
     union all
     select
+        'api_estate_housing_type_current',
+        count(*)::bigint,
+        max(date)::date,
+        max(refreshed_at)
+    from public.api_estate_housing_type_current
+    union all
+    select
         'gold_rent_current',
         count(*)::bigint,
         max(date)::date,
@@ -121,6 +128,9 @@ with table_stats as (
     union all
     select 'api_estate_segments_daily', count(*)::bigint, max(date)::date
     from public.api_estate_segments_daily
+    union all
+    select 'api_estate_housing_type_current', count(*)::bigint, max(date)::date
+    from public.api_estate_housing_type_current
     union all
     select 'gold_rent_current', count(*)::bigint, max(date)::date
     from public.gold_rent_current
@@ -208,6 +218,21 @@ from (
 
     union all
     select
+        'estate housing types are current',
+        api.max_date = gold.max_date
+            and api.rows_count > 0,
+        format(
+            'gold date=%s; api date=%s rows=%s',
+            gold.max_date,
+            api.max_date,
+            api.rows_count
+        )
+    from table_stats api
+    join table_stats gold on gold.object_name = 'gold_estate_current'
+    where api.object_name = 'api_estate_housing_type_current'
+
+    union all
+    select
         'rent current matches Gold',
         api.max_date = gold.max_date
             and api.rows_count = gold.rows_count,
@@ -260,6 +285,7 @@ with api_tables(table_name) as (
         ('api_estate_daily'),
         ('api_estate_segments_current'),
         ('api_estate_segments_daily'),
+        ('api_estate_housing_type_current'),
         ('api_rent_current'),
         ('api_rent_daily'),
         ('api_rent_yield')
@@ -393,6 +419,12 @@ select
                      'api_estate_segments_daily' in function_definition
                  ) > 0
              )
+             and (
+                 function_name <> 'refresh_gold_estate'
+                 or position(
+                     'api_estate_housing_type_current' in function_definition
+                 ) > 0
+             )
              and position('truncate table' in function_definition) = 0
         then 'OK'
         else 'CHECK'
@@ -403,6 +435,8 @@ select
         as updates_estate_segments_api,
     position('api_estate_segments_daily' in function_definition) > 0
         as updates_estate_segment_history_api,
+    position('api_estate_housing_type_current' in function_definition) > 0
+        as updates_estate_housing_type_api,
     position('api_rent_yield' in function_definition) > 0 as updates_yield_api,
     position('truncate table' in function_definition) > 0 as uses_truncate
 from function_checks
