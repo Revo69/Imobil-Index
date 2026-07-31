@@ -144,6 +144,18 @@ C:\Users\123\Documents\Projects\Python\Imobil-Index\.venv\Scripts\python.exe -m 
   visual check still needs a normal user terminal/browser environment.
 - The user later confirmed the app works locally with Supabase in a normal
   terminal/browser environment.
+- Supabase public API health was checked again on 2026-07-31 through the
+  Supabase connector:
+  - project `estate-md` is `ACTIVE_HEALTHY` on Postgres 17.6;
+  - `api_estate_current`, `api_estate_daily`, `api_estate_segments_current`,
+    `api_estate_segments_daily`, `api_rent_current`, and `api_rent_daily`
+    all have max snapshot date 2026-07-31;
+  - `api_rent_yield` has 76 rows and was refreshed on 2026-07-31;
+  - public API table access checks passed for 7 of 7 tables;
+  - internal raw/bronze/silver/Gold objects are closed for public roles;
+  - `refresh_gold_estate()` and `refresh_gold_rent()` still report `OK`;
+  - Supabase Security Advisor has no ERROR/WARN items, only expected INFO
+    notices for closed internal tables with RLS enabled and no policies.
 - Supabase production verification on 2026-07-30:
   - `api_estate_segments_daily`: 279 rows, max date 2026-07-29.
   - `api_estate_segments_current`: 279 rows, max date 2026-07-29.
