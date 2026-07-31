@@ -22,7 +22,7 @@ for buyers, sellers, and investors. The dashboard reads safe, pre-aggregated
 
 | Tab | What you get |
 |---|---|
-| 🏷️ **For Sale** | Price per m² by sector, room/area profiles, housing type, finish/condition comparison, and 90-day trends |
+| 🏷️ **For Sale** | Price per m² by sector, room/area profiles, housing type, finish/condition, floor-position comparison, and 90-day trends |
 | 📅 **Monthly Rent** | Rental price per m² by sector, top/bottom districts, indicative gross yield |
 | 🌙 **Daily Rent** | Short-term rental pricing, occupancy-adjusted indicative gross yield, daily vs. monthly comparison |
 | ✦ **Insights** | Rule-based market signals, break-even context, and indicative gross-yield notes |
@@ -37,7 +37,7 @@ private; the dashboard and public users read only the aggregated API layer.
 
 - **Listings-weighted pricing** — average price per m² is weighted by listing count per sector, not a naive mean, avoiding skew from thin markets
 - **Lean historical queries** — the 90-day trend chart pulls only the columns and date range it needs (`date, city, sector, avg_per_m2_eur`), server-side filtered and paginated, instead of loading full tables into memory
-- **Buyer-relevant sale profiles** — rooms and area bands refine the For Sale view; housing type and finish/condition provide clearly caveated comparisons without exposing listings
+- **Buyer-relevant sale profiles** — rooms and area bands refine the For Sale view; housing type, finish/condition, and floor position provide clearly caveated comparisons without exposing listings
 - **Public API by design** — the `api_*` tables contain aggregated metrics only, use RLS, and allow anonymous read access without public writes; see the [Public API v1 contract](docs/public_api_v1.md)
 - **Hourly caching** (`st.cache_data(ttl=3600)`) to keep the app responsive without hammering the database
 - **Clear data-connection state** — public users see a calm recovery message instead of a raw exception when the API is temporarily unavailable
@@ -110,7 +110,7 @@ python scripts/check_api_health.py
 ```
 
 The smoke-check verifies row availability and freshness for every published
-`api_*` table, including sale profiles, housing type, and finish/condition metrics.
+`api_*` table, including sale profiles, housing type, finish/condition, and floor-position metrics.
 For REST endpoints, table definitions, access rules, and request examples, see
 [Public API v1](docs/public_api_v1.md).
 

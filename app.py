@@ -87,6 +87,7 @@ CONDITION_GROUP_ORDER = [
     "Cosmetic renovation",
     "Needs renovation",
 ]
+FLOOR_POSITION_ORDER = ["Ground floor", "Middle floor", "Top floor"]
 
 
 # =========================
@@ -777,6 +778,27 @@ def render_condition_comparison(df_conditions: pd.DataFrame) -> None:
     st.caption(
         "Differences also reflect location, area, housing type, and listing mix; "
         "they are not a causal renovation premium."
+    )
+
+
+def render_floor_position_comparison(df_floor_positions: pd.DataFrame) -> None:
+    render_section(
+        "Floor position",
+        "Current asking price per m2 by position within the building.",
+    )
+    summary = build_segment_summary(
+        df_floor_positions, "floor_position", FLOOR_POSITION_ORDER
+    )
+    render_segment_chart(
+        summary,
+        "floor_position",
+        "Price comparison",
+        "EUR/m2",
+        FLOOR_POSITION_ORDER,
+    )
+    st.caption(
+        "Differences also reflect location, building height, condition, housing "
+        "type, and listing mix; they are not a causal floor premium."
     )
 
 
@@ -1518,6 +1540,7 @@ try:
             df_sale_segments,
             df_sale_housing_types,
             df_sale_conditions,
+            df_sale_floor_positions,
             df_rent,
             df_yield,
         ) = load_data()
@@ -1691,6 +1714,10 @@ with main_col:
                 df_sale_conditions, selected_cities, min_listings
             )
             render_condition_comparison(condition_data)
+            floor_position_data = filter_by_city_and_listings(
+                df_sale_floor_positions, selected_cities, min_listings
+            )
+            render_floor_position_comparison(floor_position_data)
             if market_lens == "Listings":
                 render_listing_sections(df, SALE_COLOR_SCALE)
             else:

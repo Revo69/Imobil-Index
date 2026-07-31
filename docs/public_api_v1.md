@@ -34,6 +34,7 @@ Authorization: Bearer <SUPABASE_ANON_KEY>
 | `api_estate_segments_daily` | Historical sale metrics by rooms and area band | date + municipality + city + sector + rooms_group + area_band |
 | `api_estate_housing_type_current` | Current sale metrics by new-build versus resale segment | date + municipality + city + sector + housing_type |
 | `api_estate_condition_current` | Current sale metrics by normalized finish and condition | date + municipality + city + sector + condition_group |
+| `api_estate_floor_position_current` | Current sale metrics by floor position | date + municipality + city + sector + floor_position |
 | `api_rent_current` | Current monthly/daily rent metrics | date + municipality + city + sector + deal_type |
 | `api_rent_daily` | Historical monthly/daily rent metrics | date + municipality + city + sector + deal_type |
 | `api_rent_yield` | Indicative gross rent-yield metrics | city + sector |
@@ -57,6 +58,7 @@ Authorization: Bearer <SUPABASE_ANON_KEY>
 | `area_band` | Total-area group. Current values are `<40 m2`, `40-59 m2`, `60-79 m2`, `80-119 m2`, and `120+ m2`. |
 | `housing_type` | Sale-market segment. Current values are `Новострой` and `Вторичный`. |
 | `condition_group` | Normalized finish and condition segment. Current values are `Euro renovation`, `White finish`, `Cosmetic renovation`, `Individual design`, and `Needs renovation`. |
+| `floor_position` | Position in the building. Current values are `Ground floor`, `Middle floor`, and `Top floor`. |
 
 ## `api_estate_current`
 
@@ -179,6 +181,30 @@ the price effect of a renovation.
 | `avg_per_m2_eur` | numeric | yes | Average sale price per square meter in EUR. |
 | `refreshed_at` | timestamptz | no | API refresh timestamp. |
 
+## `api_estate_floor_position_current`
+
+Current sale-market aggregate by position within the building. It uses the same
+sale-market quality filters as the existing public sale-profile API, plus valid
+positive `floor` and `total_floors` values. Only groups with at least 5
+listings are published.
+
+This is a comparison signal, not a causal estimate of a floor premium. Building
+height, location, condition, housing type, and listing mix can also affect the
+visible price differences.
+
+| Column | Type | Nullable | Meaning |
+|---|---|---|---|
+| `date` | date | no | Snapshot date. |
+| `municipality` | text | no | Municipality. |
+| `city` | text | no | City. |
+| `sector` | text | no | Sector or district. |
+| `floor_position` | text | no | `Ground floor`, `Middle floor`, or `Top floor`. |
+| `listings` | bigint | no | Sale listings in this segment. |
+| `avg_price_eur` | numeric | yes | Average sale listing price in EUR. |
+| `median_price_eur` | numeric | yes | Median sale listing price in EUR. |
+| `avg_per_m2_eur` | numeric | yes | Average sale price per square meter in EUR. |
+| `refreshed_at` | timestamptz | no | API refresh timestamp. |
+
 ## `api_rent_current`
 
 Current rent-market aggregate by date, municipality, city, sector, and deal
@@ -280,6 +306,14 @@ curl "https://tfwfvdbatsdncyoibzxp.supabase.co/rest/v1/api_estate_condition_curr
   -H "Authorization: Bearer <SUPABASE_ANON_KEY>"
 ```
 
+Current sale metrics by floor position:
+
+```bash
+curl "https://tfwfvdbatsdncyoibzxp.supabase.co/rest/v1/api_estate_floor_position_current?city=eq.%D0%9A%D0%B8%D1%88%D0%B8%D0%BD%D1%91%D0%B2&select=date,city,sector,floor_position,listings,avg_per_m2_eur&order=listings.desc" \
+  -H "apikey: <SUPABASE_ANON_KEY>" \
+  -H "Authorization: Bearer <SUPABASE_ANON_KEY>"
+```
+
 90-day sale price history for one city:
 
 ```bash
@@ -303,13 +337,13 @@ database functions used by the upstream pipeline:
 
 | Function | Public tables maintained |
 |---|---|
-| `refresh_gold_estate()` | `api_estate_current`, `api_estate_daily`, `api_estate_segments_current`, `api_estate_segments_daily`, `api_estate_housing_type_current`, `api_estate_condition_current`, `api_rent_yield` |
+| `refresh_gold_estate()` | `api_estate_current`, `api_estate_daily`, `api_estate_segments_current`, `api_estate_segments_daily`, `api_estate_housing_type_current`, `api_estate_condition_current`, `api_estate_floor_position_current`, `api_rent_yield` |
 | `refresh_gold_rent()` | `api_rent_current`, `api_rent_daily`, `api_rent_yield` |
 
 After a normal pipeline run, `api_estate_current`, `api_estate_daily`,
 `api_estate_segments_current`, `api_estate_segments_daily`,
 `api_estate_housing_type_current`, `api_estate_condition_current`,
-`api_rent_current`, and `api_rent_daily`
+`api_estate_floor_position_current`, `api_rent_current`, and `api_rent_daily`
 should have the latest snapshot date.
 
 ## Access Rules

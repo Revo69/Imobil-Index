@@ -208,6 +208,19 @@ C:\Users\123\Documents\Projects\Python\Imobil-Index\.venv\Scripts\python.exe -m 
   - extended the public API documentation, SQL health-check, and local API
     smoke-check;
   - connected one full-width `Finish & condition` comparison chart to For Sale.
+- Implemented `Floor position` on 2026-07-31:
+  - added `api_estate_floor_position_current`, an aggregated public table by
+    snapshot date, municipality, city, sector, and floor position;
+  - classified valid floor pairs into `Ground floor`, `Middle floor`, and
+    `Top floor`, with one-floor buildings included in `Ground floor`;
+  - added RLS, read-only public SELECT access, no public writes, and the
+    `api_estate_floor_position_city_idx` lookup index;
+  - updated `refresh_gold_estate()` without removing existing public API
+    refresh blocks, then ran it successfully;
+  - verified 158 current aggregates, all three groups, matching Gold freshness,
+    public access rules, and fixed `search_path`;
+  - extended the public API documentation, SQL health-check, local API
+    smoke-check, and the For Sale dashboard.
 - Supabase production verification on 2026-07-30:
   - `api_estate_segments_daily`: 279 rows, max date 2026-07-29.
   - `api_estate_segments_current`: 279 rows, max date 2026-07-29.
@@ -440,6 +453,20 @@ streamlit run app.py
 7. Watch one scheduled pipeline run:
 
 - confirm `api_estate_condition_current` advances with `api_estate_current`;
+- run `sql/check_public_api_layer.sql` and confirm every status is `OK`.
+
+8. Visually verify the new `Floor position` chart in a normal browser:
+
+- it shows Ground, Middle, and Top floor with direct EUR/m2 labels;
+- city and minimum-listings filters affect the comparison;
+- Rooms and Area filters leave the comparison unchanged;
+- the explanatory caption remains visible and the chart stacks cleanly on a
+  phone-sized viewport.
+
+9. Watch one scheduled pipeline run:
+
+- confirm `api_estate_floor_position_current` advances with
+  `api_estate_current`;
 - run `sql/check_public_api_layer.sql` and confirm every status is `OK`.
 
 ## Parking Lot
