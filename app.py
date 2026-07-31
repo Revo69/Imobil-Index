@@ -1202,6 +1202,103 @@ def render_yield_opportunity_notes(df_yield: pd.DataFrame) -> None:
     )
 
 
+def render_investment_shortlist(df_yield: pd.DataFrame, min_listings: int) -> None:
+    required = {
+        "city",
+        "sector",
+        "yield_monthly_percent",
+        "yield_daily_percent",
+        "avg_sale_price_eur",
+        "sale_listings",
+        "total_rent_listings",
+    }
+    if df_yield.empty or not required.issubset(df_yield.columns):
+        return
+
+    data = df_yield.copy()
+    numeric_columns = [
+        "yield_monthly_percent",
+        "yield_daily_percent",
+        "avg_sale_price_eur",
+        "sale_listings",
+        "total_rent_listings",
+    ]
+    for column in numeric_columns:
+        data[column] = pd.to_numeric(data[column], errors="coerce")
+    data = data.dropna(subset=["city", "sector", *numeric_columns])
+    data = data[
+        (data["sale_listings"] >= min_listings)
+        & (data["total_rent_listings"] >= min_listings)
+    ]
+    if data.empty:
+        return
+
+    data["Market"] = sector_label(data)
+    shortlist = data.nlargest(10, "yield_monthly_percent").copy()
+    shortlist = shortlist[
+        [
+            "Market",
+            "yield_monthly_percent",
+            "yield_daily_percent",
+            "avg_sale_price_eur",
+            "sale_listings",
+            "total_rent_listings",
+        ]
+    ].rename(
+        columns={
+            "yield_monthly_percent": "Monthly gross yield",
+            "yield_daily_percent": "Daily gross yield (60%)",
+            "avg_sale_price_eur": "Avg sale price",
+            "sale_listings": "Sale listings",
+            "total_rent_listings": "Rent listings",
+        }
+    )
+
+    render_section(
+        "Investment shortlist",
+        "Top visible markets by indicative monthly gross yield.",
+    )
+    with st.container(border=True):
+        st.dataframe(
+            shortlist,
+            width="stretch",
+            hide_index=True,
+            height=min(420, 48 + len(shortlist) * 36),
+            column_config={
+                "Market": st.column_config.TextColumn("Market", width="medium"),
+                "Monthly gross yield": st.column_config.NumberColumn(
+                    "Monthly gross yield",
+                    format="%.1f%%",
+                    width="small",
+                ),
+                "Daily gross yield (60%)": st.column_config.NumberColumn(
+                    "Daily gross yield (60%)",
+                    format="%.1f%%",
+                    width="small",
+                ),
+                "Avg sale price": st.column_config.NumberColumn(
+                    "Avg sale price",
+                    format="EUR %.0f",
+                    width="small",
+                ),
+                "Sale listings": st.column_config.NumberColumn(
+                    "Sale listings",
+                    format="%d",
+                    width="small",
+                ),
+                "Rent listings": st.column_config.NumberColumn(
+                    "Rent listings",
+                    format="%d",
+                    width="small",
+                ),
+            },
+        )
+    st.caption(
+        "Yield is indicative and gross. Daily rent uses the current 60% occupancy "
+        "assumption and excludes operating costs, vacancy, taxes, and management fees."
+    )
+
+
 def render_yield_chart(
     df_yield: pd.DataFrame,
     metric: str,
@@ -1940,6 +2037,7 @@ with main_col:
             render_outside_chisinau_radar(sale_df)
             render_break_even_analysis(break_even_df)
             render_yield_opportunity_notes(yield_df)
+            render_investment_shortlist(yield_df, min_listings)
 
 
 # =========================

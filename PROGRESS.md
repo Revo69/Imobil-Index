@@ -414,7 +414,24 @@ Read-only Supabase inspection on 2026-07-28 found:
 - selecting one city hides the comparison cleanly;
 - selecting specific cities restricts both rankings to those cities.
 
-3. After city comparison, choose one next decision journey:
+- The user visually verified `Compare cities` in a normal browser on 2026-07-31.
+
+3. Implemented `Investment shortlist` in Insights using the existing public
+   yield API:
+
+- ranks visible markets by indicative monthly gross yield;
+- shows the comparable daily scenario, average sale price, and both listing
+  counts in one compact table;
+- requires the current minimum listing threshold for both sale and rent supply;
+- keeps the gross-yield and 60% daily-occupancy caveats visible.
+
+4. Visually verify the new `Investment shortlist`:
+
+- all six columns remain readable on desktop and phone;
+- city and minimum-listings filters reduce the shortlist as expected;
+- the caption remains visible below the table.
+
+5. After the shortlist, choose one next decision journey:
 
 - buyer budget and affordability;
 - investment/rent-yield opportunity;
