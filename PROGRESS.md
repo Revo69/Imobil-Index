@@ -221,6 +221,11 @@ C:\Users\123\Documents\Projects\Python\Imobil-Index\.venv\Scripts\python.exe -m 
     public access rules, and fixed `search_path`;
   - extended the public API documentation, SQL health-check, local API
     smoke-check, and the For Sale dashboard.
+- Accepted the current public API and For Sale product release on 2026-07-31:
+  - the new housing type, finish/condition, and floor-position blocks were
+    visually verified in a normal browser;
+  - the changes were committed by the user;
+  - the scheduled pipeline is considered healthy and current for this release.
 - Supabase production verification on 2026-07-30:
   - `api_estate_segments_daily`: 279 rows, max date 2026-07-29.
   - `api_estate_segments_current`: 279 rows, max date 2026-07-29.
@@ -394,80 +399,18 @@ Read-only Supabase inspection on 2026-07-28 found:
 
 ## Next Small Steps
 
-1. Run checks in the real project environment:
+1. Start the market-comparison stage with a `Compare cities` view in For Sale:
 
-```powershell
-python -m py_compile app.py
-python -m ruff check app.py
-streamlit run app.py
-```
+- use the existing aggregated API tables; do not create another public table;
+- compare city-level, listing-weighted EUR/m2 alongside visible supply;
+- keep city-sector drill-down and all existing filters intact;
+- begin with a read-only product/data design, then implement one focused view.
 
-2. Visually verify the app:
+2. After city comparison, choose one next decision journey:
 
-- Insights cards render as cards, not literal HTML.
-- For Sale, Monthly Rent, Daily Rent, and Insights tabs still work.
-- On a phone-sized viewport, the Explore panel, tabs, KPI cards, charts, and
-  insight cards stack cleanly without horizontal page overflow.
-- For Sale shows the "Prices by home profile" segment block.
-- Rooms and Area filters in the left panel affect For Sale only.
-- When Rooms or Area are selected, For Sale KPI cards, rankings, segment charts,
-  and the sector table reflect the selected profile.
-- When Rooms or Area are selected, the 90-day sale trend explains that
-  profile-level history is not available yet, or renders profile-level history
-  from `api_estate_segments_daily` when enough snapshots exist.
-- Left filters affect all tabs.
-- Sector details table has no horizontal overflow.
-- Header, tabs, and cards look clean on desktop.
-
-3. Watch the next scheduled pipeline run once:
-
-- confirm `api_estate_current` and `api_rent_current` advance together with
-  Gold;
-- confirm `api_estate_segments_current` advances with the sale refresh;
-- confirm `api_estate_segments_daily` receives the latest sale-profile snapshot
-  after `sql/add_estate_segments_daily_api_layer.sql` is applied;
-- confirm the Streamlit header shows the newest snapshot date.
-- run `sql/check_public_api_layer.sql` and confirm every status is `OK`.
-
-4. Visually verify the new For Sale block in a normal browser:
-
-- it shows `New build` and `Resale` as two balanced cards;
-- city and minimum-listings filters affect the comparison;
-- Rooms and Area filters leave the comparison unchanged;
-- mobile layout stacks the two cards cleanly.
-
-5. Watch one scheduled pipeline run:
-
-- confirm `api_estate_housing_type_current` advances with
-  `api_estate_current`;
-- run `sql/check_public_api_layer.sql` and confirm every status is `OK`.
-
-6. Visually verify the new `Finish & condition` chart in a normal browser:
-
-- it shows the five normalized groups with direct EUR/m2 labels;
-- city and minimum-listings filters affect the comparison;
-- Rooms and Area filters leave the comparison unchanged;
-- the explanatory caption remains visible and the chart stacks cleanly on a
-  phone-sized viewport.
-
-7. Watch one scheduled pipeline run:
-
-- confirm `api_estate_condition_current` advances with `api_estate_current`;
-- run `sql/check_public_api_layer.sql` and confirm every status is `OK`.
-
-8. Visually verify the new `Floor position` chart in a normal browser:
-
-- it shows Ground, Middle, and Top floor with direct EUR/m2 labels;
-- city and minimum-listings filters affect the comparison;
-- Rooms and Area filters leave the comparison unchanged;
-- the explanatory caption remains visible and the chart stacks cleanly on a
-  phone-sized viewport.
-
-9. Watch one scheduled pipeline run:
-
-- confirm `api_estate_floor_position_current` advances with
-  `api_estate_current`;
-- run `sql/check_public_api_layer.sql` and confirm every status is `OK`.
+- buyer budget and affordability;
+- investment/rent-yield opportunity;
+- weekly rule-based market notes.
 
 ## Parking Lot
 
