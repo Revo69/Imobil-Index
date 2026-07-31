@@ -162,6 +162,14 @@ C:\Users\123\Documents\Projects\Python\Imobil-Index\.venv\Scripts\python.exe -m 
   - header, cards, empty states, and data-loading error states use tighter
     mobile spacing;
   - card minimum heights relax on mobile to avoid awkward empty space.
+- The user visually confirmed the dashboard looks good on both phone and
+  desktop after the mobile layout polish.
+- Added `scripts/check_api_health.py` as a simple local smoke-check for
+  `.streamlit/secrets.toml`, Supabase client creation, and public `api_*`
+  table freshness without starting Streamlit.
+- Ran `scripts/check_api_health.py` successfully on 2026-07-31:
+  all 7 public API tables returned `OK`, with sale/rent snapshots at
+  2026-07-31 and `api_rent_yield` refreshed on 2026-07-31.
 - Supabase production verification on 2026-07-30:
   - `api_estate_segments_daily`: 279 rows, max date 2026-07-29.
   - `api_estate_segments_current`: 279 rows, max date 2026-07-29.

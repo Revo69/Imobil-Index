@@ -94,6 +94,12 @@ Run locally:
 streamlit run app.py
 ```
 
+Check the public API connection without starting Streamlit:
+
+```bash
+python scripts/check_api_health.py
+```
+
 A ready-to-use [Dev Container](.devcontainer/devcontainer.json) is included for one-click setup in GitHub Codespaces.
 
 ---
