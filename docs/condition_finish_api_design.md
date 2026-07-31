@@ -1,5 +1,7 @@
 # Finish & Condition: API Design
 
+**Status:** Implemented in production on 2026-07-31.
+
 ## Goal
 
 Add a current sale-market comparison by finish quality and apartment condition.
@@ -35,7 +37,7 @@ property or have too little stable supply.
 
 ## Public Contract
 
-Create `public.api_estate_condition_current` at this grain:
+`public.api_estate_condition_current` uses this grain:
 
 `date + municipality + city + sector + condition_group`
 
@@ -64,11 +66,11 @@ EUR/m2 labels, and does not change Rooms/Area filters or their trend logic.
 The chart caption must state that visible price differences also reflect
 location, area, housing type, and the listing mix.
 
-## Implementation Order
+## Verification
 
-1. Create `api_estate_condition_current`, its index, RLS policy, and grants.
-2. Add the canonical mapping and refresh block to `refresh_gold_estate()`.
-3. Extend the API docs, SQL health-check, and local smoke-check.
-4. Verify freshness, row groups, access model, refresh-function wiring, and
-   Supabase advisors.
-5. Load the table in the dashboard and render the comparison chart.
+- The table contains 136 city-sector aggregates for the 2026-07-31 snapshot.
+- All five normalized groups are present.
+- `refresh_gold_estate()` refreshes the table with a fixed search path.
+- RLS is enabled; `anon` and `authenticated` can read but cannot write.
+- Supabase Security Advisor has no ERROR or WARN findings after the change;
+  only existing INFO notices for closed internal tables remain.

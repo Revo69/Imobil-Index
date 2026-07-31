@@ -80,6 +80,13 @@ HOUSING_TYPE_LABELS = {
     "Новострой": "New build",
     "Вторичный": "Resale",
 }
+CONDITION_GROUP_ORDER = [
+    "Euro renovation",
+    "Individual design",
+    "White finish",
+    "Cosmetic renovation",
+    "Needs renovation",
+]
 
 
 # =========================
@@ -750,6 +757,27 @@ def render_housing_type_comparison(df_housing_types: pd.DataFrame) -> None:
                 f"{avg_per_m2:.0f} EUR/m2",
                 f"{format_int(listings)} listings across visible sectors",
             )
+
+
+def render_condition_comparison(df_conditions: pd.DataFrame) -> None:
+    render_section(
+        "Finish & condition",
+        "Current asking price per m2 by normalized finish and condition group.",
+    )
+    summary = build_segment_summary(
+        df_conditions, "condition_group", CONDITION_GROUP_ORDER
+    )
+    render_segment_chart(
+        summary,
+        "condition_group",
+        "Price comparison",
+        "EUR/m2",
+        CONDITION_GROUP_ORDER,
+    )
+    st.caption(
+        "Differences also reflect location, area, housing type, and listing mix; "
+        "they are not a causal renovation premium."
+    )
 
 
 def render_market_highlights(
@@ -1489,6 +1517,7 @@ try:
             df_sales,
             df_sale_segments,
             df_sale_housing_types,
+            df_sale_conditions,
             df_rent,
             df_yield,
         ) = load_data()
@@ -1658,6 +1687,10 @@ with main_col:
                 df_sale_housing_types, selected_cities, min_listings
             )
             render_housing_type_comparison(housing_type_data)
+            condition_data = filter_by_city_and_listings(
+                df_sale_conditions, selected_cities, min_listings
+            )
+            render_condition_comparison(condition_data)
             if market_lens == "Listings":
                 render_listing_sections(df, SALE_COLOR_SCALE)
             else:

@@ -196,6 +196,18 @@ C:\Users\123\Documents\Projects\Python\Imobil-Index\.venv\Scripts\python.exe -m 
     aggregated-only `api_estate_condition_current` table.
   - The planned For Sale UI is one horizontal comparison chart; it will share
     city and minimum-listings filters but stay independent of Rooms/Area.
+- Implemented `Finish & condition` on 2026-07-31:
+  - added `api_estate_condition_current`, an aggregated public table by
+    snapshot date, municipality, city, sector, and normalized condition group;
+  - normalized five publishable groups while excluding construction-stage
+    statuses from the first public release;
+  - added RLS, read-only public SELECT access, no public writes, and the
+    `api_estate_condition_city_group_idx` lookup index;
+  - updated `refresh_gold_estate()`, ran it successfully, and verified 136
+    current aggregates across all five groups;
+  - extended the public API documentation, SQL health-check, and local API
+    smoke-check;
+  - connected one full-width `Finish & condition` comparison chart to For Sale.
 - Supabase production verification on 2026-07-30:
   - `api_estate_segments_daily`: 279 rows, max date 2026-07-29.
   - `api_estate_segments_current`: 279 rows, max date 2026-07-29.
@@ -417,14 +429,18 @@ streamlit run app.py
   `api_estate_current`;
 - run `sql/check_public_api_layer.sql` and confirm every status is `OK`.
 
-6. Implement the designed `Finish & condition` feature:
+6. Visually verify the new `Finish & condition` chart in a normal browser:
 
-- create `api_estate_condition_current` with RLS and read-only public API
-  access;
-- add canonical condition mapping to `refresh_gold_estate()`;
-- extend API checks and documentation;
-- add the For Sale horizontal comparison chart;
-- verify the public API and the dashboard in a normal browser.
+- it shows the five normalized groups with direct EUR/m2 labels;
+- city and minimum-listings filters affect the comparison;
+- Rooms and Area filters leave the comparison unchanged;
+- the explanatory caption remains visible and the chart stacks cleanly on a
+  phone-sized viewport.
+
+7. Watch one scheduled pipeline run:
+
+- confirm `api_estate_condition_current` advances with `api_estate_current`;
+- run `sql/check_public_api_layer.sql` and confirm every status is `OK`.
 
 ## Parking Lot
 

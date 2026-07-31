@@ -15,6 +15,9 @@ ESTATE_SEGMENT_COLUMNS = (
 ESTATE_HOUSING_TYPE_COLUMNS = (
     "date,city,sector,housing_type,listings,avg_price_eur,median_price_eur,avg_per_m2_eur"
 )
+ESTATE_CONDITION_COLUMNS = (
+    "date,city,sector,condition_group,listings,avg_price_eur,median_price_eur,avg_per_m2_eur"
+)
 
 
 @st.cache_resource
@@ -87,7 +90,7 @@ def load_historical_segment_data() -> pd.DataFrame:
 
 @st.cache_data(ttl=3600)
 def load_data() -> tuple[
-    pd.DataFrame, pd.DataFrame, pd.DataFrame, pd.DataFrame, pd.DataFrame
+    pd.DataFrame, pd.DataFrame, pd.DataFrame, pd.DataFrame, pd.DataFrame, pd.DataFrame
 ]:
     supabase = get_supabase_client()
     sales = pd.DataFrame(
@@ -105,8 +108,14 @@ def load_data() -> tuple[
         .execute()
         .data
     )
+    sale_conditions = pd.DataFrame(
+        supabase.table("api_estate_condition_current")
+        .select(ESTATE_CONDITION_COLUMNS)
+        .execute()
+        .data
+    )
     rent = pd.DataFrame(supabase.table("api_rent_current").select("*").execute().data)
     yield_data = pd.DataFrame(
         supabase.table("api_rent_yield").select("*").execute().data
     )
-    return sales, sale_segments, sale_housing_types, rent, yield_data
+    return sales, sale_segments, sale_housing_types, sale_conditions, rent, yield_data
