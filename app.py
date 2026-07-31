@@ -1,4 +1,5 @@
 ﻿# app.py - Imobil.Index 2026 - For Sale + Monthly Rent + Daily Rent
+import os
 from collections.abc import Iterable
 
 import pandas as pd
@@ -360,6 +361,39 @@ __THEME_CSS_VARS__
             color: var(--muted);
         }
 
+        .data-error-card {
+            margin: 1rem 0;
+            padding: 1rem 1.1rem;
+            border: 1px solid #dfc9b9;
+            border-left: 4px solid var(--amber);
+            border-radius: 8px;
+            background: #fff8f0;
+            box-shadow: var(--shadow-card);
+        }
+
+        .data-error-label {
+            color: var(--amber);
+            font-size: 0.72rem;
+            font-weight: 760;
+            letter-spacing: 0.04em;
+            text-transform: uppercase;
+        }
+
+        .data-error-title {
+            margin-top: 0.35rem;
+            color: var(--text);
+            font-size: 1.25rem;
+            line-height: 1.2;
+            font-weight: 760;
+        }
+
+        .data-error-copy {
+            max-width: 760px;
+            margin-top: 0.45rem;
+            color: var(--muted);
+            line-height: 1.5;
+        }
+
         div[data-baseweb="select"] > div,
         div[data-testid="stNumberInput"] input {
             border-radius: 8px;
@@ -419,6 +453,26 @@ __THEME_CSS_VARS__
     """.replace("__THEME_CSS_VARS__", theme_css_vars()),
     unsafe_allow_html=True,
 )
+
+
+def render_data_load_error(details: str, show_details: bool = False) -> None:
+    st.markdown(
+        """
+        <div class="data-error-card">
+            <div class="data-error-label">Data connection</div>
+            <div class="data-error-title">Market data is temporarily unavailable</div>
+            <div class="data-error-copy">
+                The dashboard could not load the latest public API data.
+                Please refresh the page in a moment. If the issue remains, check
+                the Streamlit app logs and Supabase API status.
+            </div>
+        </div>
+        """,
+        unsafe_allow_html=True,
+    )
+    if show_details:
+        with st.expander("Technical details", icon=":material/code:"):
+            st.code(details)
 
 
 def render_tab_header(
@@ -1333,8 +1387,10 @@ try:
         df_sales, df_sale_segments, df_rent, df_yield = load_data()
 # Keep the dashboard readable if the upstream API or local cache fails.
 except Exception as exc:  # noqa: BLE001
-    st.error("Could not load dashboard data from Supabase.")
-    st.caption(str(exc))
+    render_data_load_error(
+        str(exc),
+        show_details=os.environ.get("IMOBIL_DEBUG_ERRORS") == "1",
+    )
     st.stop()
 
 

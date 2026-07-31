@@ -104,6 +104,15 @@ Simple project progress log for Imobil.Index.
   Streamlit Cloud also crashed on `KeyError: 'components'`.
 - Replaced `pd.Timedelta(days=HISTORY_WINDOW_DAYS)` with explicit
   `pd.Timedelta(HISTORY_WINDOW_DAYS, unit="D")` in trend filters.
+- Added a dashboard-style data-loading error state:
+  - public users see a calm connection message instead of technical exception
+    text;
+  - technical details are shown only when `IMOBIL_DEBUG_ERRORS=1` is set.
+- Kept the data-loading error renderer in `app.py` after local visual testing
+  exposed a Streamlit hot-reload import cache issue with new helpers added to
+  `dashboard_components.py`.
+- Local Streamlit and Supabase loading were user-verified as working on
+  2026-07-31 after the Python 3.14 / `.venv` recovery.
 
 ## Important Verified Semantics
 
@@ -127,7 +136,14 @@ C:\Users\123\Documents\Projects\Python\Imobil-Index\.venv\Scripts\python.exe -m 
 C:\Users\123\Documents\Projects\Python\Imobil-Index\.venv\Scripts\python.exe -m ruff check app.py dashboard_charts.py dashboard_components.py dashboard_data.py dashboard_theme.py dashboard_transforms.py
 ```
 
-- Streamlit visual verification was not completed in the current local environment.
+- Streamlit visual verification was not completed in the Codex sandbox.
+- On 2026-07-31 the app started locally with Python 3.14.6 after recreating
+  `.venv`; the page reached the dashboard data-loading state without import
+  errors. Supabase data loading could not be completed in the Codex runtime
+  because outbound socket access was denied (`WinError 1013`), so a full local
+  visual check still needs a normal user terminal/browser environment.
+- The user later confirmed the app works locally with Supabase in a normal
+  terminal/browser environment.
 - Supabase production verification on 2026-07-30:
   - `api_estate_segments_daily`: 279 rows, max date 2026-07-29.
   - `api_estate_segments_current`: 279 rows, max date 2026-07-29.
