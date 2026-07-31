@@ -170,6 +170,15 @@ C:\Users\123\Documents\Projects\Python\Imobil-Index\.venv\Scripts\python.exe -m 
 - Ran `scripts/check_api_health.py` successfully on 2026-07-31:
   all 7 public API tables returned `OK`, with sale/rent snapshots at
   2026-07-31 and `api_rent_yield` refreshed on 2026-07-31.
+- Designed the next public API feature: a current `New build vs resale` sale
+  comparison based on `silver_estate.housing_type`.
+  - The field is 99.8% populated under the existing sale-quality rules and has
+    two clean values: `Новострой` and `Вторичный`.
+  - The planned aggregated-only table is
+    `api_estate_housing_type_current`, grouped by date, municipality, city,
+    sector, and housing type, with a minimum of five listings per group.
+  - The first dashboard release will be a For Sale comparison block, not a
+    new global filter or history series.
 - Supabase production verification on 2026-07-30:
   - `api_estate_segments_daily`: 279 rows, max date 2026-07-29.
   - `api_estate_segments_current`: 279 rows, max date 2026-07-29.
@@ -364,17 +373,15 @@ streamlit run app.py
 - confirm the Streamlit header shows the newest snapshot date.
 - run `sql/check_public_api_layer.sql` and confirm every status is `OK`.
 
-4. After that, choose only one next improvement:
+4. Implement the designed `New build vs resale` feature:
 
-- polish Insights wording;
-- improve mobile layout;
-- improve error states;
-- add SQL-side filtering for history;
-- add new parser/database fields in the upstream project later.
-- design the first Silver-powered dashboard feature, such as room filters,
-  area bands, floor/condition filters, or amenity premiums.
-- choose the first product feature built on the public API or a new aggregated
-  Silver-powered API table.
+- create `api_estate_housing_type_current` with RLS and read-only public API
+  access;
+- add its refresh step to `refresh_gold_estate()`;
+- extend API checks and documentation;
+- add the compact For Sale comparison block;
+- verify the dashboard in a normal local browser and the public API through
+  Supabase.
 
 ## Parking Lot
 
