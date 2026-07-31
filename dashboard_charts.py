@@ -2,7 +2,7 @@ import pandas as pd
 import plotly.express as px
 import streamlit as st
 
-from dashboard_components import render_empty_state, render_section
+from dashboard_components import format_number, render_empty_state, render_section
 from dashboard_theme import CHART_NEUTRAL, PLOTLY_FONT_FAMILY, THEME
 from dashboard_transforms import sector_label
 
@@ -41,6 +41,7 @@ def apply_common_chart_style(fig, height: int = 430, show_legend: bool = False):
             "x": 1,
             "title_text": "",
         },
+        separators=",.",
     )
     fig.update_xaxes(
         title_text="",
@@ -60,7 +61,7 @@ def apply_common_chart_style(fig, height: int = 430, show_legend: bool = False):
 
 
 def format_chart_hover_value(value: float, y_label: str, digits: int) -> str:
-    formatted = f"{value:,.{digits}f}"
+    formatted = format_number(value, digits)
     if y_label == "Listings":
         return f"{formatted} listings"
     if "month" in y_label:
@@ -99,7 +100,7 @@ def render_ranked_bars(
     top["Sector"] = sector_label(top)
     top["ChartLabel"] = top["Sector"].str.replace(" -> ", " - ", regex=False)
     top = top.sort_values(price_col, ascending=True)
-    top["Label"] = top[price_col].map(lambda value: f"{value:.{digits}f}")
+    top["Label"] = top[price_col].map(lambda value: format_number(value, digits))
     top["HoverValue"] = top[price_col].map(
         lambda value: format_chart_hover_value(value, y_label, digits)
     )

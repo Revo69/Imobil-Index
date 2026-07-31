@@ -3,8 +3,22 @@ from html import escape
 import streamlit as st
 
 
+def format_number(value: float, decimals: int = 0) -> str:
+    """Format visible numbers with Moldova-style separators."""
+    formatted = f"{float(value):,.{decimals}f}"
+    return formatted.replace(",", "|").replace(".", ",").replace("|", ".")
+
+
 def format_int(value: float) -> str:
-    return f"{value:,.0f}"
+    return format_number(value)
+
+
+def format_price(value: float, decimals: int = 0, suffix: str = "") -> str:
+    return f"{format_number(value, decimals)} EUR{suffix}"
+
+
+def format_percent(value: float, decimals: int = 1) -> str:
+    return f"{format_number(value, decimals)}%"
 
 
 def render_section(title: str, caption: str | None = None) -> None:

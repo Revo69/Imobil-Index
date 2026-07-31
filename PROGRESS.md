@@ -22,6 +22,13 @@ Simple project progress log for Imobil.Index.
 
 ## Recently Done
 
+- Unified visible numeric formatting across the dashboard:
+  - dots separate thousands and commas separate decimal fractions, for example
+    `105.865,4`;
+  - KPI cards, insight cards, chart labels and hover values, and dashboard
+    tables use shared formatting helpers;
+  - Plotly axes use the same separator convention;
+  - currency remains in the label or after the value, not as an `EUR` prefix.
 - Added or preserved modern dashboard layout with header, tabs, KPI cards, charts, and tables.
 - Confirmed `render_insight_cards()` uses `st.columns()` and renders each HTML card separately.
 - Improved insight-card text wrapping and mobile card sizing.

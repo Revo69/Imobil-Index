@@ -14,6 +14,9 @@ from dashboard_charts import (
 )
 from dashboard_components import (
     format_int,
+    format_number,
+    format_percent,
+    format_price,
     render_app_header,
     render_chart_title,
     render_empty_state,
@@ -560,7 +563,7 @@ def render_tab_header(
     df: pd.DataFrame,
     price_col: str,
     empty_message: str,
-    price_fmt: str = "{:.0f}",
+    price_decimals: int = 0,
     price_suffix: str = "",
     context_note: str | None = None,
 ) -> bool:
@@ -571,7 +574,7 @@ def render_tab_header(
     listings = int(df["listings"].sum())
     lowest = df.loc[df[price_col].idxmin()]
     highest = df.loc[df[price_col].idxmax()]
-    avg_price = price_fmt.format(weighted_average(df, price_col))
+    avg_price = format_price(weighted_average(df, price_col), price_decimals, price_suffix)
 
     caption = f"{data_freshness(df)} | {format_int(listings)} listings after filters"
     if context_note:
@@ -584,19 +587,19 @@ def render_tab_header(
     with col2:
         render_kpi_card(
             "Avg price per m2",
-            f"{avg_price} EUR{price_suffix}",
+            avg_price,
             "Weighted by listings",
         )
     with col3:
         render_kpi_card(
             "Lowest price",
-            f"{price_fmt.format(lowest[price_col])} EUR{price_suffix}",
+            format_price(lowest[price_col], price_decimals, price_suffix),
             place_label(lowest),
         )
     with col4:
         render_kpi_card(
             "Highest price",
-            f"{price_fmt.format(highest[price_col])} EUR{price_suffix}",
+            format_price(highest[price_col], price_decimals, price_suffix),
             place_label(highest),
         )
 
@@ -631,7 +634,8 @@ def render_segment_chart(
 
     plot = summary.copy()
     plot[group_col] = plot[group_col].astype(str)
-    plot["Label"] = plot["avg_per_m2_eur"].map(lambda value: f"{value:.0f}")
+    plot["Label"] = plot["avg_per_m2_eur"].map(format_number)
+    plot["PriceLabel"] = plot["avg_per_m2_eur"].map(format_number)
     plot["ListingsLabel"] = plot["listings"].map(format_int)
     plot["Profile"] = pd.Categorical(
         plot[group_col],
@@ -652,7 +656,7 @@ def render_segment_chart(
         orientation="h",
         text="Label",
         labels={group_col: "", "avg_per_m2_eur": y_label},
-        custom_data=["ListingsLabel"],
+        custom_data=["PriceLabel", "ListingsLabel"],
         category_orders={group_col: category_order},
     )
     fig.update_traces(
@@ -662,8 +666,8 @@ def render_segment_chart(
         cliponaxis=False,
         hovertemplate=(
             "<b>%{y}</b><br>"
-            "%{x:,.0f} EUR/m2<br>"
-            "%{customdata[0]} listings<extra></extra>"
+            "%{customdata[0]} EUR/m2<br>"
+            "%{customdata[1]} listings<extra></extra>"
         ),
     )
     fig = apply_common_chart_style(fig, height=max(280, 120 + len(plot) * 42))
@@ -756,7 +760,7 @@ def render_housing_type_comparison(df_housing_types: pd.DataFrame) -> None:
             avg_per_m2 = weighted_average(subset, "avg_per_m2_eur")
             render_kpi_card(
                 HOUSING_TYPE_LABELS[housing_type],
-                f"{avg_per_m2:.0f} EUR/m2",
+                format_price(avg_per_m2, suffix="/m2"),
                 f"{format_int(listings)} listings across visible sectors",
             )
 
@@ -815,9 +819,9 @@ def render_city_comparison_chart(
 
     is_price_chart = value_col == "avg_per_m2_eur"
     plot["Label"] = plot[value_col].map(
-        lambda value: f"{value:.0f}" if is_price_chart else format_int(value)
+        lambda value: format_number(value) if is_price_chart else format_int(value)
     )
-    plot["PriceLabel"] = plot["avg_per_m2_eur"].map(lambda value: f"{value:.0f}")
+    plot["PriceLabel"] = plot["avg_per_m2_eur"].map(format_number)
     plot["ListingsLabel"] = plot["listings"].map(format_int)
 
     colors = [CHART_NEUTRAL] * len(plot)
@@ -891,7 +895,7 @@ def render_city_comparison(df: pd.DataFrame) -> None:
 
 
 def render_market_highlights(
-    df: pd.DataFrame, price_col: str, price_fmt: str = "{:.0f}", price_suffix: str = ""
+    df: pd.DataFrame, price_col: str, price_decimals: int = 0, price_suffix: str = ""
 ) -> None:
     if df.empty:
         return
@@ -912,13 +916,13 @@ def render_market_highlights(
     with col2:
         render_kpi_card(
             "Price Range",
-            f"{price_fmt.format(spread)} EUR{price_suffix}",
+            format_price(spread, price_decimals, price_suffix),
             f"{place_label(lowest)} to {place_label(highest)}",
         )
     with col3:
         render_kpi_card(
             "Median Sector Price",
-            f"{price_fmt.format(df[price_col].median())} EUR{price_suffix}",
+            format_price(df[price_col].median(), price_decimals, price_suffix),
             "Median across visible sectors",
         )
 
@@ -926,7 +930,7 @@ def render_market_highlights(
 def render_decision_notes(
     df: pd.DataFrame,
     price_col: str,
-    price_fmt: str = "{:.0f}",
+    price_decimals: int = 0,
     price_suffix: str = "",
 ) -> None:
     if df.empty:
@@ -953,22 +957,22 @@ def render_decision_notes(
     cards = [
         (
             "Entry point",
-            f"{price_fmt.format(lowest[price_col])} EUR{price_suffix}",
+            format_price(lowest[price_col], price_decimals, price_suffix),
             f"Lowest visible value: {place_label(lowest)}.",
         ),
         (
             "Liquidity hub",
-            f"{inventory_share:.1f}% of listings",
+            f"{format_percent(inventory_share)} of listings",
             f"Most active visible sector: {place_label(most_listings)}.",
         ),
         (
             "Market spread",
-            f"{spread_pct:.0f}%",
+            format_percent(spread_pct, decimals=0),
             f"From {place_label(lowest)} to {place_label(highest)}.",
         ),
         (
             "Weighted vs median",
-            f"{abs(premium_or_discount):.1f} EUR {direction}",
+            f"{format_number(abs(premium_or_discount), 1)} EUR {direction}",
             "Shows whether larger listing pools are priced above or below the middle sector.",
         ),
     ]
@@ -1030,17 +1034,17 @@ def render_break_even_analysis(df_break_even: pd.DataFrame) -> None:
     cards = [
         (
             "Fastest switch point",
-            f"{fastest['break_even_days']:.0f} days",
+            f"{format_number(fastest['break_even_days'])} days",
             f"After this, monthly rent can be cheaper in {fastest['Sector']}.",
         ),
         (
             "Median switch point",
-            f"{median_days:.0f} days",
+            f"{format_number(median_days)} days",
             "Middle value across visible sectors with both rent modes.",
         ),
         (
             "Longest daily window",
-            f"{slowest['break_even_days']:.0f} days",
+            f"{format_number(slowest['break_even_days'])} days",
             f"Daily rent stays competitive longest in {slowest['Sector']}.",
         ),
     ]
@@ -1053,7 +1057,12 @@ def render_break_even_analysis(df_break_even: pd.DataFrame) -> None:
     top = df_break_even.nsmallest(10, "break_even_days").copy()
     top["ChartLabel"] = top["Sector"].str.replace(" -> ", " - ", regex=False)
     top = top.sort_values("break_even_days", ascending=True)
-    top["Label"] = top["break_even_days"].map(lambda value: f"{value:.0f} days")
+    top["Label"] = top["break_even_days"].map(
+        lambda value: f"{format_number(value)} days"
+    )
+    top["HoverLabel"] = top["break_even_days"].map(
+        lambda value: f"{format_number(value, 1)} days"
+    )
 
     fig = px.bar(
         top,
@@ -1062,7 +1071,7 @@ def render_break_even_analysis(df_break_even: pd.DataFrame) -> None:
         orientation="h",
         text="Label",
         labels={"break_even_days": "Days", "ChartLabel": ""},
-        custom_data=["Sector"],
+        custom_data=["Sector", "HoverLabel"],
     )
     colors = [CHART_NEUTRAL] * len(top)
     if colors:
@@ -1072,7 +1081,7 @@ def render_break_even_analysis(df_break_even: pd.DataFrame) -> None:
         marker_line_width=0,
         textposition="outside",
         cliponaxis=False,
-        hovertemplate="<b>%{customdata[0]}</b><br>%{x:.1f} days<extra></extra>",
+        hovertemplate="<b>%{customdata[0]}</b><br>%{customdata[1]}<extra></extra>",
     )
     fig = apply_common_chart_style(fig, height=max(320, min(460, 120 + len(top) * 34)))
     fig.update_layout(margin={"l": 4, "r": 68, "t": 8, "b": 4}, bargap=0.24)
@@ -1127,7 +1136,10 @@ def render_outside_chisinau_radar(df_sales: pd.DataFrame) -> None:
     else:
         chisinau_avg = weighted_average(chisinau, price_col)
         gap = chisinau_avg - outside_avg
-        comparison = f"Chisinau is {gap:.0f} EUR/m2 higher than the outside-city average."
+        comparison = (
+            f"Chisinau is {format_price(gap, suffix='/m2')} higher than the "
+            "outside-city average."
+        )
 
     cards = [
         (
@@ -1137,12 +1149,12 @@ def render_outside_chisinau_radar(df_sales: pd.DataFrame) -> None:
         ),
         (
             "Lowest outside-city price",
-            f"{lowest_city[price_col]:.0f} EUR/m2",
+            format_price(lowest_city[price_col], suffix="/m2"),
             str(lowest_city["city"]),
         ),
         (
             "Chisinau gap",
-            f"{outside_avg:.0f} EUR/m2",
+            format_price(outside_avg, suffix="/m2"),
             comparison,
         ),
     ]
@@ -1174,21 +1186,21 @@ def render_yield_opportunity_notes(df_yield: pd.DataFrame) -> None:
         best_monthly = data.loc[data["yield_monthly_percent"].idxmax()]
         cards.append((
             "Best monthly yield",
-            f"{best_monthly['yield_monthly_percent']:.1f}%",
+            format_percent(best_monthly["yield_monthly_percent"]),
             place_label(best_monthly),
         ))
     if data["yield_daily_percent"].notna().any():
         best_daily = data.loc[data["yield_daily_percent"].idxmax()]
         cards.append((
             "Best daily yield",
-            f"{best_daily['yield_daily_percent']:.1f}%",
+            format_percent(best_daily["yield_daily_percent"]),
             f"{place_label(best_daily)} at the dashboard occupancy assumption.",
         ))
     if data["daily_uplift"].notna().any():
         strongest_uplift = data.loc[data["daily_uplift"].idxmax()]
         cards.append((
             "Daily rent advantage",
-            f"+{strongest_uplift['daily_uplift']:.1f} pp",
+            f"+{format_number(strongest_uplift['daily_uplift'], 1)} pp",
             f"Biggest daily-vs-monthly yield gap: {place_label(strongest_uplift)}.",
         ))
 
@@ -1248,11 +1260,20 @@ def render_investment_shortlist(df_yield: pd.DataFrame, min_listings: int) -> No
         columns={
             "yield_monthly_percent": "Monthly gross yield",
             "yield_daily_percent": "Daily gross yield (60%)",
-            "avg_sale_price_eur": "Avg sale price",
+            "avg_sale_price_eur": "Avg price, EUR",
             "sale_listings": "Sale listings",
             "total_rent_listings": "Rent listings",
         }
     )
+    shortlist["Monthly gross yield"] = shortlist["Monthly gross yield"].map(
+        format_percent
+    )
+    shortlist["Daily gross yield (60%)"] = shortlist[
+        "Daily gross yield (60%)"
+    ].map(format_percent)
+    shortlist["Avg price, EUR"] = shortlist["Avg price, EUR"].map(format_number)
+    shortlist["Sale listings"] = shortlist["Sale listings"].map(format_int)
+    shortlist["Rent listings"] = shortlist["Rent listings"].map(format_int)
 
     render_section(
         "Investment shortlist",
@@ -1266,29 +1287,24 @@ def render_investment_shortlist(df_yield: pd.DataFrame, min_listings: int) -> No
             height=min(420, 48 + len(shortlist) * 36),
             column_config={
                 "Market": st.column_config.TextColumn("Market", width="medium"),
-                "Monthly gross yield": st.column_config.NumberColumn(
+                "Monthly gross yield": st.column_config.TextColumn(
                     "Monthly gross yield",
-                    format="%.1f%%",
                     width="small",
                 ),
-                "Daily gross yield (60%)": st.column_config.NumberColumn(
+                "Daily gross yield (60%)": st.column_config.TextColumn(
                     "Daily gross yield (60%)",
-                    format="%.1f%%",
                     width="small",
                 ),
-                "Avg sale price": st.column_config.NumberColumn(
-                    "Avg sale price",
-                    format="EUR %.0f",
+                "Avg price, EUR": st.column_config.TextColumn(
+                    "Avg price, EUR",
                     width="small",
                 ),
-                "Sale listings": st.column_config.NumberColumn(
+                "Sale listings": st.column_config.TextColumn(
                     "Sale listings",
-                    format="%d",
                     width="small",
                 ),
-                "Rent listings": st.column_config.NumberColumn(
+                "Rent listings": st.column_config.TextColumn(
                     "Rent listings",
-                    format="%d",
                     width="small",
                 ),
             },
@@ -1319,7 +1335,7 @@ def render_yield_chart(
     top_y["Sector"] = sector_label(top_y)
     top_y["ChartLabel"] = top_y["Sector"].str.replace(" -> ", " - ", regex=False)
     top_y = top_y.sort_values(metric, ascending=True)
-    top_y["Label"] = top_y[metric].map(lambda value: f"{value:.1f}%")
+    top_y["Label"] = top_y[metric].map(format_percent)
 
     colors = [CHART_NEUTRAL] * len(top_y)
     if colors:
@@ -1332,14 +1348,17 @@ def render_yield_chart(
         orientation="h",
         text="Label",
         labels={metric: "Gross yield, % p.a.", "ChartLabel": ""},
-        custom_data=["Sector"],
+        custom_data=["Sector", "Label"],
     )
     fig.update_traces(
         marker_color=colors,
         textposition="outside",
         marker_line_width=0,
         cliponaxis=False,
-        hovertemplate="<b>%{customdata[0]}</b><br>%{x:.1f}% gross yield<extra></extra>",
+        hovertemplate=(
+            "<b>%{customdata[0]}</b><br>"
+            "%{customdata[1]} gross yield<extra></extra>"
+        ),
     )
     fig = apply_common_chart_style(fig, height=max(340, min(460, 125 + len(top_y) * 34)))
     fig.update_layout(margin={"l": 4, "r": 58, "t": 8, "b": 4}, bargap=0.24)
@@ -1394,6 +1413,7 @@ def render_sales_trend(hist: pd.DataFrame, selected_cities: list[str]) -> None:
         return
 
     plot["sector"] = plot["sector"].fillna("Center").astype(str)
+    plot["PriceLabel"] = plot["avg_per_m2_eur"].map(format_number)
     trend_colors = [
         "#315fc9",
         "#12805c",
@@ -1416,6 +1436,7 @@ def render_sales_trend(hist: pd.DataFrame, selected_cities: list[str]) -> None:
         color="sector",
         markers=False,
         color_discrete_map=color_map,
+        custom_data=["PriceLabel"],
         labels={"avg_per_m2_eur": "EUR per m2", "date": "Date", "sector": "Sector"},
     )
     fig.update_traces(
@@ -1423,7 +1444,7 @@ def render_sales_trend(hist: pd.DataFrame, selected_cities: list[str]) -> None:
         hovertemplate=(
             "<b>%{fullData.name}</b><br>"
             "%{x|%d %b %Y}<br>"
-            "%{y:,.0f} EUR per m2<extra></extra>"
+            "%{customdata[0]} EUR per m2<extra></extra>"
         ),
     )
 
@@ -1436,7 +1457,7 @@ def render_sales_trend(hist: pd.DataFrame, selected_cities: list[str]) -> None:
             y=[row["avg_per_m2_eur"]],
             mode="markers+text",
             marker={"size": 6, "color": color_map.get(sector, THEME["muted"])},
-            text=[f"{sector} {row['avg_per_m2_eur']:.0f}"],
+            text=[f"{sector} {format_number(row['avg_per_m2_eur'])}"],
             textposition="middle right",
             textfont={"size": 12, "color": THEME["chart_label"]},
             hoverinfo="skip",
@@ -1534,6 +1555,7 @@ def render_profile_sales_trend(
         return
 
     plot["sector"] = plot["sector"].fillna("Center").astype(str)
+    plot["PriceLabel"] = plot["avg_per_m2_eur"].map(format_number)
     trend_colors = [
         "#315fc9",
         "#12805c",
@@ -1556,6 +1578,7 @@ def render_profile_sales_trend(
         color="sector",
         markers=False,
         color_discrete_map=color_map,
+        custom_data=["PriceLabel"],
         labels={"avg_per_m2_eur": "EUR per m2", "date": "Date", "sector": "Sector"},
     )
     fig.update_traces(
@@ -1563,7 +1586,7 @@ def render_profile_sales_trend(
         hovertemplate=(
             "<b>%{fullData.name}</b><br>"
             "%{x|%d %b %Y}<br>"
-            "%{y:,.0f} EUR per m2<extra></extra>"
+            "%{customdata[0]} EUR per m2<extra></extra>"
         ),
     )
 
@@ -1576,7 +1599,7 @@ def render_profile_sales_trend(
             y=[row["avg_per_m2_eur"]],
             mode="markers+text",
             marker={"size": 6, "color": color_map.get(sector, THEME["muted"])},
-            text=[f"{sector} {row['avg_per_m2_eur']:.0f}"],
+            text=[f"{sector} {format_number(row['avg_per_m2_eur'])}"],
             textposition="middle right",
             textfont={"size": 12, "color": THEME["chart_label"]},
             hoverinfo="skip",
@@ -1618,7 +1641,7 @@ def render_sector_table(
     sort_label = compact_labels.get(label_map.get(sort_col, sort_col), sort_col)
     render_section(
         "Sector details",
-        f"{len(df):,} visible city-sector groups. Sorted by {sort_label}.",
+        f"{format_int(len(df))} visible city-sector groups. Sorted by {sort_label}.",
     )
     if df.empty:
         render_empty_state("No rows match the current filters.")
@@ -1627,7 +1650,10 @@ def render_sector_table(
     disp = df[columns].copy().sort_values(sort_col).reset_index(drop=True)
     numeric_cols = disp.select_dtypes(include="number").columns
     for col in numeric_cols:
-        disp[col] = disp[col].round(1 if "per_m2" in col else 0)
+        decimals = 1 if "per_m2" in col else 0
+        disp[col] = disp[col].map(
+            lambda value, decimals=decimals: format_number(value, decimals)
+        )
 
     disp = disp.rename(columns=label_map).rename(columns=compact_labels)
 
@@ -1637,26 +1663,23 @@ def render_sector_table(
     if "Sector" in disp.columns:
         column_config["Sector"] = st.column_config.TextColumn("Sector", width="medium")
     if "Listings" in disp.columns:
-        column_config["Listings"] = st.column_config.NumberColumn(
+        column_config["Listings"] = st.column_config.TextColumn(
             "Listings",
             help="Listings in this city-sector group.",
-            format="%d",
             width="small",
         )
 
     for col in disp.columns:
         if col.startswith("EUR/m2"):
-            column_config[col] = st.column_config.NumberColumn(
+            column_config[col] = st.column_config.TextColumn(
                 col,
                 help="Average listing price per square meter.",
-                format="%.0f",
                 width="small",
             )
         elif col == "Avg price":
-            column_config[col] = st.column_config.NumberColumn(
+            column_config[col] = st.column_config.TextColumn(
                 col,
                 help="Average full listing price.",
-                format="%.0f",
                 width="small",
             )
 
@@ -1687,7 +1710,7 @@ def render_daily_rent_context(df_yield: pd.DataFrame) -> None:
             The current model assumes 60% daily occupancy.
             {
                 (
-                    f"Top gross daily yield: <strong>{top_daily_yield:.1f}%</strong> "
+                    f"Top gross daily yield: <strong>{format_percent(top_daily_yield)}</strong> "
                     "p.a."
                 )
                 if top_daily_yield is not None
@@ -1885,12 +1908,12 @@ with main_col:
             df,
             price_col,
             "No sale listings match the current filters.",
-            price_fmt="{:.0f}",
+            price_decimals=0,
             context_note=sale_profile_context_note(
                 selected_sale_rooms, selected_sale_area_bands
             ),
         ):
-            render_market_highlights(df, price_col, price_fmt="{:.0f}")
+            render_market_highlights(df, price_col, price_decimals=0)
             render_city_comparison(df)
             housing_type_data = filter_by_city_and_listings(
                 df_sale_housing_types, selected_cities, min_listings
@@ -1954,11 +1977,11 @@ with main_col:
             df,
             price_col,
             "No monthly rent listings match the current filters.",
-            price_fmt="{:.1f}",
+            price_decimals=1,
             price_suffix="/month",
         ):
             render_market_highlights(
-                df, price_col, price_fmt="{:.1f}", price_suffix="/month"
+                df, price_col, price_decimals=1, price_suffix="/month"
             )
             if market_lens == "Listings":
                 render_listing_sections(df, RENT_COLOR_SCALE)
@@ -1991,11 +2014,11 @@ with main_col:
             df,
             price_col,
             "No daily rent listings match the current filters.",
-            price_fmt="{:.1f}",
+            price_decimals=1,
             price_suffix="/day",
         ):
             render_market_highlights(
-                df, price_col, price_fmt="{:.1f}", price_suffix="/day"
+                df, price_col, price_decimals=1, price_suffix="/day"
             )
             if market_lens == "Listings":
                 render_listing_sections(df, DAILY_COLOR_SCALE)
@@ -2033,7 +2056,7 @@ with main_col:
                 "No insight-ready market signals match the current filters."
             )
         else:
-            render_decision_notes(sale_df, "avg_per_m2_eur", price_fmt="{:.0f}")
+            render_decision_notes(sale_df, "avg_per_m2_eur", price_decimals=0)
             render_outside_chisinau_radar(sale_df)
             render_break_even_analysis(break_even_df)
             render_yield_opportunity_notes(yield_df)
