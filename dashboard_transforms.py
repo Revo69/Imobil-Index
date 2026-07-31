@@ -71,6 +71,35 @@ def build_segment_summary(
     return grouped.sort_values(group_col).drop(columns=["weighted_per_m2"])
 
 
+def build_city_market_summary(df: pd.DataFrame) -> pd.DataFrame:
+    required = {"city", "listings", "avg_price_eur", "avg_per_m2_eur"}
+    if df.empty or not required.issubset(df.columns):
+        return pd.DataFrame()
+
+    work = df.copy()
+    for column in ("listings", "avg_price_eur", "avg_per_m2_eur"):
+        work[column] = pd.to_numeric(work[column], errors="coerce")
+    work = work.dropna(subset=["city", "listings", "avg_price_eur", "avg_per_m2_eur"])
+    work = work[work["listings"] > 0]
+    if work.empty:
+        return pd.DataFrame()
+
+    work["weighted_price"] = work["avg_price_eur"] * work["listings"]
+    work["weighted_per_m2"] = work["avg_per_m2_eur"] * work["listings"]
+    grouped = (
+        work.groupby("city", as_index=False, observed=True)
+        .agg(
+            listings=("listings", "sum"),
+            weighted_price=("weighted_price", "sum"),
+            weighted_per_m2=("weighted_per_m2", "sum"),
+        )
+        .copy()
+    )
+    grouped["avg_price_eur"] = grouped["weighted_price"] / grouped["listings"]
+    grouped["avg_per_m2_eur"] = grouped["weighted_per_m2"] / grouped["listings"]
+    return grouped.drop(columns=["weighted_price", "weighted_per_m2"])
+
+
 def ordered_segment_options(
     df_segments: pd.DataFrame,
     column: str,

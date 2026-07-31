@@ -39,6 +39,7 @@ from dashboard_theme import (
     theme_css_vars,
 )
 from dashboard_transforms import (
+    build_city_market_summary,
     build_sale_market_from_segments,
     build_segment_summary,
     data_freshness,
@@ -800,6 +801,93 @@ def render_floor_position_comparison(df_floor_positions: pd.DataFrame) -> None:
         "Differences also reflect location, building height, condition, housing "
         "type, and listing mix; they are not a causal floor premium."
     )
+
+
+def render_city_comparison_chart(
+    summary: pd.DataFrame,
+    value_col: str,
+    title: str,
+) -> None:
+    plot = summary.nlargest(10, value_col).sort_values(value_col).copy()
+    if plot.empty:
+        render_empty_state("Not enough city data for the current filters.")
+        return
+
+    is_price_chart = value_col == "avg_per_m2_eur"
+    plot["Label"] = plot[value_col].map(
+        lambda value: f"{value:.0f}" if is_price_chart else format_int(value)
+    )
+    plot["PriceLabel"] = plot["avg_per_m2_eur"].map(lambda value: f"{value:.0f}")
+    plot["ListingsLabel"] = plot["listings"].map(format_int)
+
+    colors = [CHART_NEUTRAL] * len(plot)
+    if colors:
+        colors[-1] = SALE_COLOR_SCALE[-1]
+
+    fig = px.bar(
+        plot,
+        x=value_col,
+        y="city",
+        orientation="h",
+        text="Label",
+        labels={value_col: "", "city": ""},
+        custom_data=["PriceLabel", "ListingsLabel"],
+    )
+    fig.update_traces(
+        marker_color=colors,
+        marker_line_width=0,
+        textposition="outside",
+        cliponaxis=False,
+        hovertemplate=(
+            "<b>%{y}</b><br>"
+            "%{customdata[0]} EUR/m2<br>"
+            "%{customdata[1]} visible listings<extra></extra>"
+        ),
+    )
+    fig = apply_common_chart_style(fig, height=max(300, 120 + len(plot) * 36))
+    fig.update_layout(margin={"l": 4, "r": 58, "t": 8, "b": 4}, bargap=0.24)
+    fig.update_xaxes(
+        title_text="",
+        showgrid=True,
+        showticklabels=False,
+        ticks="",
+        zeroline=False,
+    )
+    fig.update_yaxes(
+        categoryorder="array",
+        categoryarray=plot["city"].tolist()[::-1],
+        tickangle=0,
+        automargin=True,
+        title_text="",
+    )
+
+    with st.container(border=True):
+        render_chart_title(title)
+        render_plotly_chart(fig)
+
+
+def render_city_comparison(df: pd.DataFrame) -> None:
+    summary = build_city_market_summary(df)
+    if summary.empty or summary["city"].nunique() < 2:
+        return
+
+    render_section(
+        "Compare cities",
+        "Price per m2 and visible supply across the current city selection.",
+    )
+    price_col, supply_col = st.columns(2)
+    with price_col:
+        render_city_comparison_chart(
+            summary,
+            "avg_per_m2_eur",
+            "Highest priced cities",
+        )
+    with supply_col:
+        render_city_comparison_chart(
+            summary,
+            "listings",
+            "Most visible supply",
+        )
 
 
 def render_market_highlights(
@@ -1706,6 +1794,7 @@ with main_col:
             ),
         ):
             render_market_highlights(df, price_col, price_fmt="{:.0f}")
+            render_city_comparison(df)
             housing_type_data = filter_by_city_and_listings(
                 df_sale_housing_types, selected_cities, min_listings
             )

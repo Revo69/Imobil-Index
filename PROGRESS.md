@@ -401,12 +401,20 @@ Read-only Supabase inspection on 2026-07-28 found:
 
 1. Start the market-comparison stage with a `Compare cities` view in For Sale:
 
-- use the existing aggregated API tables; do not create another public table;
-- compare city-level, listing-weighted EUR/m2 alongside visible supply;
-- keep city-sector drill-down and all existing filters intact;
-- begin with a read-only product/data design, then implement one focused view.
+- Implemented `Compare cities` in For Sale using existing aggregated API data:
+  - city EUR/m2 is rebuilt with listing-weighted aggregation from visible
+    city-sector rows;
+  - the view presents the top visible city price and supply rankings without a
+    new public table or pipeline change;
+  - city, minimum-listings, and Rooms/Area profile selections are preserved.
 
-2. After city comparison, choose one next decision journey:
+2. Visually verify the new `Compare cities` block:
+
+- price and supply rankings have direct labels and stay readable on mobile;
+- selecting one city hides the comparison cleanly;
+- selecting specific cities restricts both rankings to those cities.
+
+3. After city comparison, choose one next decision journey:
 
 - buyer budget and affordability;
 - investment/rent-yield opportunity;
