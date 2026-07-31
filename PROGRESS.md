@@ -156,6 +156,12 @@ C:\Users\123\Documents\Projects\Python\Imobil-Index\.venv\Scripts\python.exe -m 
   - `refresh_gold_estate()` and `refresh_gold_rent()` still report `OK`;
   - Supabase Security Advisor has no ERROR/WARN items, only expected INFO
     notices for closed internal tables with RLS enabled and no policies.
+- Added a small mobile layout polish pass:
+  - Streamlit column rows stack into one column on narrow screens;
+  - main tabs wrap into a compact two-by-two layout;
+  - header, cards, empty states, and data-loading error states use tighter
+    mobile spacing;
+  - card minimum heights relax on mobile to avoid awkward empty space.
 - Supabase production verification on 2026-07-30:
   - `api_estate_segments_daily`: 279 rows, max date 2026-07-29.
   - `api_estate_segments_current`: 279 rows, max date 2026-07-29.
@@ -327,6 +333,8 @@ streamlit run app.py
 
 - Insights cards render as cards, not literal HTML.
 - For Sale, Monthly Rent, Daily Rent, and Insights tabs still work.
+- On a phone-sized viewport, the Explore panel, tabs, KPI cards, charts, and
+  insight cards stack cleanly without horizontal page overflow.
 - For Sale shows the "Prices by home profile" segment block.
 - Rooms and Area filters in the left panel affect For Sale only.
 - When Rooms or Area are selected, For Sale KPI cards, rankings, segment charts,

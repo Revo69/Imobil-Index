@@ -436,17 +436,84 @@ __THEME_CSS_VARS__
         }
 
         @media (max-width: 760px) {
+            .block-container {
+                padding: 0.75rem 0.85rem 2.25rem;
+            }
+
+            div[data-testid="stHorizontalBlock"] {
+                flex-direction: column;
+                gap: 0.75rem;
+            }
+
+            div[data-testid="stHorizontalBlock"] > div {
+                width: 100% !important;
+                flex: 1 1 auto !important;
+                min-width: 0 !important;
+            }
+
+            div[data-testid="stTabs"] [role="tablist"] {
+                gap: 0.3rem;
+                margin-bottom: 1rem;
+                padding: 0.3rem;
+            }
+
+            div[data-testid="stTabs"] button {
+                flex: 1 1 calc(50% - 0.3rem);
+                min-height: 2.45rem;
+                padding: 0.45rem 0.35rem;
+                font-size: 0.9rem;
+            }
+
+            .app-header {
+                margin-bottom: 0.85rem;
+                padding: 0.9rem 0.95rem;
+            }
+
             .brand-row {
                 align-items: flex-start;
                 flex-direction: column;
+                gap: 0.75rem;
+            }
+
+            .brand-kicker {
+                font-size: 0.68rem;
+            }
+
+            .brand-title {
+                font-size: 2rem;
+            }
+
+            .brand-copy {
+                margin-top: 0.55rem;
+                font-size: 0.92rem;
+                line-height: 1.5;
             }
 
             .status-pill {
                 white-space: normal;
             }
 
+            .section {
+                padding-top: 0.7rem;
+            }
+
+            .kpi-card {
+                min-height: auto;
+                padding: 0.85rem 0.9rem;
+            }
+
             .insight-card {
                 min-height: auto;
+            }
+
+            .insight-strip,
+            .data-error-card,
+            .empty-state {
+                padding: 0.85rem 0.9rem;
+            }
+
+            .data-error-title {
+                font-size: 1.08rem;
             }
         }
     </style>
