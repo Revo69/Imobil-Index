@@ -894,7 +894,7 @@ def render_city_comparison(df: pd.DataFrame) -> None:
         )
 
 
-def render_budget_guide(df: pd.DataFrame) -> None:
+def render_budget_guide(df: pd.DataFrame, buyer_budget: int) -> None:
     required = {"city", "sector", "listings", "avg_price_eur", "avg_per_m2_eur"}
     if df.empty or not required.issubset(df.columns):
         return
@@ -902,13 +902,6 @@ def render_budget_guide(df: pd.DataFrame) -> None:
     render_section(
         "Budget guide",
         "City-sector averages that fit the buyer budget, ranked by visible supply.",
-    )
-    buyer_budget = st.number_input(
-        "Buyer budget, EUR",
-        min_value=10_000,
-        value=100_000,
-        step=5_000,
-        key="buyer_budget_eur",
     )
 
     markets = df.copy()
@@ -924,7 +917,7 @@ def render_budget_guide(df: pd.DataFrame) -> None:
         )
         return
 
-    highest_in_range = within_budget.loc[within_budget["avg_price_eur"].idxmax()]
+    visible_supply = int(within_budget["listings"].sum())
     col_budget, col_markets, col_supply = st.columns(3)
     with col_budget:
         render_kpi_card(
@@ -940,9 +933,9 @@ def render_budget_guide(df: pd.DataFrame) -> None:
         )
     with col_supply:
         render_kpi_card(
-            "Highest average in range",
-            format_price(highest_in_range["avg_price_eur"]),
-            place_label(highest_in_range),
+            "Visible supply",
+            format_int(visible_supply),
+            "Listings in markets within budget",
         )
 
     shortlist = within_budget.nlargest(10, "listings").copy()
@@ -1937,7 +1930,7 @@ with filter_col, st.container(border=True):
             for value in st.session_state["filter_sale_area_bands"]
             if value in area_options
         ]
-    st.markdown("**Sale profile**")
+    st.markdown("**For Sale criteria**")
     selected_sale_rooms = st.multiselect(
         "Rooms",
         options=room_options,
@@ -1952,7 +1945,14 @@ with filter_col, st.container(border=True):
         placeholder="All areas",
         key="filter_sale_area_bands",
     )
-    st.caption("Rooms and area apply to For Sale only.")
+    buyer_budget = st.number_input(
+        "Buyer budget, EUR",
+        min_value=10_000,
+        value=100_000,
+        step=5_000,
+        key="buyer_budget_eur",
+    )
+    st.caption("Rooms and area affect For Sale. Budget applies to Budget guide only.")
     min_listings = st.number_input(
         "Min. listings",
         min_value=1,
@@ -2003,7 +2003,7 @@ with main_col:
             ),
         ):
             render_market_highlights(df, price_col, price_decimals=0)
-            render_budget_guide(df)
+            render_budget_guide(df, buyer_budget)
             render_city_comparison(df)
             housing_type_data = filter_by_city_and_listings(
                 df_sale_housing_types, selected_cities, min_listings

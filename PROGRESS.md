@@ -4,7 +4,7 @@ Simple project progress log for Imobil.Index.
 
 ## Last Updated
 
-2026-07-31
+2026-08-02
 
 ## Current State
 
@@ -460,6 +460,22 @@ Read-only Supabase inspection on 2026-07-28 found:
 - changing city, room, area, and minimum-listing filters updates the guide;
 - an empty state appears for a budget below all visible city-sector averages;
 - the table stays readable on desktop and mobile.
+
+8. Revised the `Budget guide` control placement after UX review:
+
+- moved `Buyer budget, EUR` to the existing left-side `For Sale criteria`
+  group with Rooms and Area;
+- the budget remains scoped to `Budget guide` only, stated directly below the
+  control;
+- removed the second control zone from the main analysis area;
+- replaced the less actionable `Highest average in range` card with total
+  `Visible supply` for markets within budget.
+
+9. Visually verify the revised control placement:
+
+- the left panel stays readable on desktop and mobile;
+- changing the budget updates only `Budget guide`;
+- all For Sale controls remain understandable as one grouped set.
 
 ## Parking Lot
 

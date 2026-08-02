@@ -60,6 +60,41 @@ Project guide for AI-assisted work on Imobil.Index.
 - Do not average city-sector aggregates equally when the UI claims to show market average.
 - Do not expose Supabase service keys or secrets.
 
+## New Feature Standard
+
+Before adding a feature to the UI, Python backend, or Supabase schema:
+
+1. Check current syntax and official documentation for the installed runtime,
+   Streamlit, Plotly, Supabase, and PostgreSQL features being used. Do not rely
+   only on remembered APIs or deprecated examples.
+2. Inspect the existing app patterns, data grain, public API contract, and
+   database schema before designing the change.
+3. Keep the design small: state the user goal, scope of each control, data
+   source, and the intended empty/error state before implementation.
+4. For UI, follow the existing design system, keep controls in a consistent
+   control area, make values readable without hover, and verify desktop and
+   mobile layouts when possible.
+5. For database changes, use the Supabase skill and current PostgreSQL/Supabase
+   guidance. Define the grain, minimum privacy threshold, indexes, constraints,
+   RLS, public access rules, refresh wiring, and rollback-safe migration path.
+6. In PostgreSQL functions, write `DELETE ... WHERE TRUE` when an intentional
+   full-table delete is required. Keep a specific predicate for conditional
+   deletes.
+7. Run focused checks for the changed surface. Do not claim syntax, schema,
+   security, or visual verification unless it was actually performed.
+8. Use the applicable skill before implementation:
+   - use `supabase:supabase` for every Supabase, PostgreSQL schema, RLS,
+     migration, function, or public API change;
+   - use `developing-with-streamlit` for every Streamlit UI, layout, widget,
+     styling, performance, or deployment change;
+   - use a focused design, visualization, testing, or code-review skill when
+     the change needs that expertise.
+9. If no available skill covers an important part of the task, explain the gap
+   and ask the user to connect or install the appropriate skill before taking
+   a risky implementation shortcut.
+10. Explain the selected approach, trade-offs, and verification in practical
+    beginner-friendly language so each change is a learning opportunity.
+
 ## Preferred Checks
 
 Run the smallest useful checks after each change:
