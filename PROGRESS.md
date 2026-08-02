@@ -4,7 +4,7 @@ Simple project progress log for Imobil.Index.
 
 ## Last Updated
 
-2026-08-02
+2026-08-03
 
 ## Current State
 
@@ -22,6 +22,14 @@ Simple project progress log for Imobil.Index.
 
 ## Recently Done
 
+- Added rule-based weekly market notes in Insights using existing public sale
+  history and current visible city-sector markets:
+  - compares the latest snapshot to the closest snapshot at least seven days
+    earlier, only for markets present in both snapshots;
+  - shows median movement, the largest increase, and the lowest movement;
+  - stays hidden when fewer than three comparable markets are available;
+  - clearly states that it tracks average asking price per m2 rather than
+    transaction prices or a listing-weighted market index.
 - Unified visible numeric formatting across the dashboard:
   - dots separate thousands and commas separate decimal fractions, for example
     `105.865,4`;

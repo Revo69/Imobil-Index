@@ -226,3 +226,62 @@ def filter_by_city_and_listings(
     if "listings" in filtered.columns:
         filtered = filtered[filtered["listings"] >= min_listings]
     return filtered
+
+
+def build_weekly_price_movement(
+    historical_data: pd.DataFrame,
+    visible_markets: pd.DataFrame,
+) -> pd.DataFrame:
+    """Compare the latest sale snapshot with a comparable earlier snapshot."""
+    history_required = {"date", "city", "sector", "avg_per_m2_eur"}
+    market_required = {"city", "sector"}
+    if (
+        historical_data.empty
+        or visible_markets.empty
+        or not history_required.issubset(historical_data.columns)
+        or not market_required.issubset(visible_markets.columns)
+    ):
+        return pd.DataFrame()
+
+    markets = visible_markets[["city", "sector"]].drop_duplicates()
+    history = historical_data.copy()
+    history["date"] = pd.to_datetime(history["date"], errors="coerce")
+    history["avg_per_m2_eur"] = pd.to_numeric(
+        history["avg_per_m2_eur"], errors="coerce"
+    )
+    history = history.dropna(subset=["date", "city", "avg_per_m2_eur"])
+    history = history.merge(markets, on=["city", "sector"], how="inner")
+    if history.empty:
+        return pd.DataFrame()
+
+    history = (
+        history.sort_values(["date", "city", "sector"])
+        .drop_duplicates(["date", "city", "sector"], keep="last")
+        .copy()
+    )
+    latest_date = history["date"].max()
+    baseline_candidates = history[history["date"] <= latest_date - pd.Timedelta(days=7)]
+    if baseline_candidates.empty:
+        return pd.DataFrame()
+    baseline_date = baseline_candidates["date"].max()
+
+    latest = history[history["date"] == latest_date][
+        ["city", "sector", "avg_per_m2_eur"]
+    ].rename(columns={"avg_per_m2_eur": "latest_avg_per_m2_eur"})
+    baseline = history[history["date"] == baseline_date][
+        ["city", "sector", "avg_per_m2_eur"]
+    ].rename(columns={"avg_per_m2_eur": "baseline_avg_per_m2_eur"})
+    movement = latest.merge(baseline, on=["city", "sector"], how="inner")
+    movement = movement[movement["baseline_avg_per_m2_eur"] > 0].copy()
+    if movement.empty:
+        return movement
+
+    movement["change_percent"] = (
+        (movement["latest_avg_per_m2_eur"] - movement["baseline_avg_per_m2_eur"])
+        / movement["baseline_avg_per_m2_eur"]
+        * 100
+    )
+    movement["latest_date"] = latest_date
+    movement["baseline_date"] = baseline_date
+    movement["days_between"] = (latest_date - baseline_date).days
+    return movement.sort_values("change_percent")
