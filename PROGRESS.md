@@ -444,6 +444,23 @@ Read-only Supabase inspection on 2026-07-28 found:
 - investment/rent-yield opportunity;
 - weekly rule-based market notes.
 
+6. Started the buyer decision journey with `Budget guide` in For Sale:
+
+- uses existing aggregated sale data, with no new public API table or pipeline change;
+- keeps the selected budget local to the new guide and does not alter existing
+  filters, KPI cards, charts, or sector tables;
+- identifies city-sector averages at or below the budget and ranks the first
+  ten by visible supply;
+- clearly states that values are listing-weighted averages, not individual
+  listing availability.
+
+7. Visually verify `Budget guide`:
+
+- changing the budget updates the cards and shortlist;
+- changing city, room, area, and minimum-listing filters updates the guide;
+- an empty state appears for a budget below all visible city-sector averages;
+- the table stays readable on desktop and mobile.
+
 ## Parking Lot
 
 - Daily vs monthly rent calculator.

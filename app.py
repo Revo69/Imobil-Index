@@ -894,6 +894,95 @@ def render_city_comparison(df: pd.DataFrame) -> None:
         )
 
 
+def render_budget_guide(df: pd.DataFrame) -> None:
+    required = {"city", "sector", "listings", "avg_price_eur", "avg_per_m2_eur"}
+    if df.empty or not required.issubset(df.columns):
+        return
+
+    render_section(
+        "Budget guide",
+        "City-sector averages that fit the buyer budget, ranked by visible supply.",
+    )
+    buyer_budget = st.number_input(
+        "Buyer budget, EUR",
+        min_value=10_000,
+        value=100_000,
+        step=5_000,
+        key="buyer_budget_eur",
+    )
+
+    markets = df.copy()
+    for column in ("listings", "avg_price_eur", "avg_per_m2_eur"):
+        markets[column] = pd.to_numeric(markets[column], errors="coerce")
+    markets = markets.dropna(subset=required)
+    markets = markets[markets["listings"] > 0]
+    within_budget = markets[markets["avg_price_eur"] <= buyer_budget].copy()
+
+    if within_budget.empty:
+        render_empty_state(
+            "No city-sector average is within this budget for the current filters."
+        )
+        return
+
+    highest_in_range = within_budget.loc[within_budget["avg_price_eur"].idxmax()]
+    col_budget, col_markets, col_supply = st.columns(3)
+    with col_budget:
+        render_kpi_card(
+            "Budget cap",
+            format_price(buyer_budget),
+            "For the current For Sale selection",
+        )
+    with col_markets:
+        render_kpi_card(
+            "Markets in range",
+            format_int(len(within_budget)),
+            "City-sector averages at or below budget",
+        )
+    with col_supply:
+        render_kpi_card(
+            "Highest average in range",
+            format_price(highest_in_range["avg_price_eur"]),
+            place_label(highest_in_range),
+        )
+
+    shortlist = within_budget.nlargest(10, "listings").copy()
+    shortlist["Market"] = sector_label(shortlist)
+    shortlist = shortlist[
+        ["Market", "avg_price_eur", "avg_per_m2_eur", "listings"]
+    ].rename(
+        columns={
+            "avg_price_eur": "Avg price, EUR",
+            "avg_per_m2_eur": "Price, EUR/m2",
+            "listings": "Listings",
+        }
+    )
+    shortlist["Avg price, EUR"] = shortlist["Avg price, EUR"].map(format_number)
+    shortlist["Price, EUR/m2"] = shortlist["Price, EUR/m2"].map(format_number)
+    shortlist["Listings"] = shortlist["Listings"].map(format_int)
+
+    with st.container(border=True):
+        st.dataframe(
+            shortlist,
+            width="stretch",
+            hide_index=True,
+            height=min(420, 48 + len(shortlist) * 36),
+            column_config={
+                "Market": st.column_config.TextColumn("Market", width="medium"),
+                "Avg price, EUR": st.column_config.TextColumn(
+                    "Avg price, EUR", width="small"
+                ),
+                "Price, EUR/m2": st.column_config.TextColumn(
+                    "Price, EUR/m2", width="small"
+                ),
+                "Listings": st.column_config.TextColumn("Listings", width="small"),
+            },
+        )
+    st.caption(
+        "Prices are listing-weighted city-sector averages. Individual listings may "
+        "be above or below the selected budget."
+    )
+
+
 def render_market_highlights(
     df: pd.DataFrame, price_col: str, price_decimals: int = 0, price_suffix: str = ""
 ) -> None:
@@ -1914,6 +2003,7 @@ with main_col:
             ),
         ):
             render_market_highlights(df, price_col, price_decimals=0)
+            render_budget_guide(df)
             render_city_comparison(df)
             housing_type_data = filter_by_city_and_listings(
                 df_sale_housing_types, selected_cities, min_listings
