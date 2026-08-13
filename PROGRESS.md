@@ -18,11 +18,24 @@ Simple project progress log for Imobil.Index.
   - Monthly Rent
   - Daily Rent
   - Insights
-- The Insights tab contains deterministic, rule-based analytics only. No AI layer is used in the app.
+- The Insights tab contains deterministic, rule-based market signals only. No AI layer is used in the app.
 
 ## Recently Done
 
-- Added `Daily vs monthly return` in Insights using the existing public
+- Reduced the default Insights view after a UX audit:
+  - city and sector weekly signals are now one `Weekly market brief`, with a
+    city-level view when at least three comparable cities exist and a clear
+    sector-level fallback otherwise;
+  - outside-Chisinau cards and the regional chart now form one `Regional value
+    comparison` section;
+  - secondary yield cards and the investment shortlist are behind a collapsed
+    `Investment analysis` disclosure;
+  - daily-versus-monthly break-even and return decisions now live in Daily
+    Rent, next to the occupancy assumption they use;
+  - sale-price decision cards now show `EUR/m2` explicitly where applicable.
+- Deferred a separate mobile filter-panel pass. It needs its own responsive
+  layout design so the existing global and For Sale filters remain easy to use.
+- Added `Daily vs monthly return` using the existing public
   `api_rent_yield` contract, with no schema or refresh change:
   - `Expected occupancy` is one clearly scoped slider in the left filter panel;
   - daily gross return is re-scaled from the published 60% occupancy model;
@@ -30,11 +43,11 @@ Simple project progress log for Imobil.Index.
     supply for both sale and rent data;
   - it shows direct return, break-even occupancy, and daily-versus-monthly
     values, with gross-yield cost caveats.
-- Refined the occupancy control after user testing: it now updates the Daily
-  Rent yield chart and context as well as all daily-yield comparisons in
-  Insights, while monthly-rent values stay fixed.
-- Added rule-based weekly market notes in Insights using existing public sale
-  history and current visible city-sector markets:
+- Refined the occupancy control after user testing: it updates the Daily Rent
+  yield chart, break-even, and return comparison, while monthly-rent values
+  stay fixed.
+- Added rule-based weekly market signals using existing public sale history and
+  current visible city-sector markets:
   - compares the latest snapshot to the closest snapshot at least seven days
     earlier, only for markets present in both snapshots;
   - shows median movement, the largest increase, and the lowest movement;
@@ -425,112 +438,32 @@ Read-only Supabase inspection on 2026-07-28 found:
 
 ## Current Work
 
-- Added `Weekly city movement` in Insights alongside the existing sector-level
-  weekly notes:
-  - it compares the latest snapshot with the closest snapshot at least seven
-    days earlier;
-  - city values are rebuilt as listing-weighted averages across matching
-    city-sector markets only;
-  - it appears only when at least three comparable cities are available and
-    clearly states the listing-mix caveat.
-- Visual verification is pending in the normal browser: check the default
-  all-cities view, a restricted city selection, and a higher minimum-listings
-  threshold.
+- The compact Insights layout needs visual verification in the normal browser:
+  check the default all-cities view, a restricted city selection, and a higher
+  minimum-listings threshold.
+- The next separate UX task is a mobile treatment for the filter panel. It is
+  intentionally deferred from this reduction pass because it affects every tab
+  and requires preserving the existing filters.
 
 ## Next Small Steps
 
-1. Expanded the regional decision journey in Insights:
+1. Verify the reduced information hierarchy in a normal browser:
 
-- `Outside Chisinau radar` retains its compact market cards and now adds a
-  price-gap ranking for cities below the visible Chisinau average;
-- city prices are rebuilt as listing-weighted averages from the current filtered
-  city-sector rows, so the comparison does not overweight small sectors;
-- the chart uses no new controls and appears only when the view contains
-  Chisinau and at least two lower-priced outside cities.
+- Insights shows Decision notes, Weekly market brief, Regional value comparison,
+  and a closed Investment analysis disclosure without an extra city-weekly
+  section;
+- Daily Rent contains the occupancy-linked break-even and return comparison;
+- `EUR/m2` is visible on sale-price decision cards.
 
-2. Visually verify the regional value comparison:
+2. Design and implement a separate mobile filter-panel treatment:
 
-- the highlighted city has the largest direct price-gap label;
-- changing the Cities or Min. listings filter updates or hides the section
-  cleanly;
-- the chart remains readable on desktop and phone.
-
-3. Start the market-comparison stage with a `Compare cities` view in For Sale:
-
-- Implemented `Compare cities` in For Sale using existing aggregated API data:
-  - city EUR/m2 is rebuilt with listing-weighted aggregation from visible
-    city-sector rows;
-  - the view presents the top visible city price and supply rankings without a
-    new public table or pipeline change;
-  - city, minimum-listings, and Rooms/Area profile selections are preserved.
-
-2. Visually verify the new `Compare cities` block:
-
-- price and supply rankings have direct labels and stay readable on mobile;
-- selecting one city hides the comparison cleanly;
-- selecting specific cities restricts both rankings to those cities.
-
-- The user visually verified `Compare cities` in a normal browser on 2026-07-31.
-
-3. Implemented `Investment shortlist` in Insights using the existing public
-   yield API:
-
-- ranks visible markets by indicative monthly gross yield;
-- shows the comparable daily scenario, average sale price, and both listing
-  counts in one compact table;
-- requires the current minimum listing threshold for both sale and rent supply;
-- keeps the gross-yield and 60% daily-occupancy caveats visible.
-
-4. Visually verify the new `Investment shortlist`:
-
-- all six columns remain readable on desktop and phone;
-- city and minimum-listings filters reduce the shortlist as expected;
-- the caption remains visible below the table.
-
-5. After the shortlist, choose one next decision journey:
-
-- buyer budget and affordability;
-- investment/rent-yield opportunity;
-- weekly rule-based market notes.
-
-6. Started the buyer decision journey with `Budget guide` in For Sale:
-
-- uses existing aggregated sale data, with no new public API table or pipeline change;
-- keeps the selected budget local to the new guide and does not alter existing
-  filters, KPI cards, charts, or sector tables;
-- identifies city-sector averages at or below the budget and ranks the first
-  ten by visible supply;
-- clearly states that values are listing-weighted averages, not individual
-  listing availability.
-
-7. Visually verify `Budget guide`:
-
-- changing the budget updates the cards and shortlist;
-- changing city, room, area, and minimum-listing filters updates the guide;
-- an empty state appears for a budget below all visible city-sector averages;
-- the table stays readable on desktop and mobile.
-
-8. Revised the `Budget guide` control placement after UX review:
-
-- moved `Buyer budget, EUR` to the existing left-side `For Sale criteria`
-  group with Rooms and Area;
-- the budget remains scoped to `Budget guide` only, stated directly below the
-  control;
-- removed the second control zone from the main analysis area;
-- replaced the less actionable `Highest average in range` card with total
-  `Visible supply` for markets within budget.
-
-9. Visually verify the revised control placement:
-
-- the left panel stays readable on desktop and mobile;
-- changing the budget updates only `Budget guide`;
-- all For Sale controls remain understandable as one grouped set.
+- preserve all global and For Sale filters;
+- reduce the amount of form content shown before the tabs on a phone;
+- verify both desktop and mobile after the layout change.
 
 ## Parking Lot
 
-- Daily vs monthly rent calculator.
 - Weekend house index.
 - Suburban radar improvements.
 - Ideal apartment portrait.
-- Rule-based weekly market notes.
 - Future parser fields: rooms, area, floor, house/dacha/land, amenities, distance from Chisinau.

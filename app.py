@@ -20,6 +20,7 @@ from dashboard_components import (
     render_app_header,
     render_chart_title,
     render_empty_state,
+    render_insight_card_row,
     render_insight_cards,
     render_kpi_card,
     render_section,
@@ -1040,11 +1041,12 @@ def render_decision_notes(
     inventory_share = most_listings["listings"] / total_listings * 100
     premium_or_discount = weighted_price - median_price
     direction = "above" if premium_or_discount >= 0 else "below"
+    unit_suffix = "/m2" if price_col.endswith("_per_m2_eur") else price_suffix
 
     cards = [
         (
             "Entry point",
-            format_price(lowest[price_col], price_decimals, price_suffix),
+            format_price(lowest[price_col], price_decimals, unit_suffix),
             f"Lowest visible value: {place_label(lowest)}.",
         ),
         (
@@ -1059,7 +1061,7 @@ def render_decision_notes(
         ),
         (
             "Weighted vs median",
-            f"{format_number(abs(premium_or_discount), 1)} EUR {direction}",
+            f"{format_number(abs(premium_or_discount), 1)} EUR{unit_suffix} {direction}",
             "Shows whether larger listing pools are priced above or below the middle sector.",
         ),
     ]
@@ -1070,63 +1072,16 @@ def render_decision_notes(
     )
 
 
-def render_weekly_market_notes(
-    historical_sales: pd.DataFrame,
-    visible_markets: pd.DataFrame,
-) -> None:
-    movement = build_weekly_price_movement(historical_sales, visible_markets)
-    if len(movement) < 3:
-        return
-
-    median_change = float(movement["change_percent"].median())
-    largest_increase = movement.loc[movement["change_percent"].idxmax()]
-    lowest_movement = movement.loc[movement["change_percent"].idxmin()]
-    baseline_date = movement["baseline_date"].iloc[0]
-    latest_date = movement["latest_date"].iloc[0]
-    days_between = int(movement["days_between"].iloc[0])
-
-    def signed_percent(value: float) -> str:
-        prefix = "+" if value > 0 else ""
-        return f"{prefix}{format_percent(value)}"
-
-    cards = [
-        (
-            "Median movement",
-            signed_percent(median_change),
-            f"Across {format_int(len(movement))} comparable markets.",
-        ),
-        (
-            "Largest increase",
-            signed_percent(largest_increase["change_percent"]),
-            place_label(largest_increase),
-        ),
-        (
-            "Lowest movement",
-            signed_percent(lowest_movement["change_percent"]),
-            place_label(lowest_movement),
-        ),
-    ]
-    render_insight_cards(
-        "Weekly market notes",
-        (
-            "Average asking-price movement over "
-            f"{days_between} days: {baseline_date:%d %b %Y} to {latest_date:%d %b %Y}."
-        ),
-        cards,
-    )
-    st.caption(
-        "Tracks average asking price per m2, not transaction prices or a "
-        "listing-weighted market index."
-    )
-
-
-def render_weekly_city_market_notes(
+def render_weekly_market_brief(
     historical_sales: pd.DataFrame,
     visible_markets: pd.DataFrame,
 ) -> None:
     movement = build_weekly_city_price_movement(historical_sales, visible_markets)
-    if len(movement) < 3:
-        return
+    is_city_brief = len(movement) >= 3
+    if not is_city_brief:
+        movement = build_weekly_price_movement(historical_sales, visible_markets)
+        if len(movement) < 3:
+            return
 
     median_change = float(movement["change_percent"].median())
     largest_increase = movement.loc[movement["change_percent"].idxmax()]
@@ -1145,35 +1100,61 @@ def render_weekly_city_market_notes(
             f"sectors and {format_int(row['latest_listings'])} listings."
         )
 
-    cards = [
-        (
-            "Median city movement",
-            signed_percent(median_change),
-            f"Across {format_int(len(movement))} comparable cities.",
-        ),
-        (
-            "Largest city increase",
-            signed_percent(largest_increase["change_percent"]),
-            city_note(largest_increase),
-        ),
-        (
-            "Lowest city movement",
-            signed_percent(lowest_movement["change_percent"]),
-            city_note(lowest_movement),
-        ),
-    ]
-    render_insight_cards(
-        "Weekly city movement",
-        (
+    if is_city_brief:
+        cards = [
+            (
+                "Median city movement",
+                signed_percent(median_change),
+                f"Across {format_int(len(movement))} comparable cities.",
+            ),
+            (
+                "Largest city increase",
+                signed_percent(largest_increase["change_percent"]),
+                city_note(largest_increase),
+            ),
+            (
+                "Lowest city movement",
+                signed_percent(lowest_movement["change_percent"]),
+                city_note(lowest_movement),
+            ),
+        ]
+        caption = (
             "Listing-weighted asking-price movement over "
             f"{days_between} days: {baseline_date:%d %b %Y} to {latest_date:%d %b %Y}."
-        ),
-        cards,
-    )
-    st.caption(
-        "Changes can reflect both asking prices and the mix of visible listings; "
-        "they are not transaction-price changes."
-    )
+        )
+        caveat = (
+            "Changes can reflect both asking prices and the mix of visible listings; "
+            "they are not transaction-price changes."
+        )
+    else:
+        cards = [
+            (
+                "Median movement",
+                signed_percent(median_change),
+                f"Across {format_int(len(movement))} comparable markets.",
+            ),
+            (
+                "Largest increase",
+                signed_percent(largest_increase["change_percent"]),
+                place_label(largest_increase),
+            ),
+            (
+                "Lowest movement",
+                signed_percent(lowest_movement["change_percent"]),
+                place_label(lowest_movement),
+            ),
+        ]
+        caption = (
+            "Average asking-price movement over "
+            f"{days_between} days: {baseline_date:%d %b %Y} to {latest_date:%d %b %Y}."
+        )
+        caveat = (
+            "Showing city-sector detail because fewer than three cities are comparable. "
+            "These are average asking prices per m2, not transaction prices."
+        )
+
+    render_insight_cards("Weekly market brief", caption, cards)
+    st.caption(caveat)
 
 
 def build_break_even_table(
@@ -1216,11 +1197,6 @@ def render_break_even_analysis(df_break_even: pd.DataFrame) -> None:
     if df_break_even.empty:
         return
 
-    render_section(
-        "Daily vs monthly break-even",
-        "Estimated number of daily-rent days that equals one month of rent per m2.",
-    )
-
     fastest = df_break_even.iloc[0]
     slowest = df_break_even.iloc[-1]
     median_days = df_break_even["break_even_days"].median()
@@ -1242,8 +1218,8 @@ def render_break_even_analysis(df_break_even: pd.DataFrame) -> None:
         ),
     ]
     render_insight_cards(
-        "Stay calculator",
-        "Useful for short stays, temporary housing, and relocation scenarios.",
+        "Daily vs monthly break-even",
+        "Estimated daily-rent days that equal one month of rent per m2.",
         cards,
     )
 
@@ -1351,11 +1327,11 @@ def render_outside_chisinau_radar(df_sales: pd.DataFrame) -> None:
             comparison,
         ),
     ]
-    render_insight_cards(
-        "Outside Chisinau radar",
-        "Quick view of sale prices outside Chisinau.",
-        cards,
+    render_section(
+        "Regional value comparison",
+        "Sale prices outside Chisinau, compared with the visible Chisinau average.",
     )
+    render_insight_card_row(cards)
 
     regional_comparison = build_city_price_gap_summary(df_sales, CHISINAU_CITY)
     if (
@@ -1419,10 +1395,6 @@ def render_outside_chisinau_radar(df_sales: pd.DataFrame) -> None:
         title_text="",
     )
 
-    render_section(
-        "Regional value comparison",
-        "Price gap below the visible Chisinau average, using current listings.",
-    )
     with st.container(border=True):
         render_chart_title("Largest price gap to Chisinau")
         render_plotly_chart(fig)
@@ -2449,6 +2421,15 @@ with main_col:
                 "Indicative gross annual yield, before operating costs.",
             )
             render_daily_rent_context(filtered_yield, daily_occupancy_percent)
+            break_even_df = build_break_even_table(
+                df_rent, selected_cities, min_listings
+            )
+            render_break_even_analysis(break_even_df)
+            render_daily_vs_monthly_return(
+                filtered_yield,
+                daily_occupancy_percent,
+                min_listings,
+            )
 
     # --------------------- 4. Insights ---------------------
     with tab_insights:
@@ -2459,31 +2440,22 @@ with main_col:
             filter_by_city_and_listings(df_yield, selected_cities, min_listings),
             daily_occupancy_percent,
         )
-        break_even_df = build_break_even_table(
-            df_rent, selected_cities, min_listings
-        )
-
-        if sale_df.empty and break_even_df.empty and yield_df.empty:
+        if sale_df.empty and yield_df.empty:
             render_empty_state(
                 "No insight-ready market signals match the current filters."
             )
         else:
             render_decision_notes(sale_df, "avg_per_m2_eur", price_decimals=0)
-            render_weekly_market_notes(df_hist_sales, sale_df)
-            render_weekly_city_market_notes(df_hist_sales, sale_df)
+            render_weekly_market_brief(df_hist_sales, sale_df)
             render_outside_chisinau_radar(sale_df)
-            render_break_even_analysis(break_even_df)
-            render_yield_opportunity_notes(yield_df)
-            render_investment_shortlist(
-                yield_df,
-                min_listings,
-                daily_occupancy_percent,
-            )
-            render_daily_vs_monthly_return(
-                yield_df,
-                daily_occupancy_percent,
-                min_listings,
-            )
+            if not yield_df.empty:
+                with st.expander("Investment analysis"):
+                    render_yield_opportunity_notes(yield_df)
+                    render_investment_shortlist(
+                        yield_df,
+                        min_listings,
+                        daily_occupancy_percent,
+                    )
 
 
 # =========================

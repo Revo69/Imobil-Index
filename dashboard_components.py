@@ -85,6 +85,10 @@ def render_insight_cards(
     title: str, caption: str, cards: list[tuple[str, str, str]]
 ) -> None:
     render_section(title, caption)
+    render_insight_card_row(cards)
+
+
+def render_insight_card_row(cards: list[tuple[str, str, str]]) -> None:
     if not cards:
         render_empty_state("Not enough data for this insight yet.")
         return
