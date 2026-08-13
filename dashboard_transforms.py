@@ -285,3 +285,64 @@ def build_weekly_price_movement(
     movement["baseline_date"] = baseline_date
     movement["days_between"] = (latest_date - baseline_date).days
     return movement.sort_values("change_percent")
+
+
+def build_daily_vs_monthly_return(
+    yield_data: pd.DataFrame,
+    daily_occupancy_percent: int,
+) -> pd.DataFrame:
+    """Recalculate daily gross return from the public 60% occupancy model."""
+    required = {
+        "city",
+        "sector",
+        "annual_rent_monthly",
+        "annual_rent_daily_60pct",
+        "avg_sale_price_eur",
+        "sale_listings",
+        "total_rent_listings",
+    }
+    if (
+        yield_data.empty
+        or not required.issubset(yield_data.columns)
+        or not 0 < daily_occupancy_percent <= 100
+    ):
+        return pd.DataFrame()
+
+    data = yield_data.copy()
+    numeric_columns = [
+        "annual_rent_monthly",
+        "annual_rent_daily_60pct",
+        "avg_sale_price_eur",
+        "sale_listings",
+        "total_rent_listings",
+    ]
+    for column in numeric_columns:
+        data[column] = pd.to_numeric(data[column], errors="coerce")
+    data = data.dropna(subset=["city", "sector", *numeric_columns])
+    data = data[
+        (data["annual_rent_monthly"] > 0)
+        & (data["annual_rent_daily_60pct"] > 0)
+        & (data["avg_sale_price_eur"] > 0)
+    ].copy()
+    if data.empty:
+        return data
+
+    occupancy_rate = daily_occupancy_percent / 100
+    data["daily_annual_rent_eur"] = (
+        data["annual_rent_daily_60pct"] / 0.60 * occupancy_rate
+    )
+    data["monthly_gross_yield_percent"] = (
+        data["annual_rent_monthly"] / data["avg_sale_price_eur"] * 100
+    )
+    data["daily_gross_yield_percent"] = (
+        data["daily_annual_rent_eur"] / data["avg_sale_price_eur"] * 100
+    )
+    data["daily_advantage_pp"] = (
+        data["daily_gross_yield_percent"] - data["monthly_gross_yield_percent"]
+    )
+    data["occupancy_to_match_monthly_percent"] = (
+        data["annual_rent_monthly"]
+        / (data["annual_rent_daily_60pct"] / 0.60)
+        * 100
+    )
+    return data.sort_values("daily_advantage_pp", ascending=False)

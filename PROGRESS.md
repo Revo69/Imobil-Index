@@ -4,7 +4,7 @@ Simple project progress log for Imobil.Index.
 
 ## Last Updated
 
-2026-08-03
+2026-08-13
 
 ## Current State
 
@@ -22,6 +22,14 @@ Simple project progress log for Imobil.Index.
 
 ## Recently Done
 
+- Added `Daily vs monthly return` in Insights using the existing public
+  `api_rent_yield` contract, with no schema or refresh change:
+  - `Expected occupancy` is one clearly scoped slider in the left filter panel;
+  - daily gross return is re-scaled from the published 60% occupancy model;
+  - the comparison stays at city-sector grain and requires the selected minimum
+    supply for both sale and rent data;
+  - it shows direct return, break-even occupancy, and daily-versus-monthly
+    values, with gross-yield cost caveats.
 - Added rule-based weekly market notes in Insights using existing public sale
   history and current visible city-sector markets:
   - compares the latest snapshot to the closest snapshot at least seven days

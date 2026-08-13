@@ -43,6 +43,7 @@ from dashboard_theme import (
 )
 from dashboard_transforms import (
     build_city_market_summary,
+    build_daily_vs_monthly_return,
     build_sale_market_from_segments,
     build_segment_summary,
     build_weekly_price_movement,
@@ -1448,6 +1449,123 @@ def render_investment_shortlist(df_yield: pd.DataFrame, min_listings: int) -> No
     )
 
 
+def render_daily_vs_monthly_return(
+    df_yield: pd.DataFrame,
+    daily_occupancy_percent: int,
+    min_listings: int,
+) -> None:
+    data = build_daily_vs_monthly_return(df_yield, daily_occupancy_percent)
+    if data.empty:
+        return
+
+    data = data[
+        (data["sale_listings"] >= min_listings)
+        & (data["total_rent_listings"] >= min_listings)
+    ].copy()
+    if data.empty:
+        return
+
+    daily_ahead = int((data["daily_advantage_pp"] > 0).sum())
+    median_advantage = float(data["daily_advantage_pp"].median())
+    median_break_even = float(data["occupancy_to_match_monthly_percent"].median())
+    best_daily = data.iloc[0]
+    signed_median_advantage = (
+        f"+{format_number(median_advantage, 1)}"
+        if median_advantage > 0
+        else format_number(median_advantage, 1)
+    )
+
+    render_insight_cards(
+        "Daily vs monthly return",
+        (
+            "Indicative gross-return comparison at "
+            f"{daily_occupancy_percent}% expected daily occupancy."
+        ),
+        [
+            (
+                "Daily ahead",
+                format_int(daily_ahead),
+                f"Of {format_int(len(data))} comparable visible markets.",
+            ),
+            (
+                "Median daily advantage",
+                f"{signed_median_advantage} pp",
+                "Daily gross yield versus monthly rent.",
+            ),
+            (
+                "Median break-even occupancy",
+                format_percent(median_break_even),
+                "Daily occupancy needed to match monthly annual rent.",
+            ),
+            (
+                "Highest daily yield",
+                format_percent(best_daily["daily_gross_yield_percent"]),
+                place_label(best_daily),
+            ),
+        ],
+    )
+
+    daily_yield_label = f"Daily yield ({daily_occupancy_percent}%)"
+    comparison = data.head(10).copy()
+    comparison["Market"] = sector_label(comparison)
+    comparison = comparison[
+        [
+            "Market",
+            "monthly_gross_yield_percent",
+            "daily_gross_yield_percent",
+            "occupancy_to_match_monthly_percent",
+            "daily_advantage_pp",
+        ]
+    ].rename(
+        columns={
+            "monthly_gross_yield_percent": "Monthly yield",
+            "daily_gross_yield_percent": daily_yield_label,
+            "occupancy_to_match_monthly_percent": "Break-even occupancy",
+            "daily_advantage_pp": "Daily vs monthly",
+        }
+    )
+    comparison["Monthly yield"] = comparison["Monthly yield"].map(format_percent)
+    comparison[daily_yield_label] = comparison[daily_yield_label].map(format_percent)
+    comparison["Break-even occupancy"] = comparison[
+        "Break-even occupancy"
+    ].map(format_percent)
+    comparison["Daily vs monthly"] = comparison["Daily vs monthly"].map(
+        lambda value: (
+            f"+{format_number(value, 1)} pp"
+            if value > 0
+            else f"{format_number(value, 1)} pp"
+        )
+    )
+
+    with st.container(border=True):
+        st.dataframe(
+            comparison,
+            width="stretch",
+            hide_index=True,
+            height=min(420, 48 + len(comparison) * 36),
+            column_config={
+                "Market": st.column_config.TextColumn("Market", width="medium"),
+                "Monthly yield": st.column_config.TextColumn(
+                    "Monthly yield", width="small"
+                ),
+                daily_yield_label: st.column_config.TextColumn(
+                    daily_yield_label, width="small"
+                ),
+                "Break-even occupancy": st.column_config.TextColumn(
+                    "Break-even occupancy", width="small"
+                ),
+                "Daily vs monthly": st.column_config.TextColumn(
+                    "Daily vs monthly", width="small"
+                ),
+            },
+        )
+    st.caption(
+        "Daily income is re-scaled from the public 60% occupancy model. Both "
+        "returns are indicative and gross, before vacancy, cleaning, utilities, "
+        "taxes, platform fees, and management costs."
+    )
+
+
 def render_yield_chart(
     df_yield: pd.DataFrame,
     metric: str,
@@ -2011,6 +2129,17 @@ with filter_col, st.container(border=True):
         step=1,
         key="filter_min_listings",
     )
+    st.markdown("**Daily rent assumption**")
+    daily_occupancy_percent = st.slider(
+        "Expected occupancy",
+        min_value=20,
+        max_value=90,
+        value=60,
+        step=5,
+        format="%d%%",
+        key="daily_occupancy_percent",
+    )
+    st.caption("Applies to Daily vs monthly return only.")
     market_lens = st.radio(
         "Chart focus",
         ["Prices", "Listings"],
@@ -2203,6 +2332,11 @@ with main_col:
             render_break_even_analysis(break_even_df)
             render_yield_opportunity_notes(yield_df)
             render_investment_shortlist(yield_df, min_listings)
+            render_daily_vs_monthly_return(
+                yield_df,
+                daily_occupancy_percent,
+                min_listings,
+            )
 
 
 # =========================
