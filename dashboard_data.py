@@ -5,7 +5,7 @@ import streamlit as st
 from supabase import create_client
 
 HISTORY_WINDOW_DAYS = 90
-HISTORY_SALE_COLUMNS = "date,city,sector,avg_per_m2_eur"
+HISTORY_SALE_COLUMNS = "date,city,sector,listings,avg_per_m2_eur"
 HISTORY_SALE_SEGMENT_COLUMNS = (
     "date,city,sector,rooms_group,area_band,listings,avg_price_eur,avg_per_m2_eur"
 )

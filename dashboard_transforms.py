@@ -273,6 +273,8 @@ def build_weekly_price_movement(
     history["avg_per_m2_eur"] = pd.to_numeric(
         history["avg_per_m2_eur"], errors="coerce"
     )
+    if "listings" in history.columns:
+        history["listings"] = pd.to_numeric(history["listings"], errors="coerce")
     history = history.dropna(subset=["date", "city", "avg_per_m2_eur"])
     history = history.merge(markets, on=["city", "sector"], how="inner")
     if history.empty:
@@ -289,12 +291,22 @@ def build_weekly_price_movement(
         return pd.DataFrame()
     baseline_date = baseline_candidates["date"].max()
 
-    latest = history[history["date"] == latest_date][
-        ["city", "sector", "avg_per_m2_eur"]
-    ].rename(columns={"avg_per_m2_eur": "latest_avg_per_m2_eur"})
-    baseline = history[history["date"] == baseline_date][
-        ["city", "sector", "avg_per_m2_eur"]
-    ].rename(columns={"avg_per_m2_eur": "baseline_avg_per_m2_eur"})
+    latest_columns = ["city", "sector", "avg_per_m2_eur"]
+    baseline_columns = ["city", "sector", "avg_per_m2_eur"]
+    latest_rename = {"avg_per_m2_eur": "latest_avg_per_m2_eur"}
+    baseline_rename = {"avg_per_m2_eur": "baseline_avg_per_m2_eur"}
+    if "listings" in history.columns:
+        latest_columns.append("listings")
+        baseline_columns.append("listings")
+        latest_rename["listings"] = "latest_listings"
+        baseline_rename["listings"] = "baseline_listings"
+
+    latest = history[history["date"] == latest_date][latest_columns].rename(
+        columns=latest_rename
+    )
+    baseline = history[history["date"] == baseline_date][baseline_columns].rename(
+        columns=baseline_rename
+    )
     movement = latest.merge(baseline, on=["city", "sector"], how="inner")
     movement = movement[movement["baseline_avg_per_m2_eur"] > 0].copy()
     if movement.empty:
@@ -309,6 +321,80 @@ def build_weekly_price_movement(
     movement["baseline_date"] = baseline_date
     movement["days_between"] = (latest_date - baseline_date).days
     return movement.sort_values("change_percent")
+
+
+def build_weekly_city_price_movement(
+    historical_data: pd.DataFrame,
+    visible_markets: pd.DataFrame,
+) -> pd.DataFrame:
+    """Build comparable listing-weighted weekly asking-price movement by city."""
+    movement = build_weekly_price_movement(historical_data, visible_markets)
+    required = {
+        "city",
+        "sector",
+        "latest_avg_per_m2_eur",
+        "baseline_avg_per_m2_eur",
+        "latest_listings",
+        "baseline_listings",
+    }
+    if movement.empty or not required.issubset(movement.columns):
+        return pd.DataFrame()
+
+    data = movement.copy()
+    numeric_columns = [
+        "latest_avg_per_m2_eur",
+        "baseline_avg_per_m2_eur",
+        "latest_listings",
+        "baseline_listings",
+    ]
+    for column in numeric_columns:
+        data[column] = pd.to_numeric(data[column], errors="coerce")
+    data = data.dropna(subset=["city", "sector", *numeric_columns])
+    data = data[
+        (data["latest_avg_per_m2_eur"] > 0)
+        & (data["baseline_avg_per_m2_eur"] > 0)
+        & (data["latest_listings"] > 0)
+        & (data["baseline_listings"] > 0)
+    ].copy()
+    if data.empty:
+        return pd.DataFrame()
+
+    data["latest_weighted_value"] = (
+        data["latest_avg_per_m2_eur"] * data["latest_listings"]
+    )
+    data["baseline_weighted_value"] = (
+        data["baseline_avg_per_m2_eur"] * data["baseline_listings"]
+    )
+    city_movement = (
+        data.groupby("city", as_index=False, observed=True)
+        .agg(
+            comparable_sectors=("sector", "nunique"),
+            latest_listings=("latest_listings", "sum"),
+            baseline_listings=("baseline_listings", "sum"),
+            latest_weighted_value=("latest_weighted_value", "sum"),
+            baseline_weighted_value=("baseline_weighted_value", "sum"),
+            latest_date=("latest_date", "first"),
+            baseline_date=("baseline_date", "first"),
+            days_between=("days_between", "first"),
+        )
+        .copy()
+    )
+    city_movement["latest_avg_per_m2_eur"] = (
+        city_movement["latest_weighted_value"] / city_movement["latest_listings"]
+    )
+    city_movement["baseline_avg_per_m2_eur"] = (
+        city_movement["baseline_weighted_value"]
+        / city_movement["baseline_listings"]
+    )
+    city_movement["change_percent"] = (
+        (
+            city_movement["latest_avg_per_m2_eur"]
+            - city_movement["baseline_avg_per_m2_eur"]
+        )
+        / city_movement["baseline_avg_per_m2_eur"]
+        * 100
+    )
+    return city_movement.sort_values("change_percent")
 
 
 def apply_daily_occupancy_assumption(

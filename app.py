@@ -48,6 +48,7 @@ from dashboard_transforms import (
     build_daily_vs_monthly_return,
     build_sale_market_from_segments,
     build_segment_summary,
+    build_weekly_city_price_movement,
     build_weekly_price_movement,
     data_freshness,
     filter_by_city,
@@ -1116,6 +1117,62 @@ def render_weekly_market_notes(
     st.caption(
         "Tracks average asking price per m2, not transaction prices or a "
         "listing-weighted market index."
+    )
+
+
+def render_weekly_city_market_notes(
+    historical_sales: pd.DataFrame,
+    visible_markets: pd.DataFrame,
+) -> None:
+    movement = build_weekly_city_price_movement(historical_sales, visible_markets)
+    if len(movement) < 3:
+        return
+
+    median_change = float(movement["change_percent"].median())
+    largest_increase = movement.loc[movement["change_percent"].idxmax()]
+    lowest_movement = movement.loc[movement["change_percent"].idxmin()]
+    baseline_date = movement["baseline_date"].iloc[0]
+    latest_date = movement["latest_date"].iloc[0]
+    days_between = int(movement["days_between"].iloc[0])
+
+    def signed_percent(value: float) -> str:
+        prefix = "+" if value > 0 else ""
+        return f"{prefix}{format_percent(value)}"
+
+    def city_note(row: pd.Series) -> str:
+        return (
+            f"{row['city']}: {format_int(row['comparable_sectors'])} comparable "
+            f"sectors and {format_int(row['latest_listings'])} listings."
+        )
+
+    cards = [
+        (
+            "Median city movement",
+            signed_percent(median_change),
+            f"Across {format_int(len(movement))} comparable cities.",
+        ),
+        (
+            "Largest city increase",
+            signed_percent(largest_increase["change_percent"]),
+            city_note(largest_increase),
+        ),
+        (
+            "Lowest city movement",
+            signed_percent(lowest_movement["change_percent"]),
+            city_note(lowest_movement),
+        ),
+    ]
+    render_insight_cards(
+        "Weekly city movement",
+        (
+            "Listing-weighted asking-price movement over "
+            f"{days_between} days: {baseline_date:%d %b %Y} to {latest_date:%d %b %Y}."
+        ),
+        cards,
+    )
+    st.caption(
+        "Changes can reflect both asking prices and the mix of visible listings; "
+        "they are not transaction-price changes."
     )
 
 
@@ -2413,6 +2470,7 @@ with main_col:
         else:
             render_decision_notes(sale_df, "avg_per_m2_eur", price_decimals=0)
             render_weekly_market_notes(df_hist_sales, sale_df)
+            render_weekly_city_market_notes(df_hist_sales, sale_df)
             render_outside_chisinau_radar(sale_df)
             render_break_even_analysis(break_even_df)
             render_yield_opportunity_notes(yield_df)

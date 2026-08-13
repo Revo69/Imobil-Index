@@ -423,6 +423,20 @@ Read-only Supabase inspection on 2026-07-28 found:
   - tightened section rhythm after the header and tab toolbar changes;
   - unified dashboard card shadows and flex layout for KPI and insight cards.
 
+## Current Work
+
+- Added `Weekly city movement` in Insights alongside the existing sector-level
+  weekly notes:
+  - it compares the latest snapshot with the closest snapshot at least seven
+    days earlier;
+  - city values are rebuilt as listing-weighted averages across matching
+    city-sector markets only;
+  - it appears only when at least three comparable cities are available and
+    clearly states the listing-mix caveat.
+- Visual verification is pending in the normal browser: check the default
+  all-cities view, a restricted city selection, and a higher minimum-listings
+  threshold.
+
 ## Next Small Steps
 
 1. Expanded the regional decision journey in Insights:
