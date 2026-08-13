@@ -42,6 +42,7 @@ from dashboard_theme import (
     theme_css_vars,
 )
 from dashboard_transforms import (
+    apply_daily_occupancy_assumption,
     build_city_market_summary,
     build_daily_vs_monthly_return,
     build_sale_market_from_segments,
@@ -1348,7 +1349,11 @@ def render_yield_opportunity_notes(df_yield: pd.DataFrame) -> None:
     )
 
 
-def render_investment_shortlist(df_yield: pd.DataFrame, min_listings: int) -> None:
+def render_investment_shortlist(
+    df_yield: pd.DataFrame,
+    min_listings: int,
+    daily_occupancy_percent: int,
+) -> None:
     required = {
         "city",
         "sector",
@@ -1380,6 +1385,7 @@ def render_investment_shortlist(df_yield: pd.DataFrame, min_listings: int) -> No
         return
 
     data["Market"] = sector_label(data)
+    daily_yield_label = f"Daily gross yield ({daily_occupancy_percent}%)"
     shortlist = data.nlargest(10, "yield_monthly_percent").copy()
     shortlist = shortlist[
         [
@@ -1393,7 +1399,7 @@ def render_investment_shortlist(df_yield: pd.DataFrame, min_listings: int) -> No
     ].rename(
         columns={
             "yield_monthly_percent": "Monthly gross yield",
-            "yield_daily_percent": "Daily gross yield (60%)",
+            "yield_daily_percent": daily_yield_label,
             "avg_sale_price_eur": "Avg price, EUR",
             "sale_listings": "Sale listings",
             "total_rent_listings": "Rent listings",
@@ -1402,9 +1408,7 @@ def render_investment_shortlist(df_yield: pd.DataFrame, min_listings: int) -> No
     shortlist["Monthly gross yield"] = shortlist["Monthly gross yield"].map(
         format_percent
     )
-    shortlist["Daily gross yield (60%)"] = shortlist[
-        "Daily gross yield (60%)"
-    ].map(format_percent)
+    shortlist[daily_yield_label] = shortlist[daily_yield_label].map(format_percent)
     shortlist["Avg price, EUR"] = shortlist["Avg price, EUR"].map(format_number)
     shortlist["Sale listings"] = shortlist["Sale listings"].map(format_int)
     shortlist["Rent listings"] = shortlist["Rent listings"].map(format_int)
@@ -1425,8 +1429,8 @@ def render_investment_shortlist(df_yield: pd.DataFrame, min_listings: int) -> No
                     "Monthly gross yield",
                     width="small",
                 ),
-                "Daily gross yield (60%)": st.column_config.TextColumn(
-                    "Daily gross yield (60%)",
+                daily_yield_label: st.column_config.TextColumn(
+                    daily_yield_label,
                     width="small",
                 ),
                 "Avg price, EUR": st.column_config.TextColumn(
@@ -1444,7 +1448,7 @@ def render_investment_shortlist(df_yield: pd.DataFrame, min_listings: int) -> No
             },
         )
     st.caption(
-        "Yield is indicative and gross. Daily rent uses the current 60% occupancy "
+        "Yield is indicative and gross. Daily rent uses the selected occupancy "
         "assumption and excludes operating costs, vacancy, taxes, and management fees."
     )
 
@@ -1943,7 +1947,10 @@ def render_sector_table(
     )
 
 
-def render_daily_rent_context(df_yield: pd.DataFrame) -> None:
+def render_daily_rent_context(
+    df_yield: pd.DataFrame,
+    daily_occupancy_percent: int,
+) -> None:
     render_section(
         "Daily vs monthly rent context",
         "Indicative gross yield comparison for the current market snapshot.",
@@ -1951,14 +1958,16 @@ def render_daily_rent_context(df_yield: pd.DataFrame) -> None:
 
     top_daily_yield = None
     if not df_yield.empty and "yield_daily_percent" in df_yield.columns:
-        top_daily_yield = df_yield["yield_daily_percent"].max()
+        top_daily_yield = pd.to_numeric(
+            df_yield["yield_daily_percent"], errors="coerce"
+        ).max()
 
     st.markdown(
         f"""
         <div class="insight-strip">
             Daily rent can show materially higher gross yield than monthly rent,
             but it depends on occupancy, seasonality, and operating costs.
-            The current model assumes 60% daily occupancy.
+            The current model assumes {daily_occupancy_percent}% daily occupancy.
             {
                 (
                     f"Top gross daily yield: <strong>{format_percent(top_daily_yield)}</strong> "
@@ -2139,7 +2148,7 @@ with filter_col, st.container(border=True):
         format="%d%%",
         key="daily_occupancy_percent",
     )
-    st.caption("Applies to Daily vs monthly return only.")
+    st.caption("Applies to daily-rent yield and return comparisons.")
     market_lens = st.radio(
         "Chart focus",
         ["Prices", "Listings"],
@@ -2276,8 +2285,9 @@ with main_col:
         price_col = "avg_price_per_m2_eur"
         df = df_rent[df_rent["deal_type"] == DAILY_RENT_DEAL].copy()
         df = filter_by_city_and_listings(df, selected_cities, min_listings)
-        filtered_yield = filter_by_city_and_listings(
-            df_yield, selected_cities, min_listings
+        filtered_yield = apply_daily_occupancy_assumption(
+            filter_by_city_and_listings(df_yield, selected_cities, min_listings),
+            daily_occupancy_percent,
         )
 
         if render_tab_header(
@@ -2304,18 +2314,19 @@ with main_col:
             render_yield_chart(
                 filtered_yield,
                 "yield_daily_percent",
-                "Daily rental yield at 60% occupancy",
+                f"Daily rental yield at {daily_occupancy_percent}% occupancy",
                 "Indicative gross annual yield, before operating costs.",
             )
-            render_daily_rent_context(filtered_yield)
+            render_daily_rent_context(filtered_yield, daily_occupancy_percent)
 
     # --------------------- 4. Insights ---------------------
     with tab_insights:
         sale_df = filter_by_city_and_listings(
             df_sales, selected_cities, min_listings
         )
-        yield_df = filter_by_city_and_listings(
-            df_yield, selected_cities, min_listings
+        yield_df = apply_daily_occupancy_assumption(
+            filter_by_city_and_listings(df_yield, selected_cities, min_listings),
+            daily_occupancy_percent,
         )
         break_even_df = build_break_even_table(
             df_rent, selected_cities, min_listings
@@ -2331,7 +2342,11 @@ with main_col:
             render_outside_chisinau_radar(sale_df)
             render_break_even_analysis(break_even_df)
             render_yield_opportunity_notes(yield_df)
-            render_investment_shortlist(yield_df, min_listings)
+            render_investment_shortlist(
+                yield_df,
+                min_listings,
+                daily_occupancy_percent,
+            )
             render_daily_vs_monthly_return(
                 yield_df,
                 daily_occupancy_percent,

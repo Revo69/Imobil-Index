@@ -30,6 +30,9 @@ Simple project progress log for Imobil.Index.
     supply for both sale and rent data;
   - it shows direct return, break-even occupancy, and daily-versus-monthly
     values, with gross-yield cost caveats.
+- Refined the occupancy control after user testing: it now updates the Daily
+  Rent yield chart and context as well as all daily-yield comparisons in
+  Insights, while monthly-rent values stay fixed.
 - Added rule-based weekly market notes in Insights using existing public sale
   history and current visible city-sector markets:
   - compares the latest snapshot to the closest snapshot at least seven days

@@ -287,6 +287,45 @@ def build_weekly_price_movement(
     return movement.sort_values("change_percent")
 
 
+def apply_daily_occupancy_assumption(
+    yield_data: pd.DataFrame,
+    daily_occupancy_percent: int,
+) -> pd.DataFrame:
+    """Apply the selected occupancy to daily-rent yield metrics."""
+    required = {
+        "annual_rent_daily_60pct",
+        "avg_sale_price_eur",
+        "yield_daily_percent",
+    }
+    if (
+        yield_data.empty
+        or not required.issubset(yield_data.columns)
+        or not 0 < daily_occupancy_percent <= 100
+    ):
+        return yield_data.copy()
+
+    data = yield_data.copy()
+    for column in required:
+        data[column] = pd.to_numeric(data[column], errors="coerce")
+    valid = (data["annual_rent_daily_60pct"] > 0) & (
+        data["avg_sale_price_eur"] > 0
+    )
+    data["annual_rent_daily_eur"] = pd.NA
+    data["yield_daily_percent"] = pd.NA
+    data.loc[valid, "annual_rent_daily_eur"] = (
+        data.loc[valid, "annual_rent_daily_60pct"]
+        / 0.60
+        * daily_occupancy_percent
+        / 100
+    )
+    data.loc[valid, "yield_daily_percent"] = (
+        data.loc[valid, "annual_rent_daily_eur"]
+        / data.loc[valid, "avg_sale_price_eur"]
+        * 100
+    )
+    return data
+
+
 def build_daily_vs_monthly_return(
     yield_data: pd.DataFrame,
     daily_occupancy_percent: int,
@@ -308,7 +347,7 @@ def build_daily_vs_monthly_return(
     ):
         return pd.DataFrame()
 
-    data = yield_data.copy()
+    data = apply_daily_occupancy_assumption(yield_data, daily_occupancy_percent)
     numeric_columns = [
         "annual_rent_monthly",
         "annual_rent_daily_60pct",
@@ -327,16 +366,10 @@ def build_daily_vs_monthly_return(
     if data.empty:
         return data
 
-    occupancy_rate = daily_occupancy_percent / 100
-    data["daily_annual_rent_eur"] = (
-        data["annual_rent_daily_60pct"] / 0.60 * occupancy_rate
-    )
     data["monthly_gross_yield_percent"] = (
         data["annual_rent_monthly"] / data["avg_sale_price_eur"] * 100
     )
-    data["daily_gross_yield_percent"] = (
-        data["daily_annual_rent_eur"] / data["avg_sale_price_eur"] * 100
-    )
+    data["daily_gross_yield_percent"] = data["yield_daily_percent"]
     data["daily_advantage_pp"] = (
         data["daily_gross_yield_percent"] - data["monthly_gross_yield_percent"]
     )
