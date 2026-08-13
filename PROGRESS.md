@@ -425,7 +425,23 @@ Read-only Supabase inspection on 2026-07-28 found:
 
 ## Next Small Steps
 
-1. Start the market-comparison stage with a `Compare cities` view in For Sale:
+1. Expanded the regional decision journey in Insights:
+
+- `Outside Chisinau radar` retains its compact market cards and now adds a
+  price-gap ranking for cities below the visible Chisinau average;
+- city prices are rebuilt as listing-weighted averages from the current filtered
+  city-sector rows, so the comparison does not overweight small sectors;
+- the chart uses no new controls and appears only when the view contains
+  Chisinau and at least two lower-priced outside cities.
+
+2. Visually verify the regional value comparison:
+
+- the highlighted city has the largest direct price-gap label;
+- changing the Cities or Min. listings filter updates or hides the section
+  cleanly;
+- the chart remains readable on desktop and phone.
+
+3. Start the market-comparison stage with a `Compare cities` view in For Sale:
 
 - Implemented `Compare cities` in For Sale using existing aggregated API data:
   - city EUR/m2 is rebuilt with listing-weighted aggregation from visible

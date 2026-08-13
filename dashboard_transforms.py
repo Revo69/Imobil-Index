@@ -100,6 +100,30 @@ def build_city_market_summary(df: pd.DataFrame) -> pd.DataFrame:
     return grouped.drop(columns=["weighted_price", "weighted_per_m2"])
 
 
+def build_city_price_gap_summary(
+    df: pd.DataFrame,
+    reference_city: str,
+) -> pd.DataFrame:
+    """Compare city-level listing-weighted prices with one visible reference city."""
+    summary = build_city_market_summary(df)
+    if summary.empty:
+        return summary
+
+    reference = summary[summary["city"] == reference_city]
+    if reference.empty:
+        return pd.DataFrame()
+
+    reference_price = float(reference.iloc[0]["avg_per_m2_eur"])
+    comparison = summary[summary["city"] != reference_city].copy()
+    if comparison.empty:
+        return comparison
+
+    comparison["price_gap_eur_per_m2"] = (
+        reference_price - comparison["avg_per_m2_eur"]
+    )
+    return comparison.sort_values("price_gap_eur_per_m2", ascending=False)
+
+
 def ordered_segment_options(
     df_segments: pd.DataFrame,
     column: str,

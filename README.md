@@ -25,7 +25,7 @@ for buyers, sellers, and investors. The dashboard reads safe, pre-aggregated
 | 🏷️ **For Sale** | City and sector pricing, room/area profiles, housing type, finish/condition, floor-position comparison, and 90-day trends |
 | 📅 **Monthly Rent** | Rental price per m² by sector, top/bottom districts, indicative gross yield |
 | 🌙 **Daily Rent** | Short-term rental pricing, occupancy-adjusted indicative gross yield, daily vs. monthly comparison |
-| ✦ **Insights** | Rule-based signals, weekly price movement, break-even context, yield notes, investment shortlist, and daily-vs-monthly return comparison |
+| ✦ **Insights** | Rule-based signals, weekly price movement, regional value comparison, break-even context, yield notes, investment shortlist, and daily-vs-monthly return comparison |
 
 Data is refreshed daily through an upstream ETL pipeline (**bronze → silver →
 gold**: raw ingestion → cleaning/normalization → aggregated metrics). Gold stays
@@ -38,6 +38,7 @@ private; the dashboard and public users read only the aggregated API layer.
 - **Listings-weighted pricing** — average price per m² is weighted by listing count per sector, not a naive mean, avoiding skew from thin markets
 - **Lean historical queries** — the 90-day trend chart pulls only the columns and date range it needs (`date, city, sector, avg_per_m2_eur`), server-side filtered and paginated, instead of loading full tables into memory
 - **Buyer-relevant sale profiles** — city comparison, rooms and area bands, housing type, finish/condition, and floor position provide clearly caveated comparisons without exposing listings
+- **Regional value comparison** — shows cities outside Chisinau with the largest listing-weighted price gap to the current Chisinau average
 - **Investment shortlist** — compares visible markets by indicative monthly and daily gross yield, average sale price, and available sale/rent supply
 - **Daily rent assumption** — re-scales the published 60% daily-rent model across Daily Rent and Insights, showing sector-level gross return, break-even occupancy, and the daily-versus-monthly difference
 - **Public API by design** — the `api_*` tables contain aggregated metrics only, use RLS, and allow anonymous read access without public writes; see the [Public API v1 contract](docs/public_api_v1.md)

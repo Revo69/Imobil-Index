@@ -44,6 +44,7 @@ from dashboard_theme import (
 from dashboard_transforms import (
     apply_daily_occupancy_assumption,
     build_city_market_summary,
+    build_city_price_gap_summary,
     build_daily_vs_monthly_return,
     build_sale_market_from_segments,
     build_segment_summary,
@@ -1297,6 +1298,79 @@ def render_outside_chisinau_radar(df_sales: pd.DataFrame) -> None:
         "Outside Chisinau radar",
         "Quick view of sale prices outside Chisinau.",
         cards,
+    )
+
+    regional_comparison = build_city_price_gap_summary(df_sales, CHISINAU_CITY)
+    if (
+        regional_comparison.empty
+        or "price_gap_eur_per_m2" not in regional_comparison.columns
+    ):
+        return
+    regional_comparison = regional_comparison[
+        regional_comparison["price_gap_eur_per_m2"] > 0
+    ].copy()
+    if regional_comparison["city"].nunique() < 2:
+        return
+
+    plot = (
+        regional_comparison.nlargest(8, "price_gap_eur_per_m2")
+        .sort_values("price_gap_eur_per_m2")
+        .copy()
+    )
+    plot["Label"] = plot["price_gap_eur_per_m2"].map(
+        lambda value: format_number(value)
+    )
+    plot["PriceLabel"] = plot["avg_per_m2_eur"].map(format_number)
+    plot["ListingsLabel"] = plot["listings"].map(format_int)
+
+    colors = [CHART_NEUTRAL] * len(plot)
+    colors[-1] = SALE_COLOR_SCALE[-1]
+    fig = px.bar(
+        plot,
+        x="price_gap_eur_per_m2",
+        y="city",
+        orientation="h",
+        text="Label",
+        labels={"price_gap_eur_per_m2": "", "city": ""},
+        custom_data=["PriceLabel", "ListingsLabel"],
+    )
+    fig.update_traces(
+        marker_color=colors,
+        marker_line_width=0,
+        textposition="outside",
+        cliponaxis=False,
+        hovertemplate=(
+            "<b>%{y}</b><br>"
+            "%{customdata[0]} EUR/m2<br>"
+            "%{customdata[1]} visible listings<extra></extra>"
+        ),
+    )
+    fig = apply_common_chart_style(fig, height=max(300, 120 + len(plot) * 36))
+    fig.update_layout(margin={"l": 4, "r": 58, "t": 8, "b": 4}, bargap=0.24)
+    fig.update_xaxes(
+        title_text="",
+        showgrid=True,
+        showticklabels=False,
+        ticks="",
+        zeroline=False,
+    )
+    fig.update_yaxes(
+        categoryorder="array",
+        categoryarray=plot["city"].tolist()[::-1],
+        tickangle=0,
+        automargin=True,
+        title_text="",
+    )
+
+    render_section(
+        "Regional value comparison",
+        "Price gap below the visible Chisinau average, using current listings.",
+    )
+    with st.container(border=True):
+        render_chart_title("Largest price gap to Chisinau")
+        render_plotly_chart(fig)
+    st.caption(
+        "Values are listing-weighted city averages, not individual listing prices."
     )
 
 
