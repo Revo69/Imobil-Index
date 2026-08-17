@@ -449,6 +449,9 @@ Read-only Supabase inspection on 2026-07-28 found:
 
 ## Current Work
 
+- Added data-loader regression coverage for public API pagination and the
+  intentional difference between required history errors and the optional
+  profile-history fallback. Local unit tests, compilation, and Ruff pass.
 - The restored Explore panel needs visual verification in the normal browser on
   desktop and phone. A separate mobile layout remains a future design task.
 

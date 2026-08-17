@@ -34,6 +34,7 @@ jobs:
           python -m py_compile app.py dashboard_components.py
           dashboard_charts.py dashboard_data.py dashboard_theme.py
           dashboard_transforms.py tests/test_dashboard_transforms.py
+          tests/test_dashboard_data.py
 
       - name: Run dashboard logic tests
         run: >
