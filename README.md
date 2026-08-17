@@ -119,6 +119,8 @@ Run the deterministic business-logic checks:
 python -m unittest discover -s tests -p "test_*.py" -v
 ```
 
+The same checks run automatically on every pull request and on pushes to `main`.
+
 The smoke-check verifies row availability and freshness for every published
 `api_*` table, including sale profiles, housing type, finish/condition, and floor-position metrics.
 For REST endpoints, table definitions, access rules, and request examples, see

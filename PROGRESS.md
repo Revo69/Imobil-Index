@@ -4,7 +4,7 @@ Simple project progress log for Imobil.Index.
 
 ## Last Updated
 
-2026-08-13
+2026-08-17
 
 ## Current State
 
@@ -25,6 +25,9 @@ Simple project progress log for Imobil.Index.
 - Added the first standard-library regression tests for dashboard transforms:
   listing-weighted prices, profile aggregation, weekly snapshot selection,
   city-level weekly weighting, and occupancy-adjusted daily return.
+- Added a focused GitHub Actions workflow for the dashboard logic:
+  it uses Python 3.13, installs only runtime dependencies, compiles the
+  dashboard modules, and runs the deterministic tests without Supabase secrets.
 - Replaced the weekly comparison's deprecated generic timedelta with an
   explicit seven-day unit, discovered while running the new tests.
 - Restored the proven two-column Explore panel after the native sidebar hid its
