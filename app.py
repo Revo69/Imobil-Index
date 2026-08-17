@@ -69,7 +69,7 @@ from dashboard_transforms import (
 # =========================
 st.set_page_config(
     page_title="Imobil.Index | Moldova Real Estate Analytics",
-    page_icon="house",
+    page_icon=":material/home_work:",
     layout="wide",
     initial_sidebar_state="expanded",
 )
