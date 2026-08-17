@@ -452,25 +452,21 @@ Read-only Supabase inspection on 2026-07-28 found:
 - Added data-loader regression coverage for public API pagination and the
   intentional difference between required history errors and the optional
   profile-history fallback. Local unit tests, compilation, and Ruff pass.
-- The restored Explore panel needs visual verification in the normal browser on
-  desktop and phone. A separate mobile layout remains a future design task.
+- Completed browser QA of the restored Explore panel at desktop and 390px mobile
+  widths. The panel remains visible, controls are reachable, and selected
+  multi-select values now use the dashboard text colour instead of inheriting
+  Streamlit's near-white default.
+- Completed browser QA of the reduced Insights hierarchy: `Decision notes`,
+  `Weekly market brief`, `Regional value comparison`, and a closed
+  `Investment analysis` disclosure render without the previous extra sections.
 
 ## Next Small Steps
 
-1. Verify the restored Explore panel in a normal browser:
+1. After the repaired source pipeline completes, confirm that the dashboard
+   snapshot date and visible supply reflect the refreshed public API data.
 
-- desktop keeps the Explore panel visible on the left;
-- phone preserves all controls without hiding the only way to open them;
-- presets, city filters, For Sale profile filters, buyer budget, minimum
-  listings, occupancy, and chart focus still update the same views.
-
-2. Verify the reduced Insights hierarchy in a normal browser:
-
-- Insights shows Decision notes, Weekly market brief, Regional value comparison,
-  and a closed Investment analysis disclosure without an extra city-weekly
-  section;
-- Daily Rent contains the occupancy-linked break-even and return comparison;
-- `EUR/m2` is visible on sale-price decision cards.
+2. Keep new product ideas in the parking lot until a real user question or a
+   data-quality need justifies a single focused addition.
 
 ## Parking Lot
 
