@@ -424,16 +424,6 @@ __THEME_CSS_VARS__
             border-color: var(--border);
         }
 
-        div[data-baseweb="select"] *,
-        div[data-baseweb="select"] input {
-            color: var(--text) !important;
-            -webkit-text-fill-color: var(--text);
-        }
-
-        div[data-baseweb="select"] svg {
-            fill: var(--text) !important;
-        }
-
         div[data-testid="stMetric"] {
             padding: 0.75rem 0.8rem;
             border: 1px solid var(--border);

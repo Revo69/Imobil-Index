@@ -459,6 +459,10 @@ Read-only Supabase inspection on 2026-07-28 found:
 - Completed browser QA of the reduced Insights hierarchy: `Decision notes`,
   `Weekly market brief`, `Regional value comparison`, and a closed
   `Investment analysis` disclosure render without the previous extra sections.
+- Added the native Streamlit light theme in `.streamlit/config.toml` using the
+  existing dashboard palette. Selected multi-select tags now use the product
+  green rather than Streamlit's default red, so a city selection does not look
+  like an error state.
 
 ## Next Small Steps
 
