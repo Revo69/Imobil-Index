@@ -463,11 +463,16 @@ Read-only Supabase inspection on 2026-07-28 found:
   existing dashboard palette. Selected multi-select tags now use the product
   green rather than Streamlit's default red, so a city selection does not look
   like an error state.
+- Ran the read-only public API health check after the parser recovery on
+  2026-08-17. All ten `api_*` tables were non-empty and current to 2026-08-17;
+  the dashboard also rendered the same snapshot date from its public data.
 
 ## Next Small Steps
 
-1. After the repaired source pipeline completes, confirm that the dashboard
-   snapshot date and visible supply reflect the refreshed public API data.
+1. In the pipeline repository, add a focused parser-quality gate that fails a
+   run when an abnormal share of `status = success` estate records has no core
+   parsed fields. This prevents a source-page change from silently reaching
+   Gold and the public API again.
 
 2. Keep new product ideas in the parking lot until a real user question or a
    data-quality need justifies a single focused addition.
