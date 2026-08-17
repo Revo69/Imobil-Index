@@ -466,6 +466,10 @@ Read-only Supabase inspection on 2026-07-28 found:
 - Ran the read-only public API health check after the parser recovery on
   2026-08-17. All ten `api_*` tables were non-empty and current to 2026-08-17;
   the dashboard also rendered the same snapshot date from its public data.
+- Ran a focused control-state QA after applying the native Streamlit theme:
+  selected filters and active tabs use the product green rather than the
+  default red, and the Explore controls, tabs, and current-market section stay
+  reachable at a 390px mobile width. No behaviour change was needed.
 
 ## Next Small Steps
 
