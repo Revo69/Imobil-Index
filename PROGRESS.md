@@ -22,6 +22,11 @@ Simple project progress log for Imobil.Index.
 
 ## Recently Done
 
+- Added the first standard-library regression tests for dashboard transforms:
+  listing-weighted prices, profile aggregation, weekly snapshot selection,
+  city-level weekly weighting, and occupancy-adjusted daily return.
+- Replaced the weekly comparison's deprecated generic timedelta with an
+  explicit seven-day unit, discovered while running the new tests.
 - Moved the Explore filters into Streamlit's native sidebar:
   - desktop users keep the same left-side controls, presets, and filter state;
   - smaller screens start with the controls collapsed, so the dashboard tabs

@@ -286,7 +286,9 @@ def build_weekly_price_movement(
         .copy()
     )
     latest_date = history["date"].max()
-    baseline_candidates = history[history["date"] <= latest_date - pd.Timedelta(days=7)]
+    baseline_candidates = history[
+        history["date"] <= latest_date - pd.Timedelta(7, unit="D")
+    ]
     if baseline_candidates.empty:
         return pd.DataFrame()
     baseline_date = baseline_candidates["date"].max()

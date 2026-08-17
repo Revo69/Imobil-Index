@@ -114,6 +114,12 @@ Check the public API connection without starting Streamlit:
 python scripts/check_api_health.py
 ```
 
+Run the deterministic business-logic checks:
+
+```bash
+python -m unittest discover -s tests -p "test_*.py" -v
+```
+
 The smoke-check verifies row availability and freshness for every published
 `api_*` table, including sale profiles, housing type, finish/condition, and floor-position metrics.
 For REST endpoints, table definitions, access rules, and request examples, see
