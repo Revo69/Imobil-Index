@@ -71,7 +71,7 @@ st.set_page_config(
     page_title="Imobil.Index | Moldova Real Estate Analytics",
     page_icon="house",
     layout="wide",
-    initial_sidebar_state="auto",
+    initial_sidebar_state="expanded",
 )
 
 MONTHLY_RENT_DEAL = (
@@ -2150,9 +2150,9 @@ latest_snapshot = (
 )
 render_app_header(latest_snapshot)
 
-filter_panel = st.sidebar.container(border=True)
+filter_col, main_col = st.columns([1.25, 4.45], gap="large")
 
-with filter_panel:
+with filter_col, st.container(border=True):
     st.markdown(
         """
         <h3 class="panel-title">Explore market</h3>
@@ -2263,7 +2263,7 @@ with filter_panel:
     st.metric("Cities in view", f"{selected_count}/{len(all_cities)}")
     st.caption("Use presets for fast exploration or filters for a specific view.")
 
-with st.container():
+with main_col:
     tab_sale, tab_rent_monthly, tab_rent_daily, tab_insights = st.tabs(
         ["For Sale", "Monthly Rent", "Daily Rent", "Insights"]
     )

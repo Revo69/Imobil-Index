@@ -27,11 +27,9 @@ Simple project progress log for Imobil.Index.
   city-level weekly weighting, and occupancy-adjusted daily return.
 - Replaced the weekly comparison's deprecated generic timedelta with an
   explicit seven-day unit, discovered while running the new tests.
-- Moved the Explore filters into Streamlit's native sidebar:
-  - desktop users keep the same left-side controls, presets, and filter state;
-  - smaller screens start with the controls collapsed, so the dashboard tabs
-    and results are reachable without scrolling through the full filter form;
-  - no filter keys, calculations, or public data contracts changed.
+- Restored the proven two-column Explore panel after the native sidebar hid its
+  opening control together with Streamlit's hidden header. No filter keys,
+  calculations, or public data contracts changed.
 - Reduced the default Insights view after a UX audit:
   - city and sector weekly signals are now one `Weekly market brief`, with a
     city-level view when at least three comparable cities exist and a clear
@@ -448,17 +446,15 @@ Read-only Supabase inspection on 2026-07-28 found:
 
 ## Current Work
 
-- The native sidebar layout needs visual verification in the normal browser on
-  desktop and phone.
+- The restored Explore panel needs visual verification in the normal browser on
+  desktop and phone. A separate mobile layout remains a future design task.
 
 ## Next Small Steps
 
-1. Verify the native filter sidebar in a normal browser:
+1. Verify the restored Explore panel in a normal browser:
 
-- desktop keeps the Explore panel visible on the left and the main area uses
-  the released horizontal space;
-- phone starts with the filter panel collapsed and opens it from the native
-  menu without losing current selections;
+- desktop keeps the Explore panel visible on the left;
+- phone preserves all controls without hiding the only way to open them;
 - presets, city filters, For Sale profile filters, buyer budget, minimum
   listings, occupancy, and chart focus still update the same views.
 
