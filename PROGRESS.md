@@ -22,6 +22,11 @@ Simple project progress log for Imobil.Index.
 
 ## Recently Done
 
+- Moved the Explore filters into Streamlit's native sidebar:
+  - desktop users keep the same left-side controls, presets, and filter state;
+  - smaller screens start with the controls collapsed, so the dashboard tabs
+    and results are reachable without scrolling through the full filter form;
+  - no filter keys, calculations, or public data contracts changed.
 - Reduced the default Insights view after a UX audit:
   - city and sector weekly signals are now one `Weekly market brief`, with a
     city-level view when at least three comparable cities exist and a clear
@@ -438,28 +443,27 @@ Read-only Supabase inspection on 2026-07-28 found:
 
 ## Current Work
 
-- The compact Insights layout needs visual verification in the normal browser:
-  check the default all-cities view, a restricted city selection, and a higher
-  minimum-listings threshold.
-- The next separate UX task is a mobile treatment for the filter panel. It is
-  intentionally deferred from this reduction pass because it affects every tab
-  and requires preserving the existing filters.
+- The native sidebar layout needs visual verification in the normal browser on
+  desktop and phone.
 
 ## Next Small Steps
 
-1. Verify the reduced information hierarchy in a normal browser:
+1. Verify the native filter sidebar in a normal browser:
+
+- desktop keeps the Explore panel visible on the left and the main area uses
+  the released horizontal space;
+- phone starts with the filter panel collapsed and opens it from the native
+  menu without losing current selections;
+- presets, city filters, For Sale profile filters, buyer budget, minimum
+  listings, occupancy, and chart focus still update the same views.
+
+2. Verify the reduced Insights hierarchy in a normal browser:
 
 - Insights shows Decision notes, Weekly market brief, Regional value comparison,
   and a closed Investment analysis disclosure without an extra city-weekly
   section;
 - Daily Rent contains the occupancy-linked break-even and return comparison;
 - `EUR/m2` is visible on sale-price decision cards.
-
-2. Design and implement a separate mobile filter-panel treatment:
-
-- preserve all global and For Sale filters;
-- reduce the amount of form content shown before the tabs on a phone;
-- verify both desktop and mobile after the layout change.
 
 ## Parking Lot
 

@@ -42,6 +42,7 @@ private; the dashboard and public users read only the aggregated API layer.
 - **Regional value comparison** — shows cities outside Chisinau with the largest listing-weighted price gap to the current Chisinau average
 - **Investment shortlist** — compares visible markets by indicative monthly and daily gross yield, average sale price, and available sale/rent supply
 - **Daily rent assumption** — re-scales the published 60% daily-rent model in Daily Rent, showing sector-level gross return, break-even occupancy, and the daily-versus-monthly difference
+- **Responsive filters** — the same Explore controls stay visible in the left panel on desktop and collapse into the native Streamlit menu on smaller screens
 - **Public API by design** — the `api_*` tables contain aggregated metrics only, use RLS, and allow anonymous read access without public writes; see the [Public API v1 contract](docs/public_api_v1.md)
 - **Hourly caching** (`st.cache_data(ttl=3600)`) to keep the app responsive without hammering the database
 - **Clear data-connection state** — public users see a calm recovery message instead of a raw exception when the API is temporarily unavailable
