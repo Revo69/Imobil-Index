@@ -2297,18 +2297,6 @@ with main_col:
             render_market_highlights(df, price_col, price_decimals=0)
             render_budget_guide(df, buyer_budget)
             render_city_comparison(df)
-            housing_type_data = filter_by_city_and_listings(
-                df_sale_housing_types, selected_cities, min_listings
-            )
-            render_housing_type_comparison(housing_type_data)
-            condition_data = filter_by_city_and_listings(
-                df_sale_conditions, selected_cities, min_listings
-            )
-            render_condition_comparison(condition_data)
-            floor_position_data = filter_by_city_and_listings(
-                df_sale_floor_positions, selected_cities, min_listings
-            )
-            render_floor_position_comparison(floor_position_data)
             if market_lens == "Listings":
                 render_listing_sections(df, SALE_COLOR_SCALE)
             else:
@@ -2320,9 +2308,25 @@ with main_col:
                     HIGH_PRICE_COLOR_SCALE,
                     0,
                 )
-            render_sale_segments(
-                sale_segments, selected_sale_rooms, selected_sale_area_bands
-            )
+            with st.expander("Property characteristics", icon=":material/home:"):
+                st.caption(
+                    "Compare housing type, finish, floor position, room count, and area."
+                )
+                housing_type_data = filter_by_city_and_listings(
+                    df_sale_housing_types, selected_cities, min_listings
+                )
+                render_housing_type_comparison(housing_type_data)
+                condition_data = filter_by_city_and_listings(
+                    df_sale_conditions, selected_cities, min_listings
+                )
+                render_condition_comparison(condition_data)
+                floor_position_data = filter_by_city_and_listings(
+                    df_sale_floor_positions, selected_cities, min_listings
+                )
+                render_floor_position_comparison(floor_position_data)
+                render_sale_segments(
+                    sale_segments, selected_sale_rooms, selected_sale_area_bands
+                )
             if sale_profile_active:
                 render_profile_sales_trend(
                     df_hist_sale_segments,

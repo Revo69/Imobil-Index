@@ -470,13 +470,15 @@ Read-only Supabase inspection on 2026-07-28 found:
   selected filters and active tabs use the product green rather than the
   default red, and the Explore controls, tabs, and current-market section stay
   reachable at a 390px mobile width. No behaviour change was needed.
+- Reduced the initial density of the For Sale tab without removing analytics:
+  `New build vs resale`, `Finish & condition`, `Floor position`, and `Prices by
+  home profile` now live in one closed `Property characteristics` disclosure
+  after the main market and ranking views.
 
 ## Next Small Steps
 
-1. In the pipeline repository, add a focused parser-quality gate that fails a
-   run when an abnormal share of `status = success` estate records has no core
-   parsed fields. This prevents a source-page change from silently reaching
-   Gold and the public API again.
+1. Parser-quality gate work in the pipeline repository is deferred at the
+   user's request. Resume it before the next source-parser change.
 
 2. Keep new product ideas in the parking lot until a real user question or a
    data-quality need justifies a single focused addition.
