@@ -1741,8 +1741,8 @@ def render_yield_chart(
 
 def render_sales_trend(hist: pd.DataFrame, selected_cities: list[str]) -> None:
     render_section(
-        "90-day price movement",
-        "Most active Chisinau sectors, shown as comparable price paths.",
+        "Chisinau price pulse",
+        "90-day price paths in the most active Chisinau sectors.",
     )
     if hist.empty:
         render_empty_state("Historical sale data is not available.")
@@ -2285,18 +2285,29 @@ with main_col:
             df = filter_by_city_and_listings(df_sales, selected_cities, min_listings)
         sale_segments = filter_segments_to_market(profile_sale_segments, df)
 
-        if render_tab_header(
-            df,
-            price_col,
-            "No sale listings match the current filters.",
-            price_decimals=0,
-            context_note=sale_profile_context_note(
-                selected_sale_rooms, selected_sale_area_bands
-            ),
-        ):
+        if df.empty:
+            render_empty_state("No sale listings match the current filters.")
+        else:
+            if sale_profile_active:
+                render_profile_sales_trend(
+                    df_hist_sale_segments,
+                    selected_cities,
+                    selected_sale_rooms,
+                    selected_sale_area_bands,
+                    min_listings,
+                )
+            else:
+                render_sales_trend(df_hist_sales, selected_cities)
+            render_tab_header(
+                df,
+                price_col,
+                "No sale listings match the current filters.",
+                price_decimals=0,
+                context_note=sale_profile_context_note(
+                    selected_sale_rooms, selected_sale_area_bands
+                ),
+            )
             render_market_highlights(df, price_col, price_decimals=0)
-            render_budget_guide(df, buyer_budget)
-            render_city_comparison(df)
             if market_lens == "Listings":
                 render_listing_sections(df, SALE_COLOR_SCALE)
             else:
@@ -2308,6 +2319,8 @@ with main_col:
                     HIGH_PRICE_COLOR_SCALE,
                     0,
                 )
+            render_budget_guide(df, buyer_budget)
+            render_city_comparison(df)
             with st.expander("Property characteristics", icon=":material/home:"):
                 st.caption(
                     "Compare housing type, finish, floor position, room count, and area."
@@ -2327,16 +2340,6 @@ with main_col:
                 render_sale_segments(
                     sale_segments, selected_sale_rooms, selected_sale_area_bands
                 )
-            if sale_profile_active:
-                render_profile_sales_trend(
-                    df_hist_sale_segments,
-                    selected_cities,
-                    selected_sale_rooms,
-                    selected_sale_area_bands,
-                    min_listings,
-                )
-            else:
-                render_sales_trend(df_hist_sales, selected_cities)
             render_sector_table(
                 df,
                 ["city", "sector", "listings", "avg_per_m2_eur", "avg_price_eur"],

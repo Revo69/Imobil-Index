@@ -4,7 +4,7 @@ Simple project progress log for Imobil.Index.
 
 ## Last Updated
 
-2026-08-17
+2026-08-19
 
 ## Current State
 
@@ -474,6 +474,14 @@ Read-only Supabase inspection on 2026-07-28 found:
   `New build vs resale`, `Finish & condition`, `Floor position`, and `Prices by
   home profile` now live in one closed `Property characteristics` disclosure
   after the main market and ranking views.
+- Reframed the For Sale tab so the existing `Chisinau price pulse` is the
+  primary visual story after tab navigation; when a room or area profile is
+  active, its matching profile trend appears in that position instead.
+- Kept the same filters, public data, and calculations. The current-market
+  summary, rankings, budget guide, city comparison, property characteristics,
+  and sector table now follow as progressively more detailed analysis.
+- Added a regression test for this order. Compilation, Ruff, and all 11 unit
+  tests pass; the local Streamlit preview responds at `http://127.0.0.1:8503`.
 
 ## Next Small Steps
 
