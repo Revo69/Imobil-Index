@@ -23,6 +23,7 @@ from dashboard_components import (
     render_insight_card_row,
     render_insight_cards,
     render_kpi_card,
+    render_market_signal_rail,
     render_section,
 )
 from dashboard_data import (
@@ -2400,16 +2401,44 @@ with main_col:
         if df.empty:
             render_empty_state("No sale listings match the current filters.")
         else:
-            if sale_profile_active:
-                render_profile_sales_trend(
-                    df_hist_sale_segments,
-                    selected_cities,
-                    selected_sale_rooms,
-                    selected_sale_area_bands,
-                    min_listings,
-                )
-            else:
-                render_sales_trend(df_hist_sales, selected_cities)
+            most_active = df.loc[df["listings"].idxmax()]
+            signal_title = (
+                "Chișinău signals"
+                if selected_cities == [CHISINAU_CITY]
+                else "Market signals"
+            )
+            signal_cards = [
+                (
+                    "Weighted price per m2",
+                    format_price(weighted_average(df, price_col), suffix="/m2"),
+                    "Listing-weighted current market.",
+                ),
+                (
+                    "Visible supply",
+                    format_int(df["listings"].sum()),
+                    f"Across {format_int(len(df))} city-sector groups.",
+                ),
+                (
+                    "Most active sector",
+                    place_label(most_active),
+                    f"{format_int(most_active['listings'])} listings.",
+                ),
+            ]
+
+            trend_col, signal_col = st.columns([1.65, 1], gap="large")
+            with trend_col:
+                if sale_profile_active:
+                    render_profile_sales_trend(
+                        df_hist_sale_segments,
+                        selected_cities,
+                        selected_sale_rooms,
+                        selected_sale_area_bands,
+                        min_listings,
+                    )
+                else:
+                    render_sales_trend(df_hist_sales, selected_cities)
+            with signal_col:
+                render_market_signal_rail(signal_title, signal_cards)
             render_tab_header(
                 df,
                 price_col,
