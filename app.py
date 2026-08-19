@@ -993,26 +993,20 @@ def render_market_highlights(
     highest = df.loc[df[price_col].idxmax()]
     spread = highest[price_col] - lowest[price_col]
 
-    render_section("Key signals", "Quick read of the current filtered market.")
+    render_section("Market pulse", "Three quick signals from the current market.")
     col1, col2, col3 = st.columns(3)
     with col1:
-        render_kpi_card(
-            "Most Active Sector",
-            format_int(most_listings["listings"]),
-            place_label(most_listings),
-        )
+        st.metric("Most active sector", format_int(most_listings["listings"]))
+        st.caption(place_label(most_listings))
     with col2:
-        render_kpi_card(
-            "Price Range",
-            format_price(spread, price_decimals, price_suffix),
-            f"{place_label(lowest)} to {place_label(highest)}",
-        )
+        st.metric("Price range", format_price(spread, price_decimals, price_suffix))
+        st.caption(f"{place_label(lowest)} to {place_label(highest)}")
     with col3:
-        render_kpi_card(
-            "Median Sector Price",
+        st.metric(
+            "Median sector price",
             format_price(df[price_col].median(), price_decimals, price_suffix),
-            "Median across visible sectors",
         )
+        st.caption("Median across visible sectors")
 
 
 def render_decision_notes(

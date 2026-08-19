@@ -18,6 +18,13 @@ def daily_rent_tab_source() -> str:
     return source[start:end]
 
 
+def market_highlights_source() -> str:
+    source = APP_PATH.read_text(encoding="utf-8")
+    start = source.index("def render_market_highlights(")
+    end = source.index("def render_decision_notes(", start)
+    return source[start:end]
+
+
 class SaleTabLayoutTests(unittest.TestCase):
     def test_sale_trends_precede_market_overview(self) -> None:
         source = sale_tab_source()
@@ -52,6 +59,15 @@ class DailyRentTabLayoutTests(unittest.TestCase):
         self.assertLess(
             disclosure_position, source.index("render_daily_vs_monthly_return")
         )
+
+
+class MarketPulseLayoutTests(unittest.TestCase):
+    def test_market_pulse_uses_compact_metrics_instead_of_kpi_cards(self) -> None:
+        source = market_highlights_source()
+
+        self.assertIn('render_section("Market pulse"', source)
+        self.assertNotIn("render_kpi_card(", source)
+        self.assertEqual(source.count("st.metric("), 3)
 
 
 if __name__ == "__main__":

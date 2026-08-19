@@ -488,6 +488,10 @@ Read-only Supabase inspection on 2026-07-28 found:
   - daily-versus-monthly context, break-even analysis, and return comparison
     now live in one closed `Return scenarios` disclosure;
   - added regression coverage for the yield and disclosure order.
+- Replaced the repeated three-card `Key signals` block across the main tabs
+  with a compact `Market pulse` row using the same active-sector, price-range,
+  and median-price values. It reduces card density without removing market
+  context or changing calculations.
 
 ## Next Small Steps
 
