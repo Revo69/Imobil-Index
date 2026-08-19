@@ -8,9 +8,11 @@ import streamlit as st
 
 from dashboard_charts import (
     apply_common_chart_style,
+    apply_sale_hero_chart_style,
     render_listing_sections,
     render_plotly_chart,
     render_price_sections,
+    render_sale_hero_chart,
 )
 from dashboard_components import (
     format_int,
@@ -348,6 +350,14 @@ __THEME_CSS_VARS__
             color: var(--sale-hero-muted);
             font-size: 0.94rem;
             line-height: 1.5;
+        }
+
+        .st-key-sale-trend-hero,
+        .st-key-sale-trend-hero div[data-testid="stVerticalBlockBorderWrapper"] {
+            border-color: var(--sale-hero-surface);
+            border-radius: 8px;
+            background: var(--sale-hero-bg);
+            box-shadow: var(--shadow);
         }
 
         .sale-signal-rail {
@@ -1929,31 +1939,15 @@ def render_sales_trend(hist: pd.DataFrame, selected_cities: list[str]) -> None:
             marker={"size": 6, "color": color_map.get(sector, THEME["muted"])},
             text=[f"{sector} {format_number(row['avg_per_m2_eur'])}"],
             textposition="middle right",
-            textfont={"size": 12, "color": THEME["chart_label"]},
+            textfont={"size": 12, "color": THEME["sale_hero_text"]},
             hoverinfo="skip",
             showlegend=False,
             cliponaxis=False,
         )
 
-    fig = apply_common_chart_style(fig, height=500, show_legend=False)
-    fig.update_layout(
-        hovermode="x unified",
-        margin={"l": 16, "r": 150, "t": 10, "b": 18},
-    )
-    fig.update_xaxes(
-        title_text="",
-        tickangle=0,
-        showgrid=False,
-        tickformat="%d %b",
-    )
-    fig.update_yaxes(
-        title_text="EUR per m2",
-        gridcolor=THEME["border"],
-        zeroline=False,
-    )
-
-    with st.container(border=True):
-        render_plotly_chart(fig)
+    fig = apply_sale_hero_chart_style(fig, height=500)
+    fig.update_layout(hovermode="x unified")
+    render_sale_hero_chart(fig)
 
 
 def selected_trend_city(selected_cities: Iterable[str]) -> str:
@@ -2071,31 +2065,15 @@ def render_profile_sales_trend(
             marker={"size": 6, "color": color_map.get(sector, THEME["muted"])},
             text=[f"{sector} {format_number(row['avg_per_m2_eur'])}"],
             textposition="middle right",
-            textfont={"size": 12, "color": THEME["chart_label"]},
+            textfont={"size": 12, "color": THEME["sale_hero_text"]},
             hoverinfo="skip",
             showlegend=False,
             cliponaxis=False,
         )
 
-    fig = apply_common_chart_style(fig, height=500, show_legend=False)
-    fig.update_layout(
-        hovermode="x unified",
-        margin={"l": 16, "r": 150, "t": 10, "b": 18},
-    )
-    fig.update_xaxes(
-        title_text="",
-        tickangle=0,
-        showgrid=False,
-        tickformat="%d %b",
-    )
-    fig.update_yaxes(
-        title_text="EUR per m2",
-        gridcolor=THEME["border"],
-        zeroline=False,
-    )
-
-    with st.container(border=True):
-        render_plotly_chart(fig)
+    fig = apply_sale_hero_chart_style(fig, height=500)
+    fig.update_layout(hovermode="x unified")
+    render_sale_hero_chart(fig)
 
 
 def render_sector_table(

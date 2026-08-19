@@ -2,6 +2,7 @@ import unittest
 from pathlib import Path
 
 APP_PATH = Path(__file__).resolve().parents[1] / "app.py"
+CHARTS_PATH = Path(__file__).resolve().parents[1] / "dashboard_charts.py"
 
 
 def sale_tab_source() -> str:
@@ -25,6 +26,20 @@ def market_highlights_source() -> str:
     return source[start:end]
 
 
+def app_function_source(name: str, next_name: str) -> str:
+    source = APP_PATH.read_text(encoding="utf-8")
+    start = source.index(f"def {name}(")
+    end = source.index(f"def {next_name}(", start)
+    return source[start:end]
+
+
+def chart_function_source(name: str, next_name: str) -> str:
+    source = CHARTS_PATH.read_text(encoding="utf-8")
+    start = source.index(f"def {name}(")
+    end = source.index(f"def {next_name}(", start)
+    return source[start:end]
+
+
 def insights_tab_source() -> str:
     source = APP_PATH.read_text(encoding="utf-8")
     start = source.index("    with tab_insights:")
@@ -42,6 +57,29 @@ class SaleTabLayoutTests(unittest.TestCase):
         self.assertLess(source.index("render_profile_sales_trend"), header_position)
         self.assertLess(source.index("render_sales_trend"), overview_position)
         self.assertLess(source.index("render_profile_sales_trend"), overview_position)
+
+
+class SaleHeroChartContractTests(unittest.TestCase):
+    def test_sale_trend_paths_use_the_scoped_hero_chart_treatment(self) -> None:
+        sales_trend = app_function_source("render_sales_trend", "selected_trend_city")
+        profile_trend = app_function_source(
+            "render_profile_sales_trend", "render_sector_table"
+        )
+        charts_source = CHARTS_PATH.read_text(encoding="utf-8")
+
+        self.assertIn("def apply_sale_hero_chart_style(", charts_source)
+        self.assertIn("def render_sale_hero_chart(", charts_source)
+        self.assertIn('key="sale-trend-hero"', charts_source)
+        for trend_source in (sales_trend, profile_trend):
+            self.assertIn("apply_sale_hero_chart_style(", trend_source)
+            self.assertIn("render_sale_hero_chart(", trend_source)
+            self.assertIn('THEME["sale_hero_text"]', trend_source)
+
+    def test_generic_rankings_keep_the_common_chart_style(self) -> None:
+        ranked_bars = chart_function_source("render_ranked_bars", "render_price_sections")
+
+        self.assertIn("apply_common_chart_style(", ranked_bars)
+        self.assertNotIn("apply_sale_hero_chart_style(", ranked_bars)
 
 
 class DailyRentTabLayoutTests(unittest.TestCase):
