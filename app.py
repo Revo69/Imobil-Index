@@ -260,7 +260,7 @@ __THEME_CSS_VARS__
         }
 
         .section {
-            padding: 1rem 0 0.3rem;
+            padding: var(--section-space) 0 var(--section-space-compact);
         }
 
         .section-title {
@@ -311,6 +311,108 @@ __THEME_CSS_VARS__
             color: var(--muted);
             font-size: 0.86rem;
             line-height: 1.35;
+        }
+
+        /* For Sale presentation contract. Task 3 supplies the matching markup. */
+        .sale-hero {
+            box-sizing: border-box;
+            margin: 0 0 1rem;
+            padding: 1.15rem 1.2rem;
+            border: 1px solid var(--sale-hero-surface);
+            border-radius: 8px;
+            background: var(--sale-hero-bg);
+            box-shadow: var(--shadow);
+            color: var(--sale-hero-text);
+        }
+
+        .sale-hero-eyebrow {
+            color: var(--sale-hero-muted);
+            font-size: 0.72rem;
+            font-weight: 760;
+            letter-spacing: 0.08em;
+            text-transform: uppercase;
+        }
+
+        .sale-hero-title {
+            margin: 0.35rem 0 0;
+            color: var(--sale-hero-text);
+            font-size: clamp(1.55rem, 2.6vw, 2.2rem);
+            line-height: 1.12;
+            font-weight: 780;
+        }
+
+        .sale-hero-copy {
+            max-width: 740px;
+            margin: 0.5rem 0 0;
+            color: var(--sale-hero-muted);
+            font-size: 0.94rem;
+            line-height: 1.5;
+        }
+
+        .sale-signal-rail {
+            display: grid;
+            grid-template-columns: repeat(3, minmax(0, 1fr));
+            gap: 0.65rem;
+            margin: 0 0 1rem;
+            padding: 0.65rem;
+            border: 1px solid var(--sale-signal-border);
+            border-radius: 8px;
+            background: var(--sale-signal-bg);
+        }
+
+        .sale-signal {
+            min-width: 0;
+            padding: 0.75rem 0.8rem;
+            border-left: 3px solid var(--green);
+            border-radius: 5px;
+            background: var(--surface);
+        }
+
+        .sale-signal-label,
+        .sale-metric-label {
+            color: var(--muted);
+            font-size: 0.7rem;
+            font-weight: 760;
+            letter-spacing: 0.04em;
+            text-transform: uppercase;
+        }
+
+        .sale-signal-value,
+        .sale-metric-value {
+            margin-top: 0.3rem;
+            color: var(--text);
+            font-size: clamp(1.05rem, 1.7vw, 1.32rem);
+            line-height: 1.16;
+            font-weight: 780;
+            overflow-wrap: anywhere;
+        }
+
+        .sale-signal-note,
+        .sale-metric-note {
+            margin-top: 0.32rem;
+            color: var(--muted);
+            font-size: 0.82rem;
+            line-height: 1.35;
+            overflow-wrap: anywhere;
+        }
+
+        .sale-metric-grid {
+            display: grid;
+            grid-template-columns: repeat(3, minmax(0, 1fr));
+            gap: 0.65rem;
+            margin: 0 0 0.85rem;
+        }
+
+        .sale-metric-cell {
+            min-width: 0;
+            padding: 0.8rem 0.85rem;
+            border: 1px solid var(--border);
+            border-radius: 8px;
+            background: var(--surface);
+        }
+
+        .sale-section {
+            padding: var(--section-space) 0 var(--section-space-compact);
         }
 
         div[data-testid="stVerticalBlockBorderWrapper"] {
@@ -465,7 +567,7 @@ __THEME_CSS_VARS__
 
             div[data-testid="stHorizontalBlock"] {
                 flex-direction: column;
-                gap: 0.75rem;
+                gap: var(--mobile-stack-gap);
             }
 
             div[data-testid="stHorizontalBlock"] > div {
@@ -518,6 +620,21 @@ __THEME_CSS_VARS__
 
             .section {
                 padding-top: 0.7rem;
+            }
+
+            .sale-hero {
+                padding: 0.95rem;
+            }
+
+            .sale-signal-rail,
+            .sale-metric-grid {
+                grid-template-columns: 1fr;
+                gap: var(--mobile-stack-gap);
+            }
+
+            .sale-signal,
+            .sale-metric-cell {
+                padding: 0.8rem 0.85rem;
             }
 
             .kpi-card {

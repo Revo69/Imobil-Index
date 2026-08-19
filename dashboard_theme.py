@@ -15,6 +15,15 @@ THEME = {
     "chart_label": "#31443b",
     "shadow": "0 10px 26px rgba(18, 48, 38, 0.08)",
     "shadow_card": "0 6px 18px rgba(18, 48, 38, 0.055)",
+    "sale_hero_bg": "#123026",
+    "sale_hero_surface": "#1b4134",
+    "sale_hero_text": "#ffffff",
+    "sale_hero_muted": "#c9d9d2",
+    "sale_signal_bg": "#edf4f0",
+    "sale_signal_border": "#c9d9d2",
+    "section_space": "1rem",
+    "section_space_compact": "0.3rem",
+    "mobile_stack_gap": "0.75rem",
 }
 
 CSS_VARIABLES = {
@@ -32,6 +41,15 @@ CSS_VARIABLES = {
     "cyan": THEME["cyan"],
     "shadow": THEME["shadow"],
     "shadow-card": THEME["shadow_card"],
+    "sale-hero-bg": THEME["sale_hero_bg"],
+    "sale-hero-surface": THEME["sale_hero_surface"],
+    "sale-hero-text": THEME["sale_hero_text"],
+    "sale-hero-muted": THEME["sale_hero_muted"],
+    "sale-signal-bg": THEME["sale_signal_bg"],
+    "sale-signal-border": THEME["sale_signal_border"],
+    "section-space": THEME["section_space"],
+    "section-space-compact": THEME["section_space_compact"],
+    "mobile-stack-gap": THEME["mobile_stack_gap"],
 }
 
 SALE_COLOR_SCALE = ["#e5edff", "#9db7f4", "#315fc9", "#1e3f8f"]
