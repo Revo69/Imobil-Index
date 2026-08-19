@@ -2252,6 +2252,7 @@ with filter_col, st.container(border=True):
         horizontal=True,
         key="market_lens",
     )
+    st.caption("Applies to the main rankings in every tab.")
 
     selected_count = len(selected_cities) if selected_cities else len(all_cities)
     st.metric("Cities in view", f"{selected_count}/{len(all_cities)}")
