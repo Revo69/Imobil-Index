@@ -2450,8 +2450,8 @@ with main_col:
                 "No insight-ready market signals match the current filters."
             )
         else:
-            render_decision_notes(sale_df, "avg_per_m2_eur", price_decimals=0)
             render_weekly_market_brief(df_hist_sales, sale_df)
+            render_decision_notes(sale_df, "avg_per_m2_eur", price_decimals=0)
             render_outside_chisinau_radar(sale_df)
             if not yield_df.empty:
                 with st.expander("Investment analysis"):

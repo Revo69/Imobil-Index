@@ -25,6 +25,13 @@ def market_highlights_source() -> str:
     return source[start:end]
 
 
+def insights_tab_source() -> str:
+    source = APP_PATH.read_text(encoding="utf-8")
+    start = source.index("    with tab_insights:")
+    end = source.index("# =========================\n# Footer", start)
+    return source[start:end]
+
+
 class SaleTabLayoutTests(unittest.TestCase):
     def test_sale_trends_precede_market_overview(self) -> None:
         source = sale_tab_source()
@@ -68,6 +75,16 @@ class MarketPulseLayoutTests(unittest.TestCase):
         self.assertIn('render_section("Market pulse"', source)
         self.assertNotIn("render_kpi_card(", source)
         self.assertEqual(source.count("st.metric("), 3)
+
+
+class InsightsTabLayoutTests(unittest.TestCase):
+    def test_weekly_brief_precedes_decision_notes(self) -> None:
+        source = insights_tab_source()
+
+        self.assertLess(
+            source.index("render_weekly_market_brief"),
+            source.index("render_decision_notes"),
+        )
 
 
 if __name__ == "__main__":

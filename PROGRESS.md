@@ -492,6 +492,9 @@ Read-only Supabase inspection on 2026-07-28 found:
   with a compact `Market pulse` row using the same active-sector, price-range,
   and median-price values. It reduces card density without removing market
   context or changing calculations.
+- Reordered the Insights entry point so `Weekly market brief` appears before
+  the static `Decision notes`; when history is insufficient, the existing
+  decision notes remain the first visible useful block.
 
 ## Next Small Steps
 
