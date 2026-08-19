@@ -56,6 +56,18 @@ class ReferenceDesignSourceContractTests(unittest.TestCase):
         self.assertIn('"Chișinău signals"', source)
         self.assertIn('"Market signals"', source)
 
+    def test_empty_for_sale_market_renders_signal_rail_fallback(self) -> None:
+        source = sale_tab_source(app_source())
+        empty_branch_start = source.index("        if df.empty:")
+        empty_branch_end = source.index("        else:", empty_branch_start)
+        empty_branch = source[empty_branch_start:empty_branch_end]
+
+        self.assertIn("render_market_signal_rail(", empty_branch)
+        self.assertRegex(
+            empty_branch,
+            r"render_market_signal_rail\(\s*signal_title,\s*\[\]\s*\)",
+        )
+
     def test_signal_rail_owns_no_snapshot_or_fake_reference_metrics(self) -> None:
         source = components_source()
         rail_match = re.search(

@@ -2397,16 +2397,17 @@ with main_col:
         else:
             df = filter_by_city_and_listings(df_sales, selected_cities, min_listings)
         sale_segments = filter_segments_to_market(profile_sale_segments, df)
+        signal_title = (
+            "Chișinău signals"
+            if selected_cities == [CHISINAU_CITY]
+            else "Market signals"
+        )
 
         if df.empty:
+            render_market_signal_rail(signal_title, [])
             render_empty_state("No sale listings match the current filters.")
         else:
             most_active = df.loc[df["listings"].idxmax()]
-            signal_title = (
-                "Chișinău signals"
-                if selected_cities == [CHISINAU_CITY]
-                else "Market signals"
-            )
             signal_cards = [
                 (
                     "Weighted price per m2",
