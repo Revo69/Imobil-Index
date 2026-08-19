@@ -449,6 +449,10 @@ Read-only Supabase inspection on 2026-07-28 found:
 
 ## Current Work
 
+- Clarified `Chart focus` with a scope caption. Local browser QA confirmed that
+  `Listings` switches the main rankings in For Sale, Monthly Rent, and Daily
+  Rent, while the caption remains readable at 390px mobile width. No filters,
+  public data, or calculations changed.
 - Added data-loader regression coverage for public API pagination and the
   intentional difference between required history errors and the optional
   profile-history fallback. Local unit tests, compilation, and Ruff pass.
