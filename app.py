@@ -7,6 +7,7 @@ import plotly.express as px
 import streamlit as st
 
 from dashboard_charts import (
+    SALE_HERO_TRACE_COLORS,
     apply_common_chart_style,
     apply_sale_hero_chart_style,
     render_listing_sections,
@@ -1110,30 +1111,50 @@ def render_budget_guide(df: pd.DataFrame, buyer_budget: int) -> None:
     )
 
 
+def build_market_signal_values(
+    df: pd.DataFrame, price_col: str, price_decimals: int = 0, price_suffix: str = ""
+) -> dict[str, str]:
+    most_listings = df.loc[df["listings"].idxmax()]
+    lowest = df.loc[df[price_col].idxmin()]
+    highest = df.loc[df[price_col].idxmax()]
+    spread = highest[price_col] - lowest[price_col]
+
+    return {
+        "weighted_price": format_price(
+            weighted_average(df, price_col), price_decimals, price_suffix
+        ),
+        "visible_supply": format_int(df["listings"].sum()),
+        "visible_groups": format_int(len(df)),
+        "active_sector": place_label(most_listings),
+        "active_listings": format_int(most_listings["listings"]),
+        "price_range": format_price(spread, price_decimals, price_suffix),
+        "price_range_places": f"{place_label(lowest)} to {place_label(highest)}",
+        "median_price": format_price(
+            df[price_col].median(), price_decimals, price_suffix
+        ),
+    }
+
+
 def render_market_highlights(
     df: pd.DataFrame, price_col: str, price_decimals: int = 0, price_suffix: str = ""
 ) -> None:
     if df.empty:
         return
 
-    most_listings = df.loc[df["listings"].idxmax()]
-    lowest = df.loc[df[price_col].idxmin()]
-    highest = df.loc[df[price_col].idxmax()]
-    spread = highest[price_col] - lowest[price_col]
+    signal_values = build_market_signal_values(
+        df, price_col, price_decimals, price_suffix
+    )
 
     render_section("Market pulse", "Three quick signals from the current market.")
     col1, col2, col3 = st.columns(3)
     with col1:
-        st.metric("Most active sector", format_int(most_listings["listings"]))
-        st.caption(place_label(most_listings))
+        st.metric("Most active sector", signal_values["active_listings"])
+        st.caption(signal_values["active_sector"])
     with col2:
-        st.metric("Price range", format_price(spread, price_decimals, price_suffix))
-        st.caption(f"{place_label(lowest)} to {place_label(highest)}")
+        st.metric("Price range", signal_values["price_range"])
+        st.caption(signal_values["price_range_places"])
     with col3:
-        st.metric(
-            "Median sector price",
-            format_price(df[price_col].median(), price_decimals, price_suffix),
-        )
+        st.metric("Median sector price", signal_values["median_price"])
         st.caption("Median across visible sectors")
 
 
@@ -1863,8 +1884,8 @@ def render_yield_chart(
 
 def render_sales_trend(hist: pd.DataFrame, selected_cities: list[str]) -> None:
     render_section(
-        "Chisinau price pulse",
-        "90-day price paths in the most active Chisinau sectors.",
+        "Chișinău price pulse",
+        "90-day price paths in the most active Chișinău sectors.",
     )
     if hist.empty:
         render_empty_state("Historical sale data is not available.")
@@ -1878,11 +1899,11 @@ def render_sales_trend(hist: pd.DataFrame, selected_cities: list[str]) -> None:
     h = h[h["city"] == CHISINAU_CITY]
 
     if selected_cities and CHISINAU_CITY not in selected_cities:
-        render_empty_state("Chisinau is not selected, so the 90-day trend is hidden.")
+        render_empty_state("Chișinău is not selected, so the 90-day trend is hidden.")
         return
 
     if h.empty:
-        render_empty_state("No Chisinau history is available for the last 90 days.")
+        render_empty_state("No Chișinău history is available for the last 90 days.")
         return
 
     top_sec = h["sector"].value_counts().head(8).index
@@ -1894,18 +1915,8 @@ def render_sales_trend(hist: pd.DataFrame, selected_cities: list[str]) -> None:
 
     plot["sector"] = plot["sector"].fillna("Center").astype(str)
     plot["PriceLabel"] = plot["avg_per_m2_eur"].map(format_number)
-    trend_colors = [
-        "#315fc9",
-        "#12805c",
-        "#c56b2c",
-        "#b84d4a",
-        "#7557b5",
-        "#0f8b8d",
-        "#6f8f3b",
-        "#a36b1c",
-    ]
     color_map = {
-        sector: trend_colors[index % len(trend_colors)]
+        sector: SALE_HERO_TRACE_COLORS[index % len(SALE_HERO_TRACE_COLORS)]
         for index, sector in enumerate(plot["sector"].drop_duplicates())
     }
 
@@ -1936,7 +1947,10 @@ def render_sales_trend(hist: pd.DataFrame, selected_cities: list[str]) -> None:
             x=[row["date"]],
             y=[row["avg_per_m2_eur"]],
             mode="markers+text",
-            marker={"size": 6, "color": color_map.get(sector, THEME["muted"])},
+            marker={
+                "size": 6,
+                "color": color_map.get(sector, SALE_HERO_TRACE_COLORS[0]),
+            },
             text=[f"{sector} {format_number(row['avg_per_m2_eur'])}"],
             textposition="middle right",
             textfont={"size": 12, "color": THEME["sale_hero_text"]},
@@ -2020,18 +2034,8 @@ def render_profile_sales_trend(
 
     plot["sector"] = plot["sector"].fillna("Center").astype(str)
     plot["PriceLabel"] = plot["avg_per_m2_eur"].map(format_number)
-    trend_colors = [
-        "#315fc9",
-        "#12805c",
-        "#c56b2c",
-        "#b84d4a",
-        "#7557b5",
-        "#0f8b8d",
-        "#6f8f3b",
-        "#a36b1c",
-    ]
     color_map = {
-        sector: trend_colors[index % len(trend_colors)]
+        sector: SALE_HERO_TRACE_COLORS[index % len(SALE_HERO_TRACE_COLORS)]
         for index, sector in enumerate(plot["sector"].drop_duplicates())
     }
 
@@ -2062,7 +2066,10 @@ def render_profile_sales_trend(
             x=[row["date"]],
             y=[row["avg_per_m2_eur"]],
             mode="markers+text",
-            marker={"size": 6, "color": color_map.get(sector, THEME["muted"])},
+            marker={
+                "size": 6,
+                "color": color_map.get(sector, SALE_HERO_TRACE_COLORS[0]),
+            },
             text=[f"{sector} {format_number(row['avg_per_m2_eur'])}"],
             textposition="middle right",
             textfont={"size": 12, "color": THEME["sale_hero_text"]},
@@ -2382,25 +2389,36 @@ with main_col:
         )
 
         if df.empty:
-            render_market_signal_rail(signal_title, [])
             render_empty_state("No sale listings match the current filters.")
         else:
-            most_active = df.loc[df["listings"].idxmax()]
+            signal_values = build_market_signal_values(
+                df, price_col, price_suffix="/m2"
+            )
             signal_cards = [
                 (
                     "Weighted price per m2",
-                    format_price(weighted_average(df, price_col), suffix="/m2"),
+                    signal_values["weighted_price"],
                     "Listing-weighted current market.",
                 ),
                 (
                     "Visible supply",
-                    format_int(df["listings"].sum()),
-                    f"Across {format_int(len(df))} city-sector groups.",
+                    signal_values["visible_supply"],
+                    f"Across {signal_values['visible_groups']} city-sector groups.",
                 ),
                 (
                     "Most active sector",
-                    place_label(most_active),
-                    f"{format_int(most_active['listings'])} listings.",
+                    signal_values["active_sector"],
+                    f"{signal_values['active_listings']} listings.",
+                ),
+                (
+                    "Price range",
+                    signal_values["price_range"],
+                    signal_values["price_range_places"],
+                ),
+                (
+                    "Median sector price",
+                    signal_values["median_price"],
+                    "Median across visible sectors.",
                 ),
             ]
 
@@ -2427,7 +2445,6 @@ with main_col:
                     selected_sale_rooms, selected_sale_area_bands
                 ),
             )
-            render_market_highlights(df, price_col, price_decimals=0)
             if market_lens == "Listings":
                 render_listing_sections(df, SALE_COLOR_SCALE)
             else:

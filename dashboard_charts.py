@@ -12,6 +12,17 @@ PLOTLY_CHART_CONFIG = {
     "responsive": True,
 }
 
+SALE_HERO_TRACE_COLORS = [
+    "#7dd3fc",
+    "#86efac",
+    "#fde68a",
+    "#fca5a5",
+    "#c4b5fd",
+    "#67e8f9",
+    "#fdba74",
+    "#f9a8d4",
+]
+
 
 def render_plotly_chart(fig) -> None:
     st.plotly_chart(fig, width="stretch", config=PLOTLY_CHART_CONFIG)
