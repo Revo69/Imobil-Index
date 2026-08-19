@@ -22,10 +22,10 @@ for buyers, sellers, and investors. The dashboard reads safe, pre-aggregated
 
 | Tab | What you get |
 |---|---|
-| 🏷️ **For Sale** | City and sector pricing, room/area profiles, housing type, finish/condition, floor-position comparison, and 90-day trends |
+| 🏷️ **For Sale** | Chisinau price pulse, city and sector pricing, budget guide, and optional property-profile analysis |
 | 📅 **Monthly Rent** | Rental price per m² by sector, top/bottom districts, indicative gross yield |
-| 🌙 **Daily Rent** | Short-term rental pricing, occupancy-adjusted indicative gross yield, daily vs. monthly comparison |
-| ✦ **Insights** | Rule-based market signals, a compact weekly market brief, regional value comparison, and optional investment analysis |
+| 🌙 **Daily Rent** | Short-term rental pricing, occupancy-adjusted indicative gross yield, and optional daily-versus-monthly return scenarios |
+| ✦ **Insights** | Weekly market brief first, then rule-based market signals, regional value comparison, and optional investment analysis |
 
 Data is refreshed daily through an upstream ETL pipeline (**bronze → silver →
 gold**: raw ingestion → cleaning/normalization → aggregated metrics). Gold stays
@@ -38,10 +38,12 @@ private; the dashboard and public users read only the aggregated API layer.
 - **Listings-weighted pricing** — average price per m² is weighted by listing count per sector, not a naive mean, avoiding skew from thin markets
 - **Lean historical queries** — the 90-day trend chart and weekly city comparison pull only the needed columns and date range (`date, city, sector, listings, avg_per_m2_eur`), server-side filtered and paginated, instead of loading full tables into memory
 - **Weekly market brief** — compares listing-weighted city asking prices where possible, with a city-sector fallback when fewer than three cities are comparable
+- **Chisinau price pulse** — makes 90-day price paths in the most active Chisinau sectors the first analysis on the For Sale tab
 - **Buyer-relevant sale profiles** — city comparison, rooms and area bands, housing type, finish/condition, and floor position provide clearly caveated comparisons without exposing listings
 - **Regional value comparison** — shows cities outside Chisinau with the largest listing-weighted price gap to the current Chisinau average
 - **Investment shortlist** — compares visible markets by indicative monthly and daily gross yield, average sale price, and available sale/rent supply
 - **Daily rent assumption** — re-scales the published 60% daily-rent model in Daily Rent, showing sector-level gross return, break-even occupancy, and the daily-versus-monthly difference
+- **Progressive disclosure** — property characteristics and daily return scenarios stay available without overloading the initial dashboard view
 - **Public API by design** — the `api_*` tables contain aggregated metrics only, use RLS, and allow anonymous read access without public writes; see the [Public API v1 contract](docs/public_api_v1.md)
 - **Hourly caching** (`st.cache_data(ttl=3600)`) to keep the app responsive without hammering the database
 - **Clear data-connection state** — public users see a calm recovery message instead of a raw exception when the API is temporarily unavailable
