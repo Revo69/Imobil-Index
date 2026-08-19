@@ -482,6 +482,12 @@ Read-only Supabase inspection on 2026-07-28 found:
   and sector table now follow as progressively more detailed analysis.
 - Added a regression test for this order. Compilation, Ruff, and all 11 unit
   tests pass; the local Streamlit preview responds at `http://127.0.0.1:8503`.
+- Simplified the Daily Rent hierarchy without changing its calculations:
+  - occupancy-adjusted daily yield now appears before market rankings as the
+    tab's primary decision visual;
+  - daily-versus-monthly context, break-even analysis, and return comparison
+    now live in one closed `Return scenarios` disclosure;
+  - added regression coverage for the yield and disclosure order.
 
 ## Next Small Steps
 

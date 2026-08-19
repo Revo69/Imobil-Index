@@ -2410,6 +2410,12 @@ with main_col:
             render_market_highlights(
                 df, price_col, price_decimals=1, price_suffix="/day"
             )
+            render_yield_chart(
+                filtered_yield,
+                "yield_daily_percent",
+                f"Daily rental yield at {daily_occupancy_percent}% occupancy",
+                "Indicative gross annual yield, before operating costs.",
+            )
             if market_lens == "Listings":
                 render_listing_sections(df, DAILY_COLOR_SCALE)
             else:
@@ -2421,22 +2427,20 @@ with main_col:
                     HIGH_DAILY_RENT_COLOR_SCALE,
                     1,
                 )
-            render_yield_chart(
-                filtered_yield,
-                "yield_daily_percent",
-                f"Daily rental yield at {daily_occupancy_percent}% occupancy",
-                "Indicative gross annual yield, before operating costs.",
-            )
-            render_daily_rent_context(filtered_yield, daily_occupancy_percent)
-            break_even_df = build_break_even_table(
-                df_rent, selected_cities, min_listings
-            )
-            render_break_even_analysis(break_even_df)
-            render_daily_vs_monthly_return(
-                filtered_yield,
-                daily_occupancy_percent,
-                min_listings,
-            )
+            with st.expander("Return scenarios", icon=":material/analytics:"):
+                st.caption(
+                    "Compare daily and monthly rent using the selected occupancy assumption."
+                )
+                render_daily_rent_context(filtered_yield, daily_occupancy_percent)
+                break_even_df = build_break_even_table(
+                    df_rent, selected_cities, min_listings
+                )
+                render_break_even_analysis(break_even_df)
+                render_daily_vs_monthly_return(
+                    filtered_yield,
+                    daily_occupancy_percent,
+                    min_listings,
+                )
 
     # --------------------- 4. Insights ---------------------
     with tab_insights:
