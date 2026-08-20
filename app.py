@@ -7,13 +7,10 @@ import plotly.express as px
 import streamlit as st
 
 from dashboard_charts import (
-    SALE_HERO_TRACE_COLORS,
     apply_common_chart_style,
-    apply_sale_hero_chart_style,
     render_listing_sections,
     render_plotly_chart,
     render_price_sections,
-    render_sale_hero_chart,
 )
 from dashboard_components import (
     format_int,
@@ -26,7 +23,6 @@ from dashboard_components import (
     render_insight_card_row,
     render_insight_cards,
     render_kpi_card,
-    render_market_signal_rail,
     render_section,
 )
 from dashboard_data import (
@@ -264,7 +260,7 @@ __THEME_CSS_VARS__
         }
 
         .section {
-            padding: var(--section-space) 0 var(--section-space-compact);
+            padding: 1rem 0 0.3rem;
         }
 
         .section-title {
@@ -315,116 +311,6 @@ __THEME_CSS_VARS__
             color: var(--muted);
             font-size: 0.86rem;
             line-height: 1.35;
-        }
-
-        /* For Sale presentation contract. Task 3 supplies the matching markup. */
-        .sale-hero {
-            box-sizing: border-box;
-            margin: 0 0 1rem;
-            padding: 1.15rem 1.2rem;
-            border: 1px solid var(--sale-hero-surface);
-            border-radius: 8px;
-            background: var(--sale-hero-bg);
-            box-shadow: var(--shadow);
-            color: var(--sale-hero-text);
-        }
-
-        .sale-hero-eyebrow {
-            color: var(--sale-hero-muted);
-            font-size: 0.72rem;
-            font-weight: 760;
-            letter-spacing: 0.08em;
-            text-transform: uppercase;
-        }
-
-        .sale-hero-title {
-            margin: 0.35rem 0 0;
-            color: var(--sale-hero-text);
-            font-size: clamp(1.55rem, 2.6vw, 2.2rem);
-            line-height: 1.12;
-            font-weight: 780;
-        }
-
-        .sale-hero-copy {
-            max-width: 740px;
-            margin: 0.5rem 0 0;
-            color: var(--sale-hero-muted);
-            font-size: 0.94rem;
-            line-height: 1.5;
-        }
-
-        .st-key-sale-trend-hero,
-        .st-key-sale-trend-hero div[data-testid="stVerticalBlockBorderWrapper"] {
-            border-color: var(--sale-hero-surface);
-            border-radius: 8px;
-            background: var(--sale-hero-bg);
-            box-shadow: var(--shadow);
-        }
-
-        .sale-signal-rail {
-            display: grid;
-            grid-template-columns: repeat(3, minmax(0, 1fr));
-            gap: 0.65rem;
-            margin: 0 0 1rem;
-            padding: 0.65rem;
-            border: 1px solid var(--sale-signal-border);
-            border-radius: 8px;
-            background: var(--sale-signal-bg);
-        }
-
-        .sale-signal {
-            min-width: 0;
-            padding: 0.75rem 0.8rem;
-            border-left: 3px solid var(--green);
-            border-radius: 5px;
-            background: var(--surface);
-        }
-
-        .sale-signal-label,
-        .sale-metric-label {
-            color: var(--muted);
-            font-size: 0.7rem;
-            font-weight: 760;
-            letter-spacing: 0.04em;
-            text-transform: uppercase;
-        }
-
-        .sale-signal-value,
-        .sale-metric-value {
-            margin-top: 0.3rem;
-            color: var(--text);
-            font-size: clamp(1.05rem, 1.7vw, 1.32rem);
-            line-height: 1.16;
-            font-weight: 780;
-            overflow-wrap: anywhere;
-        }
-
-        .sale-signal-note,
-        .sale-metric-note {
-            margin-top: 0.32rem;
-            color: var(--muted);
-            font-size: 0.82rem;
-            line-height: 1.35;
-            overflow-wrap: anywhere;
-        }
-
-        .sale-metric-grid {
-            display: grid;
-            grid-template-columns: repeat(3, minmax(0, 1fr));
-            gap: 0.65rem;
-            margin: 0 0 0.85rem;
-        }
-
-        .sale-metric-cell {
-            min-width: 0;
-            padding: 0.8rem 0.85rem;
-            border: 1px solid var(--border);
-            border-radius: 8px;
-            background: var(--surface);
-        }
-
-        .sale-section {
-            padding: var(--section-space) 0 var(--section-space-compact);
         }
 
         div[data-testid="stVerticalBlockBorderWrapper"] {
@@ -579,7 +465,7 @@ __THEME_CSS_VARS__
 
             div[data-testid="stHorizontalBlock"] {
                 flex-direction: column;
-                gap: var(--mobile-stack-gap);
+                gap: 0.75rem;
             }
 
             div[data-testid="stHorizontalBlock"] > div {
@@ -632,21 +518,6 @@ __THEME_CSS_VARS__
 
             .section {
                 padding-top: 0.7rem;
-            }
-
-            .sale-hero {
-                padding: 0.95rem;
-            }
-
-            .sale-signal-rail,
-            .sale-metric-grid {
-                grid-template-columns: 1fr;
-                gap: var(--mobile-stack-gap);
-            }
-
-            .sale-signal,
-            .sale-metric-cell {
-                padding: 0.8rem 0.85rem;
             }
 
             .kpi-card {
@@ -1111,50 +982,30 @@ def render_budget_guide(df: pd.DataFrame, buyer_budget: int) -> None:
     )
 
 
-def build_market_signal_values(
-    df: pd.DataFrame, price_col: str, price_decimals: int = 0, price_suffix: str = ""
-) -> dict[str, str]:
-    most_listings = df.loc[df["listings"].idxmax()]
-    lowest = df.loc[df[price_col].idxmin()]
-    highest = df.loc[df[price_col].idxmax()]
-    spread = highest[price_col] - lowest[price_col]
-
-    return {
-        "weighted_price": format_price(
-            weighted_average(df, price_col), price_decimals, price_suffix
-        ),
-        "visible_supply": format_int(df["listings"].sum()),
-        "visible_groups": format_int(len(df)),
-        "active_sector": place_label(most_listings),
-        "active_listings": format_int(most_listings["listings"]),
-        "price_range": format_price(spread, price_decimals, price_suffix),
-        "price_range_places": f"{place_label(lowest)} to {place_label(highest)}",
-        "median_price": format_price(
-            df[price_col].median(), price_decimals, price_suffix
-        ),
-    }
-
-
 def render_market_highlights(
     df: pd.DataFrame, price_col: str, price_decimals: int = 0, price_suffix: str = ""
 ) -> None:
     if df.empty:
         return
 
-    signal_values = build_market_signal_values(
-        df, price_col, price_decimals, price_suffix
-    )
+    most_listings = df.loc[df["listings"].idxmax()]
+    lowest = df.loc[df[price_col].idxmin()]
+    highest = df.loc[df[price_col].idxmax()]
+    spread = highest[price_col] - lowest[price_col]
 
     render_section("Market pulse", "Three quick signals from the current market.")
     col1, col2, col3 = st.columns(3)
     with col1:
-        st.metric("Most active sector", signal_values["active_listings"])
-        st.caption(signal_values["active_sector"])
+        st.metric("Most active sector", format_int(most_listings["listings"]))
+        st.caption(place_label(most_listings))
     with col2:
-        st.metric("Price range", signal_values["price_range"])
-        st.caption(signal_values["price_range_places"])
+        st.metric("Price range", format_price(spread, price_decimals, price_suffix))
+        st.caption(f"{place_label(lowest)} to {place_label(highest)}")
     with col3:
-        st.metric("Median sector price", signal_values["median_price"])
+        st.metric(
+            "Median sector price",
+            format_price(df[price_col].median(), price_decimals, price_suffix),
+        )
         st.caption("Median across visible sectors")
 
 
@@ -1884,8 +1735,8 @@ def render_yield_chart(
 
 def render_sales_trend(hist: pd.DataFrame, selected_cities: list[str]) -> None:
     render_section(
-        "Chișinău price pulse",
-        "90-day price paths in the most active Chișinău sectors.",
+        "Chisinau price pulse",
+        "90-day price paths in the most active Chisinau sectors.",
     )
     if hist.empty:
         render_empty_state("Historical sale data is not available.")
@@ -1899,11 +1750,11 @@ def render_sales_trend(hist: pd.DataFrame, selected_cities: list[str]) -> None:
     h = h[h["city"] == CHISINAU_CITY]
 
     if selected_cities and CHISINAU_CITY not in selected_cities:
-        render_empty_state("Chișinău is not selected, so the 90-day trend is hidden.")
+        render_empty_state("Chisinau is not selected, so the 90-day trend is hidden.")
         return
 
     if h.empty:
-        render_empty_state("No Chișinău history is available for the last 90 days.")
+        render_empty_state("No Chisinau history is available for the last 90 days.")
         return
 
     top_sec = h["sector"].value_counts().head(8).index
@@ -1915,8 +1766,18 @@ def render_sales_trend(hist: pd.DataFrame, selected_cities: list[str]) -> None:
 
     plot["sector"] = plot["sector"].fillna("Center").astype(str)
     plot["PriceLabel"] = plot["avg_per_m2_eur"].map(format_number)
+    trend_colors = [
+        "#315fc9",
+        "#12805c",
+        "#c56b2c",
+        "#b84d4a",
+        "#7557b5",
+        "#0f8b8d",
+        "#6f8f3b",
+        "#a36b1c",
+    ]
     color_map = {
-        sector: SALE_HERO_TRACE_COLORS[index % len(SALE_HERO_TRACE_COLORS)]
+        sector: trend_colors[index % len(trend_colors)]
         for index, sector in enumerate(plot["sector"].drop_duplicates())
     }
 
@@ -1947,21 +1808,34 @@ def render_sales_trend(hist: pd.DataFrame, selected_cities: list[str]) -> None:
             x=[row["date"]],
             y=[row["avg_per_m2_eur"]],
             mode="markers+text",
-            marker={
-                "size": 6,
-                "color": color_map.get(sector, SALE_HERO_TRACE_COLORS[0]),
-            },
+            marker={"size": 6, "color": color_map.get(sector, THEME["muted"])},
             text=[f"{sector} {format_number(row['avg_per_m2_eur'])}"],
             textposition="middle right",
-            textfont={"size": 12, "color": THEME["sale_hero_text"]},
+            textfont={"size": 12, "color": THEME["chart_label"]},
             hoverinfo="skip",
             showlegend=False,
             cliponaxis=False,
         )
 
-    fig = apply_sale_hero_chart_style(fig, height=500)
-    fig.update_layout(hovermode="x unified")
-    render_sale_hero_chart(fig)
+    fig = apply_common_chart_style(fig, height=500, show_legend=False)
+    fig.update_layout(
+        hovermode="x unified",
+        margin={"l": 16, "r": 150, "t": 10, "b": 18},
+    )
+    fig.update_xaxes(
+        title_text="",
+        tickangle=0,
+        showgrid=False,
+        tickformat="%d %b",
+    )
+    fig.update_yaxes(
+        title_text="EUR per m2",
+        gridcolor=THEME["border"],
+        zeroline=False,
+    )
+
+    with st.container(border=True):
+        render_plotly_chart(fig)
 
 
 def selected_trend_city(selected_cities: Iterable[str]) -> str:
@@ -2034,8 +1908,18 @@ def render_profile_sales_trend(
 
     plot["sector"] = plot["sector"].fillna("Center").astype(str)
     plot["PriceLabel"] = plot["avg_per_m2_eur"].map(format_number)
+    trend_colors = [
+        "#315fc9",
+        "#12805c",
+        "#c56b2c",
+        "#b84d4a",
+        "#7557b5",
+        "#0f8b8d",
+        "#6f8f3b",
+        "#a36b1c",
+    ]
     color_map = {
-        sector: SALE_HERO_TRACE_COLORS[index % len(SALE_HERO_TRACE_COLORS)]
+        sector: trend_colors[index % len(trend_colors)]
         for index, sector in enumerate(plot["sector"].drop_duplicates())
     }
 
@@ -2066,21 +1950,34 @@ def render_profile_sales_trend(
             x=[row["date"]],
             y=[row["avg_per_m2_eur"]],
             mode="markers+text",
-            marker={
-                "size": 6,
-                "color": color_map.get(sector, SALE_HERO_TRACE_COLORS[0]),
-            },
+            marker={"size": 6, "color": color_map.get(sector, THEME["muted"])},
             text=[f"{sector} {format_number(row['avg_per_m2_eur'])}"],
             textposition="middle right",
-            textfont={"size": 12, "color": THEME["sale_hero_text"]},
+            textfont={"size": 12, "color": THEME["chart_label"]},
             hoverinfo="skip",
             showlegend=False,
             cliponaxis=False,
         )
 
-    fig = apply_sale_hero_chart_style(fig, height=500)
-    fig.update_layout(hovermode="x unified")
-    render_sale_hero_chart(fig)
+    fig = apply_common_chart_style(fig, height=500, show_legend=False)
+    fig.update_layout(
+        hovermode="x unified",
+        margin={"l": 16, "r": 150, "t": 10, "b": 18},
+    )
+    fig.update_xaxes(
+        title_text="",
+        tickangle=0,
+        showgrid=False,
+        tickformat="%d %b",
+    )
+    fig.update_yaxes(
+        title_text="EUR per m2",
+        gridcolor=THEME["border"],
+        zeroline=False,
+    )
+
+    with st.container(border=True):
+        render_plotly_chart(fig)
 
 
 def render_sector_table(
@@ -2382,60 +2279,20 @@ with main_col:
         else:
             df = filter_by_city_and_listings(df_sales, selected_cities, min_listings)
         sale_segments = filter_segments_to_market(profile_sale_segments, df)
-        signal_title = (
-            "Chișinău signals"
-            if selected_cities == [CHISINAU_CITY]
-            else "Market signals"
-        )
 
         if df.empty:
             render_empty_state("No sale listings match the current filters.")
         else:
-            signal_values = build_market_signal_values(
-                df, price_col, price_suffix="/m2"
-            )
-            signal_cards = [
-                (
-                    "Weighted price per m2",
-                    signal_values["weighted_price"],
-                    "Listing-weighted current market.",
-                ),
-                (
-                    "Visible supply",
-                    signal_values["visible_supply"],
-                    f"Across {signal_values['visible_groups']} city-sector groups.",
-                ),
-                (
-                    "Most active sector",
-                    signal_values["active_sector"],
-                    f"{signal_values['active_listings']} listings.",
-                ),
-                (
-                    "Price range",
-                    signal_values["price_range"],
-                    signal_values["price_range_places"],
-                ),
-                (
-                    "Median sector price",
-                    signal_values["median_price"],
-                    "Median across visible sectors.",
-                ),
-            ]
-
-            trend_col, signal_col = st.columns([1.65, 1], gap="large")
-            with trend_col:
-                if sale_profile_active:
-                    render_profile_sales_trend(
-                        df_hist_sale_segments,
-                        selected_cities,
-                        selected_sale_rooms,
-                        selected_sale_area_bands,
-                        min_listings,
-                    )
-                else:
-                    render_sales_trend(df_hist_sales, selected_cities)
-            with signal_col:
-                render_market_signal_rail(signal_title, signal_cards)
+            if sale_profile_active:
+                render_profile_sales_trend(
+                    df_hist_sale_segments,
+                    selected_cities,
+                    selected_sale_rooms,
+                    selected_sale_area_bands,
+                    min_listings,
+                )
+            else:
+                render_sales_trend(df_hist_sales, selected_cities)
             render_tab_header(
                 df,
                 price_col,
@@ -2445,6 +2302,7 @@ with main_col:
                     selected_sale_rooms, selected_sale_area_bands
                 ),
             )
+            render_market_highlights(df, price_col, price_decimals=0)
             if market_lens == "Listings":
                 render_listing_sections(df, SALE_COLOR_SCALE)
             else:

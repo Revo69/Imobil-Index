@@ -12,17 +12,6 @@ PLOTLY_CHART_CONFIG = {
     "responsive": True,
 }
 
-SALE_HERO_TRACE_COLORS = [
-    "#7dd3fc",
-    "#86efac",
-    "#fde68a",
-    "#fca5a5",
-    "#c4b5fd",
-    "#67e8f9",
-    "#fdba74",
-    "#f9a8d4",
-]
-
 
 def render_plotly_chart(fig) -> None:
     st.plotly_chart(fig, width="stretch", config=PLOTLY_CHART_CONFIG)
@@ -69,53 +58,6 @@ def apply_common_chart_style(fig, height: int = 430, show_legend: bool = False):
         fixedrange=True,
     )
     return fig
-
-
-def apply_sale_hero_chart_style(fig, height: int = 500):
-    """Apply the dark, For Sale-only presentation to an existing trend figure."""
-    fig.update_layout(
-        height=height,
-        margin={"l": 16, "r": 150, "t": 10, "b": 18},
-        paper_bgcolor=THEME["sale_hero_bg"],
-        plot_bgcolor=THEME["sale_hero_bg"],
-        font={
-            "family": PLOTLY_FONT_FAMILY,
-            "size": 13,
-            "color": THEME["sale_hero_text"],
-        },
-        hoverlabel={
-            "bgcolor": THEME["sale_hero_surface"],
-            "bordercolor": THEME["sale_hero_muted"],
-            "font_size": 13,
-            "font_color": THEME["sale_hero_text"],
-        },
-        coloraxis_showscale=False,
-        showlegend=False,
-        separators=",.",
-    )
-    fig.update_xaxes(
-        title_text="",
-        showgrid=False,
-        tickangle=0,
-        tickformat="%d %b",
-        tickfont={"color": THEME["sale_hero_muted"]},
-        fixedrange=True,
-    )
-    fig.update_yaxes(
-        title_text="EUR per m2",
-        title_font={"color": THEME["sale_hero_muted"]},
-        tickfont={"color": THEME["sale_hero_muted"]},
-        gridcolor=THEME["sale_hero_surface"],
-        zeroline=False,
-        fixedrange=True,
-    )
-    return fig
-
-
-def render_sale_hero_chart(fig) -> None:
-    """Render a sale trend inside a locally keyed, dark presentation surface."""
-    with st.container(border=True, key="sale-trend-hero"):
-        render_plotly_chart(fig)
 
 
 def format_chart_hover_value(value: float, y_label: str, digits: int) -> str:

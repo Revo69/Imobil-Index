@@ -57,31 +57,6 @@ def render_app_header(latest_snapshot: str) -> None:
     )
 
 
-def render_market_signal_rail(
-    title: str, signals: list[tuple[str, str, str]]
-) -> None:
-    """Render compact, already-computed signals for the visible market."""
-    render_section(title, "Current filtered market.")
-    if not signals:
-        render_empty_state("No market signals are available for the current filters.")
-        return
-
-    signal_html = "".join(
-        (
-            '<div class="sale-signal">'
-            f'<div class="sale-signal-label">{escape(label)}</div>'
-            f'<div class="sale-signal-value">{escape(value)}</div>'
-            f'<div class="sale-signal-note">{escape(note)}</div>'
-            "</div>"
-        )
-        for label, value, note in signals
-    )
-    st.markdown(
-        f'<div class="sale-signal-rail">{signal_html}</div>',
-        unsafe_allow_html=True,
-    )
-
-
 def render_empty_state(message: str) -> None:
     st.markdown(f'<div class="empty-state">{message}</div>', unsafe_allow_html=True)
 

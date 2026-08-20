@@ -499,12 +499,6 @@ Read-only Supabase inspection on 2026-07-28 found:
 - Reordered the Insights entry point so `Weekly market brief` appears before
   the static `Decision notes`; when history is insufficient, the existing
   decision notes remain the first visible useful block.
-- Completed the For Sale reference redesign verification on 2026-08-20:
-  the scoped sale trend hero and market signals preserve the left Explore
-  panel, tabs, filters, public `api_*` data, latest-snapshot freshness, and
-  listing-weighted calculations. All 24 unit tests, compilation, and focused
-  Ruff checks pass. The fresh preview showed the public data-connection error
-  state, so real-data desktop/mobile visual QA remains pending.
 
 ## Next Small Steps
 
