@@ -147,6 +147,7 @@ This is run automatically every 6 hours by [`.github/workflows/keep-awake.yml`](
 ## Contact
 
 **Serghei Matenco**
-📩 [sergey.revo@outlook.com](mailto:sergey.revo@outlook.com)
+
+📧 [sergey.revo@outlook.com](mailto:sergey.revo@outlook.com)
 
 © 2026 Imobil.Index
