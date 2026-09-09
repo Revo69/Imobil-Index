@@ -1,13 +1,19 @@
 # ARCHITECTURE.md
 
-Architecture review and refactoring plan for Imobil.Index.
+Streamlit consumer architecture and incremental refactoring plan for
+Imobil.Index.
 
-Last reviewed: 2026-07-30
+Last reviewed: 2026-09-10
 
 ## Purpose
 
 This document describes the current Streamlit dashboard structure and a
 beginner-friendly target structure for gradual AI-assisted development.
+
+The dashboard consumes aggregated `api_*` tables only. The upstream
+[`real-estate-analytics-md`](https://github.com/Revo69/real-estate-analytics-md)
+repository owns internal data layers, database refresh functions, producer SQL,
+and the canonical [Public API v1](https://github.com/Revo69/real-estate-analytics-md/blob/main/docs/public_api_v1.md).
 
 It is intentionally a plan only. No application code is changed here.
 
@@ -28,9 +34,9 @@ Imobil-Index/
   ARCHITECTURE.md
   .gitignore
   wake_streamlit.py
-  docs/
+  docs/                         # legacy producer copies; pending removal
     public_api_v1.md
-  sql/
+  sql/                          # legacy producer copies; pending removal
     public_api_layer.sql
     refresh_gold_updates_api_layer.sql
     add_estate_segments_api_layer.sql
@@ -59,8 +65,8 @@ Imobil-Index/
 | `AGENTS.md` | AI-agent working rules, dashboard UX standards, data semantics, and preferred checks. |
 | `PROGRESS.md` | Lightweight project log, recent changes, verification status, and next steps. |
 | `.gitignore` | Local Python, Streamlit secrets, cache, editor, and temp-file exclusions. |
-| `docs/public_api_v1.md` | Public API contract and examples for safe aggregated API tables. |
-| `sql/*.sql` | Manual Supabase SQL scripts for API layer creation, refresh-function updates, access cleanup, and health checks. |
+| `docs/public_api_v1.md` | Legacy copy retained temporarily for migration parity; the upstream contract is authoritative. |
+| `sql/*.sql` | Legacy producer scripts retained temporarily for migration parity; new SQL belongs upstream. |
 | `wake_streamlit.py` | Playwright-based keep-awake script for Streamlit Community Cloud. |
 | `.github/workflows/keep-awake.yml` | Scheduled GitHub Action that runs `wake_streamlit.py`. |
 | `.devcontainer/devcontainer.json` | Codespaces/devcontainer setup and auto-run command for Streamlit. |
@@ -97,7 +103,7 @@ AI-assisted work because every change requires reading a very large `app.py`.
 | Data transformation + data loading | `dashboard_data.py` loads public API data, while `dashboard_transforms.py` handles profile-filtered market aggregates. | This boundary is now clearer; later tests can protect it. |
 | Data loaders + error policy | `dashboard_data.py` has a shared paginated fetch helper, while the wrappers keep required-vs-optional behavior. | The behavior is now easier to see, but it still needs tests or typed contracts later. |
 | Streamlit internals + app theme | CSS targets internal `data-testid` selectors. | This works today, but it is fragile across Streamlit upgrades. |
-| SQL contract + app assumptions | Public API tables and app queries are coordinated through docs and scripts, not typed contracts. | Column drift can appear only at runtime. |
+| API contract + app assumptions | Upstream API documentation and local `dashboard_data.py` column lists are not machine-checked against each other. | Column drift can appear only at runtime. |
 
 ## Review Findings
 
@@ -192,10 +198,6 @@ Imobil-Index/
   PROGRESS.md
   ARCHITECTURE.md
   wake_streamlit.py
-  docs/
-    public_api_v1.md
-  sql/
-    ...
   src/
     imobil_index/
       __init__.py
@@ -518,8 +520,8 @@ Extract pure transforms:
 - Do not rewrite the app into many files in one pass.
 - Do not introduce classes just to organize functions.
 - Do not add a complex dependency injection system.
-- Do not move SQL scripts into Python migrations until the database workflow is
-  clearer.
+- Do not add producer SQL or migrations here; the upstream pipeline repository
+  owns database changes.
 - Do not redesign the UI while moving modules. Visual changes and structural
   refactors should be separate.
 

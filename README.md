@@ -44,7 +44,7 @@ private; the dashboard and public users read only the aggregated API layer.
 - **Investment shortlist** — compares visible markets by indicative monthly and daily gross yield, average sale price, and available sale/rent supply
 - **Daily rent assumption** — re-scales the published 60% daily-rent model in Daily Rent, showing sector-level gross return, break-even occupancy, and the daily-versus-monthly difference
 - **Progressive disclosure** — property characteristics and daily return scenarios stay available without overloading the initial dashboard view
-- **Public API by design** — the `api_*` tables contain aggregated metrics only, use RLS, and allow anonymous read access without public writes; see the [Public API v1 contract](docs/public_api_v1.md)
+- **Public API by design** — the `api_*` tables contain aggregated metrics only, use RLS, and allow anonymous read access without public writes; see the [canonical Public API v1 contract](https://github.com/Revo69/real-estate-analytics-md/blob/main/docs/public_api_v1.md)
 - **Hourly caching** (`st.cache_data(ttl=3600)`) to keep the app responsive without hammering the database
 - **Clear data-connection state** — public users see a calm recovery message instead of a raw exception when the API is temporarily unavailable
 - **Self-waking deployment** — Streamlit Community Cloud puts idle free-tier apps to sleep; a plain HTTP request only returns the static "asleep" shell, so a Playwright script actually drives a headless browser to click the wake button, scheduled via GitHub Actions 4× daily
@@ -82,9 +82,11 @@ Listing sources
       └── public REST consumers
 ```
 
-This repository holds the **dashboard, public API contract, API health checks,
-and uptime automation**. It consumes the safe public API layer produced from
-the upstream Gold data.
+This repository owns the **dashboard, consumer-side API health check, and uptime
+automation**. The upstream
+[`real-estate-analytics-md`](https://github.com/Revo69/real-estate-analytics-md)
+repository owns Bronze, Silver, Gold, refresh functions, producer SQL, and the
+canonical `api_*` contract.
 
 ---
 
@@ -126,7 +128,7 @@ The same checks run automatically on every pull request and on pushes to `main`.
 The smoke-check verifies row availability and freshness for every published
 `api_*` table, including sale profiles, housing type, finish/condition, and floor-position metrics.
 For REST endpoints, table definitions, access rules, and request examples, see
-[Public API v1](docs/public_api_v1.md).
+the upstream [Public API v1](https://github.com/Revo69/real-estate-analytics-md/blob/main/docs/public_api_v1.md).
 
 A ready-to-use [Dev Container](.devcontainer/devcontainer.json) is included for one-click setup in GitHub Codespaces.
 

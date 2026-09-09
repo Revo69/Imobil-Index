@@ -4,7 +4,7 @@ Simple project progress log for Imobil.Index.
 
 ## Last Updated
 
-2026-08-19
+2026-09-10
 
 ## Current State
 
@@ -12,7 +12,9 @@ Simple project progress log for Imobil.Index.
   `dashboard_data.py`, shared chart helpers in `dashboard_charts.py`, shared UI
   primitives and card renderers in `dashboard_components.py`, theme tokens in
   `dashboard_theme.py`, and pure pandas helpers in `dashboard_transforms.py`.
-- It reads Supabase Gold tables for sale, monthly rent, daily rent, yield, and 90-day history.
+- It reads only aggregated public Supabase `api_*` tables through
+  `dashboard_data.py`; internal Bronze, Silver, and Gold objects are not
+  dashboard data sources.
 - The UI has a left Explore filter panel and four tabs:
   - For Sale
   - Monthly Rent
@@ -22,6 +24,11 @@ Simple project progress log for Imobil.Index.
 
 ## Recently Done
 
+- Clarified the repository boundary: `Imobil-Index` owns the Streamlit consumer,
+  while `real-estate-analytics-md` owns producer SQL, refresh functions, and the
+  canonical [Public API v1](https://github.com/Revo69/real-estate-analytics-md/blob/main/docs/public_api_v1.md).
+  SQL and API documents mentioned later in this historical log remain temporary
+  legacy copies until the upstream parity/removal step is completed.
 - Added the first standard-library regression tests for dashboard transforms:
   listing-weighted prices, profile aggregation, weekly snapshot selection,
   city-level weekly weighting, and occupancy-adjusted daily return.
@@ -502,10 +509,13 @@ Read-only Supabase inspection on 2026-07-28 found:
 
 ## Next Small Steps
 
-1. Parser-quality gate work in the pipeline repository is deferred at the
-   user's request. Resume it before the next source-parser change.
+1. Remove the legacy producer SQL and duplicated API design documents only after
+   upstream links and contract parity are verified.
 
-2. Keep new product ideas in the parking lot until a real user question or a
+2. Keep this progress log dashboard-only. Pipeline reliability and parser work
+   are tracked in `real-estate-analytics-md/PROGRESS.md`.
+
+3. Keep new product ideas in the parking lot until a real user question or a
    data-quality need justifies a single focused addition.
 
 ## Parking Lot

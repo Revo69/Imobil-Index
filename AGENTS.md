@@ -6,12 +6,19 @@ Project guide for AI-assisted work on Imobil.Index.
 
 - App: Streamlit dashboard for Moldova real estate analytics.
 - Main file: `app.py`.
-- Data source: Supabase Gold tables:
-  - `gold_estate_current`
-  - `gold_rent_current`
-  - `gold_rent_yield`
-  - `gold_estate_daily`
+- Data source: the public, aggregated Supabase `api_*` contract loaded by
+  `dashboard_data.py`; the dashboard never reads internal Gold objects.
 - Runtime stack: Python, Streamlit, Plotly, Supabase Python client.
+
+## Repository Ownership
+
+- This repository owns Streamlit presentation, filters, charts, display
+  transformations, consumer-side API checks, and uptime automation.
+- `real-estate-analytics-md` owns acquisition, Bronze/Silver/Gold, refresh
+  functions, producer SQL, and the canonical `api_*` contract:
+  <https://github.com/Revo69/real-estate-analytics-md/blob/main/docs/public_api_v1.md>
+- Do not add or maintain producer SQL in this repository. Propose database/API
+  changes upstream first, then update this consumer after the contract exists.
 
 ## Working Style
 
@@ -55,31 +62,32 @@ Project guide for AI-assisted work on Imobil.Index.
 
 ## Data Semantics
 
-- `Data as of` must come from the latest Gold snapshot date, not the current clock time.
+- `Data as of` must come from the latest public API snapshot date, not the
+  current clock time.
 - Average market price per m2 must be weighted by `listings`.
 - Do not average city-sector aggregates equally when the UI claims to show market average.
 - Do not expose Supabase service keys or secrets.
 
 ## New Feature Standard
 
-Before adding a feature to the UI, Python backend, or Supabase schema:
+Before adding a feature to the UI, Python backend, or public data contract:
 
 1. Check current syntax and official documentation for the installed runtime,
    Streamlit, Plotly, Supabase, and PostgreSQL features being used. Do not rely
    only on remembered APIs or deprecated examples.
-2. Inspect the existing app patterns, data grain, public API contract, and
-   database schema before designing the change.
+2. Inspect the existing app patterns, data grain, `dashboard_data.py` column
+   contracts, and the canonical upstream public API contract before designing
+   the change.
 3. Keep the design small: state the user goal, scope of each control, data
    source, and the intended empty/error state before implementation.
 4. For UI, follow the existing design system, keep controls in a consistent
    control area, make values readable without hover, and verify desktop and
    mobile layouts when possible.
-5. For database changes, use the Supabase skill and current PostgreSQL/Supabase
-   guidance. Define the grain, minimum privacy threshold, indexes, constraints,
-   RLS, public access rules, refresh wiring, and rollback-safe migration path.
-6. In PostgreSQL functions, write `DELETE ... WHERE TRUE` when an intentional
-   full-table delete is required. Keep a specific predicate for conditional
-   deletes.
+5. Make database, RLS, refresh-function, and producer SQL changes in
+   `real-estate-analytics-md`. Define and verify the grain, thresholds, access
+   rules, refresh wiring, and compatibility there before changing this app.
+6. Do not copy an upstream migration into this repository as a workaround for
+   a missing public API field.
 7. Run focused checks for the changed surface. Do not claim syntax, schema,
    security, or visual verification unless it was actually performed.
 8. Use the applicable skill before implementation:
