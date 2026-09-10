@@ -24,6 +24,11 @@ Simple project progress log for Imobil.Index.
 
 ## Recently Done
 
+- Removed the legacy producer SQL and API design documents after verifying
+  their upstream copies and contract coverage. The canonical API contract,
+  rollout history, hardening SQL, and access checks now live only in
+  `real-estate-analytics-md`; historical path references below describe work
+  completed before the ownership transfer.
 - Clarified the repository boundary: `Imobil-Index` owns the Streamlit consumer,
   while `real-estate-analytics-md` owns producer SQL, refresh functions, and the
   canonical [Public API v1](https://github.com/Revo69/real-estate-analytics-md/blob/main/docs/public_api_v1.md).
@@ -509,13 +514,10 @@ Read-only Supabase inspection on 2026-07-28 found:
 
 ## Next Small Steps
 
-1. Remove the legacy producer SQL and duplicated API design documents only after
-   upstream links and contract parity are verified.
-
-2. Keep this progress log dashboard-only. Pipeline reliability and parser work
+1. Keep this progress log dashboard-only. Pipeline reliability and parser work
    are tracked in `real-estate-analytics-md/PROGRESS.md`.
 
-3. Keep new product ideas in the parking lot until a real user question or a
+2. Keep new product ideas in the parking lot until a real user question or a
    data-quality need justifies a single focused addition.
 
 ## Parking Lot

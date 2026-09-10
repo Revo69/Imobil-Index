@@ -34,15 +34,9 @@ Imobil-Index/
   ARCHITECTURE.md
   .gitignore
   wake_streamlit.py
-  docs/                         # legacy producer copies; pending removal
-    public_api_v1.md
-  sql/                          # legacy producer copies; pending removal
-    public_api_layer.sql
-    refresh_gold_updates_api_layer.sql
-    add_estate_segments_api_layer.sql
-    add_estate_segments_daily_api_layer.sql
-    revoke_internal_public_access.sql
-    check_public_api_layer.sql
+  docs/
+    superpowers/
+      plans/                     # dashboard design history
   .github/
     workflows/
       keep-awake.yml
@@ -65,8 +59,7 @@ Imobil-Index/
 | `AGENTS.md` | AI-agent working rules, dashboard UX standards, data semantics, and preferred checks. |
 | `PROGRESS.md` | Lightweight project log, recent changes, verification status, and next steps. |
 | `.gitignore` | Local Python, Streamlit secrets, cache, editor, and temp-file exclusions. |
-| `docs/public_api_v1.md` | Legacy copy retained temporarily for migration parity; the upstream contract is authoritative. |
-| `sql/*.sql` | Legacy producer scripts retained temporarily for migration parity; new SQL belongs upstream. |
+| `docs/superpowers/plans/` | Historical dashboard-specific design plans. |
 | `wake_streamlit.py` | Playwright-based keep-awake script for Streamlit Community Cloud. |
 | `.github/workflows/keep-awake.yml` | Scheduled GitHub Action that runs `wake_streamlit.py`. |
 | `.devcontainer/devcontainer.json` | Codespaces/devcontainer setup and auto-run command for Streamlit. |
